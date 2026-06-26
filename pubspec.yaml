@@ -1,0 +1,61 @@
+name: kotoba_app
+description: "Kotoba (言葉) — Plataforma Digital de Literatura Libre"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # ── Estado ──────────────────────────────────────────────────────
+  flutter_riverpod: ^2.5.1
+
+  # ── Navegación ──────────────────────────────────────────────────
+  go_router: ^13.2.0
+
+  # ── Manejo funcional de errores ─────────────────────────────────
+  dartz: ^0.10.1
+
+  # ── Equatable ───────────────────────────────────────────────────
+  equatable: ^2.0.5
+
+  # ── Tipografía ──────────────────────────────────────────────────
+  google_fonts: ^6.2.1
+
+  # ── Imágenes con caché ──────────────────────────────────────────
+  cached_network_image: ^3.3.1
+
+  # ── Animaciones ─────────────────────────────────────────────────
+  animate_do: ^3.3.4
+
+  # ── Gráficos (dashboard de autor) ───────────────────────────────
+  fl_chart: ^0.68.0
+
+  # ── Shimmer loading ─────────────────────────────────────────────
+  shimmer: ^3.0.0
+
+  # ── Formateo de fechas ──────────────────────────────────────────
+  intl: ^0.19.0
+
+  # ── 🔄 BACKEND INTEGRATION — Descomentar al conectar la API ────
+  # dio: ^5.4.3+1
+  # flutter_secure_storage: ^9.2.2
+  # hive_flutter: ^1.1.0
+  # connectivity_plus: ^6.0.3
+  # json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+  # ── 🔄 BACKEND INTEGRATION — Descomentar al conectar la API ────
+  # build_runner: ^2.4.9
+  # json_serializable: ^6.8.0
+  # mockito: ^5.4.4
+
+flutter:
+  uses-material-design: true
