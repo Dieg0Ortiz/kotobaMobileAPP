@@ -9,6 +9,7 @@ import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/reader_providers.dart';
 import '../widgets/chapter_tile.dart';
 import '../widgets/synopsis_card.dart';
@@ -31,6 +32,13 @@ class WorkDetailScreen extends ConsumerWidget {
           final work = state.work;
           final chapters = state.chapters;
 
+          final profileAsync = ref.watch(currentProfileProvider);
+          final currentUserId = profileAsync.maybeWhen(
+            data: (u) => u.id,
+            orElse: () => '',
+          );
+          final isAuthor = currentUserId.isNotEmpty && currentUserId == work.authorId;
+
           return CustomScrollView(
             slivers: [
               // Hero cover
@@ -42,6 +50,14 @@ class WorkDetailScreen extends ConsumerWidget {
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => context.pop(),
                 ),
+                actions: [
+                  if (isAuthor)
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      tooltip: 'Editar historia',
+                      onPressed: () => context.go('/write/edit/$workId'),
+                    ),
+                ],
                 flexibleSpace: FlexibleSpaceBar(
                   background: Stack(
                     fit: StackFit.expand,

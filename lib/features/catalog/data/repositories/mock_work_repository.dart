@@ -50,4 +50,22 @@ class MockWorkRepository implements IWorkRepository {
       return const Left(NotFoundFailure('Obra no encontrada'));
     }
   }
+
+  @override
+  Future<Either<Failure, Work>> createWork(Map<String, dynamic> workData) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return Right(MockData.trendingWorks.first);
+  }
+
+  @override
+  Future<Either<Failure, Work>> updateWork(String id, Map<String, dynamic> workData) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return Right(MockData.trendingWorks.first);
+  }
+
+  @override
+  Future<Either<Failure, List<Work>>> getWorksByAuthor(String authorId) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    return Right(MockData.myAuthoredWorks);
+  }
 }

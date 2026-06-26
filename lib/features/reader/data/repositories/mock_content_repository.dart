@@ -37,4 +37,16 @@ class MockContentRepository implements IContentRepository {
       return const Left(NotFoundFailure('Capítulo no encontrado'));
     }
   }
+
+  @override
+  Future<Either<Failure, Chapter>> createChapter(Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(MockData.sampleChapters.first);
+  }
+
+  @override
+  Future<Either<Failure, Chapter>> updateChapter(String id, Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(MockData.sampleChapters.first);
+  }
 }

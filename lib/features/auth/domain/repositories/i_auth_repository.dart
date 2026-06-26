@@ -13,7 +13,7 @@ import '../entities/user.dart';
 abstract class IAuthRepository {
   Future<Either<Failure, AuthToken>> login(String email, String password);
   Future<Either<Failure, AuthToken>> register(
-      String email, String password, String username);
+      String email, String password, String username, {int? age, String? country});
   Future<Either<Failure, void>> logout();
   Future<Either<Failure, User>> getCurrentUser();
   // 🔄 BACKEND INTEGRATION: descomentar cuando se implemente refresh

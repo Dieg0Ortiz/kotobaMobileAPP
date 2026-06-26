@@ -1,25 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:device_preview/device_preview.dart';
 
 import 'core/router/app_router.dart';
 import 'core/theme/kotoba_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // 🔄 BACKEND INTEGRATION: inicializar aquí:
-  // await Hive.initFlutter();
-  // await HiveAdapters.registerAll();
   runApp(
-    const ProviderScope(
-      child: KotobaApp(),
+    ProviderScope(
+      child: DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => const KotobaApp(),
+      ),
     ),
   );
 }
 
 /// Widget raíz de la aplicación Kotoba.
-///
-/// Dark-only: no existe lightTheme en esta app.
-/// Usa MaterialApp.router con GoRouter para navegación declarativa.
 class KotobaApp extends ConsumerWidget {
   const KotobaApp({super.key});
 
@@ -29,6 +28,10 @@ class KotobaApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Kotoba',
+      // Estas líneas son para Device Preview:
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
+
       theme: KotobaTheme.darkTheme,
       themeMode: ThemeMode.dark,
       routerConfig: router,

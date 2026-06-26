@@ -1,17 +1,16 @@
 import 'package:equatable/equatable.dart';
 
 /// Entidad de dominio: Usuario.
-///
-/// Pura Dart, sin dependencias de Flutter ni librerías externas.
-/// Usada tanto para el usuario logueado como para perfiles de autor.
 class User extends Equatable {
   final String id;
   final String email;
   final String username;
+  final int? age;
+  final String? country;
   final String? bio;
   final String? avatarUrl;
   final String? bannerUrl;
-  final String role; // 'reader', 'author', 'admin'
+  final String role;
   final int followers;
   final int following;
   final int worksCount;
@@ -22,6 +21,8 @@ class User extends Equatable {
     required this.id,
     required this.email,
     required this.username,
+    this.age,
+    this.country,
     this.bio,
     this.avatarUrl,
     this.bannerUrl,
@@ -34,6 +35,42 @@ class User extends Equatable {
   });
 
   bool get isAuthor => role == 'author' || role == 'admin';
+
+  /// Crea un User desde los datos del formulario de registro (útil para UI optimista).
+  factory User.fromRegistration({
+    required String email,
+    required String username,
+    int? age,
+    String? country,
+  }) {
+    return User(
+      id: '',
+      email: email,
+      username: username,
+      age: age,
+      country: country,
+      createdAt: DateTime.now(),
+    );
+  }
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      id: json['id'] as String,
+      email: json['email'] as String,
+      username: json['username'] as String,
+      age: json['age'] as int?,
+      country: json['country'] as String?,
+      bio: json['bio'] as String?,
+      avatarUrl: json['avatar_url'] as String?,
+      bannerUrl: json['banner_url'] as String?,
+      role: json['role'] as String? ?? 'reader',
+      followers: json['followers'] as int? ?? 0,
+      following: json['following'] as int? ?? 0,
+      worksCount: json['works_count'] as int? ?? 0,
+      totalReads: json['total_reads'] as int? ?? 0,
+      createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
+    );
+  }
 
   @override
   List<Object?> get props => [id, email, username, role];

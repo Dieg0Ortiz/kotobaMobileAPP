@@ -1,17 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../data/repositories/mock_content_repository.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../data/repositories/content_repository_impl.dart';
 import '../../domain/entities/chapter.dart';
 import '../../domain/repositories/i_content_repository.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../viewmodels/work_detail_viewmodel.dart';
 
-// ── Repositorio ──────────────────────────────────────────────────
 final contentRepositoryProvider = Provider<IContentRepository>((ref) {
-  return MockContentRepository();
+  final api = ref.read(apiClientProvider);
+  return ContentRepositoryImpl(api);
 });
 
-// ── ViewModels ───────────────────────────────────────────────────
 final workDetailViewModelProvider = StateNotifierProvider.family<
     WorkDetailViewModel, AsyncValue<WorkDetailState>, String>((ref, workId) {
   return WorkDetailViewModel(ref.read(contentRepositoryProvider), workId);

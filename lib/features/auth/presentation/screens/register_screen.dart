@@ -9,7 +9,14 @@ import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../../core/widgets/common/kotoba_text_field.dart';
 import '../providers/auth_providers.dart';
 
-/// Pantalla de registro.
+const _countries = [
+  'México', 'Argentina', 'Colombia', 'Chile', 'Perú',
+  'Ecuador', 'Venezuela', 'Bolivia', 'Paraguay', 'Uruguay',
+  'Costa Rica', 'El Salvador', 'Guatemala', 'Honduras', 'Nicaragua',
+  'Panamá', 'República Dominicana', 'Cuba', 'Puerto Rico',
+  'España', 'Estados Unidos', 'Brasil', 'Otro',
+];
+
 class RegisterScreen extends ConsumerWidget {
   const RegisterScreen({super.key});
 
@@ -77,6 +84,32 @@ class RegisterScreen extends ConsumerWidget {
                 onChanged: (v) => ref
                     .read(registerViewModelProvider.notifier)
                     .updatePassword(v),
+              ),
+              const SizedBox(height: 16),
+              KotobaTextField(
+                label: 'Edad',
+                keyboardType: TextInputType.number,
+                prefixIcon: Icons.cake_outlined,
+                onChanged: (v) => ref
+                    .read(registerViewModelProvider.notifier)
+                    .updateAge(v),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: null,
+                decoration: const InputDecoration(
+                  labelText: 'País',
+                  prefixIcon: Icon(Icons.public_outlined),
+                  border: UnderlineInputBorder(),
+                ),
+                style: KotobaTypography.bodyMd,
+                dropdownColor: AppColors.surfaceHigh,
+                items: _countries.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                onChanged: (v) {
+                  if (v != null) {
+                    ref.read(registerViewModelProvider.notifier).updateCountry(v);
+                  }
+                },
               ),
               const SizedBox(height: 32),
 

@@ -1,20 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/entities/user.dart';
-import '../../data/repositories/mock_profile_repository.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/dashboard_stats.dart';
 import '../../domain/repositories/i_profile_repository.dart';
 
-// ── Repositorio ──────────────────────────────────────────────────
 final profileRepositoryProvider = Provider<IProfileRepository>((ref) {
-  return MockProfileRepository();
+  final api = ref.read(apiClientProvider);
+  return ProfileRepositoryImpl(api);
 });
 
-// ── Providers ────────────────────────────────────────────────────
 final currentProfileProvider = FutureProvider<User>((ref) async {
   final repo = ref.read(profileRepositoryProvider);
-  // Simular request del usuario actual
-  final result = await repo.getProfile('current');
+  final result = await repo.getProfile('me');
   return result.fold((f) => throw f, (user) => user);
 });
 

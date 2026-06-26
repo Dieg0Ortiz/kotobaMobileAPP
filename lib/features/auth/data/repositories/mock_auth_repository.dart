@@ -27,7 +27,7 @@ class MockAuthRepository implements IAuthRepository {
 
   @override
   Future<Either<Failure, AuthToken>> register(
-      String email, String password, String username) async {
+      String email, String password, String username, {int? age, String? country}) async {
     await Future.delayed(const Duration(milliseconds: 800));
 
     if (!email.contains('@') || password.length < 6 || username.isEmpty) {

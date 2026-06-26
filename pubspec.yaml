@@ -38,24 +38,29 @@ dependencies:
   shimmer: ^3.0.0
 
   # ── Formateo de fechas ──────────────────────────────────────────
-  intl: ^0.19.0
+  intl: ^0.20.2
 
-  # ── 🔄 BACKEND INTEGRATION — Descomentar al conectar la API ────
-  # dio: ^5.4.3+1
-  # flutter_secure_storage: ^9.2.2
-  # hive_flutter: ^1.1.0
-  # connectivity_plus: ^6.0.3
-  # json_annotation: ^4.9.0
+  # ── Device Preview ─────────────────────────────────────────────
+  device_preview: ^1.1.0
+
+  # ── 🔄 BACKEND INTEGRATION — Conectado a la API ────────────────
+  dio: ^5.4.3+1
+  flutter_secure_storage: ^9.2.2
+  json_annotation: ^4.9.0
+  shared_preferences: ^2.5.5
+  image_picker: ^1.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
 
-  # ── 🔄 BACKEND INTEGRATION — Descomentar al conectar la API ────
-  # build_runner: ^2.4.9
-  # json_serializable: ^6.8.0
-  # mockito: ^5.4.4
+  # ── Device Preview ─────────────────────────────────────────────
+  device_preview: ^1.1.0
+
+  # ── 🔄 BACKEND INTEGRATION — Conectado a la API ────────────────
+  build_runner: ^2.4.9
+  json_serializable: ^6.8.0
 
 flutter:
   uses-material-design: true

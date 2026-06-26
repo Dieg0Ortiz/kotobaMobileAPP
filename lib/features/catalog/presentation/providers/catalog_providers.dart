@@ -1,28 +1,27 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/mock/mock_data.dart';
-import '../../../catalog/data/repositories/mock_work_repository.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/data/repositories/work_repository_impl.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../../../catalog/domain/repositories/i_work_repository.dart';
 
-// ── Repositorio ──────────────────────────────────────────────────
 final workRepositoryProvider = Provider<IWorkRepository>((ref) {
-  return MockWorkRepository();
+  final api = ref.read(apiClientProvider);
+  return WorkRepositoryImpl(api);
 });
 
-// ── Datos del Home ───────────────────────────────────────────────
 final trendingWorksProvider = FutureProvider<List<Work>>((ref) async {
-  // 🔄 BACKEND INTEGRATION: usar repo real
-  await Future.delayed(const Duration(milliseconds: 600));
-  return MockData.trendingWorks;
+  final repo = ref.read(workRepositoryProvider);
+  final result = await repo.getTrending();
+  return result.fold((f) => throw f, (works) => works);
 });
 
 final recommendedWorksProvider = FutureProvider<List<Work>>((ref) async {
-  await Future.delayed(const Duration(milliseconds: 500));
-  return MockData.trendingWorks.take(3).toList();
+  final repo = ref.read(workRepositoryProvider);
+  final result = await repo.getRecommended();
+  return result.fold((f) => throw f, (works) => works.take(3).toList());
 });
 
-// ── Search ───────────────────────────────────────────────────────
 final searchQueryProvider = StateProvider<String>((ref) => '');
 final selectedGenreProvider = StateProvider<String>((ref) => 'Todos');
 

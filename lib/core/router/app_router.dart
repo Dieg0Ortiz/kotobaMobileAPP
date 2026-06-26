@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/catalog/presentation/screens/home_screen.dart';
@@ -9,18 +10,14 @@ import '../../features/profile/presentation/screens/author_dashboard_screen.dart
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reader/presentation/screens/chapter_reader_screen.dart';
 import '../../features/reader/presentation/screens/work_detail_screen.dart';
+import '../../features/write/presentation/screens/chapter_editor_screen.dart';
 import '../../features/write/presentation/screens/edit_story_screen.dart';
 import '../../features/write/presentation/screens/my_stories_screen.dart';
 import '../../features/write/presentation/screens/write_dashboard_screen.dart';
 import '../widgets/main_shell.dart';
 
-/// Router declarativo con GoRouter.
-///
-/// El guard usa [mockAuthStateProvider] para simular autenticación.
-/// 🔄 BACKEND INTEGRATION: reemplazar mockAuthStateProvider por
-/// un provider real basado en JWT/SecureStorage.
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final isLoggedIn = ref.watch(mockAuthStateProvider);
+  final isLoggedIn = ref.watch(authStateProvider);
 
   return GoRouter(
     initialLocation: '/home',
@@ -82,6 +79,15 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, state) => EditStoryScreen(
                   storyId: state.pathParameters['id']!,
                 ),
+                routes: [
+                  GoRoute(
+                    path: 'chapter/:chapterId',
+                    builder: (_, state) => ChapterEditorScreen(
+                      workId: state.pathParameters['id']!,
+                      chapterId: state.pathParameters['chapterId']! == 'new' ? null : state.pathParameters['chapterId']!,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -94,12 +100,3 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     ],
   );
 });
-
-/// Estado de autenticación mock.
-///
-/// `true` = usuario logueado (para prototipar la app completa).
-/// Cambiar a `false` para ver el flujo de auth.
-///
-/// 🔄 BACKEND INTEGRATION: eliminar este provider y usar el real
-/// basado en JWT almacenado en SecureStorage.
-final mockAuthStateProvider = StateProvider<bool>((ref) => true);
