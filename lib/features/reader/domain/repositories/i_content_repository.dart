@@ -11,4 +11,5 @@ abstract class IContentRepository {
   Future<Either<Failure, Chapter>> getChapter(String chapterId);
   Future<Either<Failure, Chapter>> createChapter(Map<String, dynamic> data);
   Future<Either<Failure, Chapter>> updateChapter(String id, Map<String, dynamic> data);
+  Future<Either<Failure, void>> deleteChapter(String chapterId);
 }

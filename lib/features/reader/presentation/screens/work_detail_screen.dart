@@ -1,20 +1,17 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
-import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/reader_providers.dart';
-import '../widgets/chapter_tile.dart';
-import '../widgets/synopsis_card.dart';
 
-/// Pantalla de detalle de la obra.
 class WorkDetailScreen extends ConsumerWidget {
   final String workId;
 
@@ -24,155 +21,627 @@ class WorkDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(workDetailViewModelProvider(workId));
 
-    return Scaffold(
-      body: stateAsync.when(
-        loading: () => const Center(child: KotobaLoading()),
-        error: (e, _) => Center(child: Text(e.toString())),
-        data: (state) {
-          final work = state.work;
-          final chapters = state.chapters;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light,
+      child: Scaffold(
+        backgroundColor: const Color(0xFF0D0D0F),
+        extendBodyBehindAppBar: true,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle.light,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => context.pop(),
+          ),
+          title: Text(
+            'Kotoba',
+            style: KotobaTypography.labelSm.copyWith(
+              color: AppColors.primary,
+              fontSize: 14,
+              letterSpacing: 0.08,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.share_outlined),
+              onPressed: () {},
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: stateAsync.when(
+          loading: () => const Center(child: KotobaLoading()),
+          error: (e, _) => Center(child: Text(e.toString())),
+          data: (state) {
+            final work = state.work;
+            final chapters = state.chapters;
 
-          final profileAsync = ref.watch(currentProfileProvider);
-          final currentUserId = profileAsync.maybeWhen(
-            data: (u) => u.id,
-            orElse: () => '',
-          );
-          final isAuthor = currentUserId.isNotEmpty && currentUserId == work.authorId;
+            final profileAsync = ref.watch(currentProfileProvider);
+            final currentUserId = profileAsync.maybeWhen(
+              data: (u) => u.id,
+              orElse: () => '',
+            );
+            final isAuthor = currentUserId.isNotEmpty && currentUserId == work.authorId;
 
-          return CustomScrollView(
-            slivers: [
-              // Hero cover
-              SliverAppBar(
-                expandedHeight: 300,
-                pinned: true,
-                backgroundColor: AppColors.background,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back),
-                  onPressed: () => context.pop(),
+            return CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _HeroSection(work: work, isAuthor: isAuthor, workId: workId),
                 ),
-                actions: [
-                  if (isAuthor)
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      tooltip: 'Editar historia',
-                      onPressed: () => context.go('/write/edit/$workId'),
-                    ),
+                SliverToBoxAdapter(
+                  child: _StatsBar(work: work),
+                ),
+                SliverToBoxAdapter(
+                  child: _ActionBar(
+                    work: work,
+                    chapters: chapters,
+                    workId: workId,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _SynopsisSection(work: work),
+                ),
+                SliverToBoxAdapter(
+                  child: _ChapterIndexSection(
+                    chapters: chapters,
+                    workId: workId,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: _CommunitySection(),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 80)),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+// ── Hero Section ────────────────────────────────────────────────────────────
+
+class _HeroSection extends StatelessWidget {
+  final dynamic work;
+  final bool isAuthor;
+  final String workId;
+
+  const _HeroSection({
+    required this.work,
+    required this.isAuthor,
+    required this.workId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tags = <String>{work.genre};
+    for (final t in (work.tags as List<dynamic>? ?? [])) {
+      tags.add(t.toString());
+    }
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.55,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (work.coverUrl != null)
+            CachedNetworkImage(
+              imageUrl: work.coverUrl!,
+              fit: BoxFit.cover,
+            ),
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Color(0xFF0D0D0F),
                 ],
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      if (work.coverUrl != null)
-                        CachedNetworkImage(
-                          imageUrl: work.coverUrl!,
-                          fit: BoxFit.cover,
-                        ),
-                      Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              AppColors.background.withValues(alpha: 0.8),
-                              AppColors.background,
-                            ],
-                            stops: const [0.4, 0.8, 1.0],
-                          ),
-                        ),
-                      ),
-                    ],
+                stops: [0.4, 1.0],
+              ),
+            ),
+          ),
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 24,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: tags.take(3).map((t) => KotobaChip(
+                    label: t,
+                  )).toList(),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  work.title,
+                  style: const TextStyle(
+                    fontFamily: 'Noto Serif JP',
+                    fontSize: 32,
+                    fontWeight: FontWeight.w600,
+                    height: 1.25,
+                    color: AppColors.onSurface,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Icon(Icons.edit, size: 16, color: AppColors.onSurfaceVariant),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Por ${work.authorName}',
+                      style: KotobaTypography.bodyMd.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (isAuthor)
+            Positioned(
+              top: 60,
+              right: 16,
+              child: IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () => context.go('/write/edit/$workId'),
               ),
-              // Meta info
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        work.title,
-                        style: KotobaTypography.displayXL,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Stats Bar ───────────────────────────────────────────────────────────────
+
+class _StatsBar extends StatelessWidget {
+  final dynamic work;
+
+  const _StatsBar({required this.work});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.5),
+        border: Border(
+          top: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.1)),
+          bottom: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.1)),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: _StatItem(value: work.formattedViewCount, label: 'Lecturas')),
+          Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+          Expanded(child: _StatItem(value: work.ratingCount.toString(), label: 'Votos')),
+          Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+          Expanded(child: _StatItem(value: work.chapterCount.toString(), label: 'Capítulos')),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  final String value;
+  final String label;
+
+  const _StatItem({required this.value, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 28,
+            fontWeight: FontWeight.w500,
+            height: 1.1,
+            color: AppColors.primaryContainer,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label.toUpperCase(),
+          style: KotobaTypography.labelSm.copyWith(
+            color: AppColors.onSurfaceVariant,
+            letterSpacing: 0.1,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── Action Bar ──────────────────────────────────────────────────────────────
+
+class _ActionBar extends StatelessWidget {
+  final dynamic work;
+  final List<dynamic> chapters;
+  final String workId;
+
+  const _ActionBar({
+    required this.work,
+    required this.chapters,
+    required this.workId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 52,
+              child: FilledButton(
+                onPressed: () {
+                  if (chapters.isNotEmpty) {
+                    context.go('/works/$workId/chapters/${chapters.first.id}');
+                  }
+                },
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primaryContainer,
+                  foregroundColor: AppColors.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  elevation: 0,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.book, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'LEER AHORA',
+                      style: KotobaTypography.labelMd.copyWith(
+                        color: AppColors.onPrimary,
+                        letterSpacing: 0.1,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Por ${work.authorName}',
-                        style: KotobaTypography.headlineMd.copyWith(
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          KotobaChip(label: work.genre),
-                          KotobaChip(label: work.status),
-                          KotobaChip(
-                              label: '${work.formattedViewCount} lecturas'),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: KotobaButton(
-                              label: AppStrings.startReading,
-                              onPressed: () {
-                                if (chapters.isNotEmpty) {
-                                  context.go(
-                                      '/works/$workId/chapters/${chapters.first.id}');
-                                }
-                              },
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: KotobaButton(
-                              label: AppStrings.supportAuthor,
-                              variant: KotobaButtonVariant.ghost,
-                              onPressed: () {},
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      Text(
-                        AppStrings.synopsis,
-                        style: KotobaTypography.headlineMd,
-                      ),
-                      const SizedBox(height: 16),
-                      SynopsisCard(text: work.synopsis),
-                      const SizedBox(height: 32),
-                      Text(
-                        AppStrings.chapterIndex,
-                        style: KotobaTypography.headlineMd,
-                      ),
-                      const SizedBox(height: 16),
-                    ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 52,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () {},
+              style: OutlinedButton.styleFrom(
+                backgroundColor: AppColors.surfaceHigh,
+                foregroundColor: AppColors.primaryContainer,
+                side: BorderSide(
+                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                padding: EdgeInsets.zero,
+              ),
+              child: const Icon(Icons.bookmark_add_outlined),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Synopsis Section ────────────────────────────────────────────────────────
+
+class _SynopsisSection extends StatelessWidget {
+  final dynamic work;
+
+  const _SynopsisSection({required this.work});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(label: AppStrings.synopsis),
+          const SizedBox(height: 16),
+          Text(
+            work.synopsis,
+            style: KotobaTypography.bodyLg.copyWith(
+              color: AppColors.onSurface.withValues(alpha: 0.9),
+            ),
+          ),
+          const SizedBox(height: 24),
+          _GlassQuote(),
+          const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassQuote extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF131318).withValues(alpha: 0.8),
+          border: Border(
+            left: const BorderSide(color: AppColors.primaryContainer, width: 4),
+            top: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
+            right: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
+            bottom: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
+          ),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              top: -8,
+              left: -4,
+              child: Icon(
+                Icons.format_quote,
+                size: 48,
+                color: AppColors.outlineVariant.withValues(alpha: 0.2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                '"Las palabras no son solo símbolos; son jaulas para atrapar el tiempo antes de que se evapore en el olvido."',
+                style: KotobaTypography.pullQuote.copyWith(
+                  fontSize: 18,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Chapter Index Section ───────────────────────────────────────────────────
+
+class _ChapterIndexSection extends StatelessWidget {
+  final List<dynamic> chapters;
+  final String workId;
+
+  const _ChapterIndexSection({
+    required this.chapters,
+    required this.workId,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final displayed = chapters.take(5).toList();
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const _SectionHeader(label: AppStrings.chapterIndex),
+              if (chapters.length > 5)
+                TextButton(
+                  onPressed: () {},
+                  child: Text(
+                    'Ver Todos',
+                    style: KotobaTypography.labelSm.copyWith(
+                      color: AppColors.primaryContainer,
+                    ),
                   ),
                 ),
-              ),
-              // Chapter list
-              SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final chapter = chapters[index];
-                    return ChapterTile(
-                      chapter: chapter,
-                      onTap: () => context
-                          .go('/works/$workId/chapters/${chapter.id}'),
-                    );
-                  },
-                  childCount: chapters.length,
-                ),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
             ],
-          );
-        },
+          ),
+          const SizedBox(height: 16),
+          ...displayed.map((ch) => Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _ChapterItem(
+              chapter: ch,
+              onTap: () => context.go('/works/$workId/chapters/${ch.id}'),
+            ),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChapterItem extends StatelessWidget {
+  final dynamic chapter;
+  final VoidCallback onTap;
+
+  const _ChapterItem({required this.chapter, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = chapter.isLocked == true;
+
+    return GestureDetector(
+      onTap: locked ? null : onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                chapter.number.toString().padLeft(2, '0'),
+                style: KotobaTypography.headlineMd.copyWith(
+                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
+                  fontSize: 28,
+                ),
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    chapter.title,
+                    style: KotobaTypography.bodyMd.copyWith(
+                      color: locked
+                          ? AppColors.onSurfaceVariant.withValues(alpha: 0.5)
+                          : AppColors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              locked ? Icons.lock_outline : Icons.play_arrow,
+              size: 20,
+              color: locked
+                  ? AppColors.outlineVariant
+                  : AppColors.primaryContainer,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Community Preview Section ───────────────────────────────────────────────
+
+class _CommunitySection extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectionHeader(label: 'Comunidad'),
+          const SizedBox(height: 16),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF131318).withValues(alpha: 0.6),
+                border: Border.all(
+                  color: AppColors.outlineVariant.withValues(alpha: 0.05),
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceHigh,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.person,
+                      size: 20,
+                      color: AppColors.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'LectorFantasma',
+                              style: KotobaTypography.labelMd.copyWith(
+                                color: AppColors.onSurface,
+                              ),
+                            ),
+                            Text(
+                              'hace 2 días',
+                              style: KotobaTypography.labelSm.copyWith(
+                                color: AppColors.outlineVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Icon(Icons.star, size: 14, color: AppColors.primaryContainer),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Shared Widgets ──────────────────────────────────────────────────────────
+
+class _SectionHeader extends StatelessWidget {
+  final String label;
+
+  const _SectionHeader({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.2)),
+        ),
+      ),
+      child: Text(
+        label.toUpperCase(),
+        style: KotobaTypography.labelSm.copyWith(
+          color: AppColors.onSurfaceVariant,
+          letterSpacing: 0.1,
+        ),
       ),
     );
   }

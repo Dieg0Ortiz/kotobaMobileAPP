@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -16,10 +17,14 @@ import '../../features/write/presentation/screens/my_stories_screen.dart';
 import '../../features/write/presentation/screens/write_dashboard_screen.dart';
 import '../widgets/main_shell.dart';
 
+final _rootNavigatorKey = GlobalKey<NavigatorState>();
+final _shellNavigatorKey = GlobalKey<NavigatorState>();
+
 final appRouterProvider = Provider<GoRouter>((ref) {
   final isLoggedIn = ref.watch(authStateProvider);
 
   return GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: '/home',
     redirect: (context, state) {
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
@@ -38,6 +43,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (_, __) => const RegisterScreen(),
       ),
       ShellRoute(
+        navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => MainShell(child: child),
         routes: [
           GoRoute(
@@ -56,6 +62,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: 'chapters/:chapterId',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (_, state) => ChapterReaderScreen(
                   chapterId: state.pathParameters['chapterId']!,
                 ),
@@ -76,18 +83,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               ),
               GoRoute(
                 path: 'edit/:id',
+                parentNavigatorKey: _rootNavigatorKey,
                 builder: (_, state) => EditStoryScreen(
                   storyId: state.pathParameters['id']!,
                 ),
-                routes: [
-                  GoRoute(
-                    path: 'chapter/:chapterId',
-                    builder: (_, state) => ChapterEditorScreen(
-                      workId: state.pathParameters['id']!,
-                      chapterId: state.pathParameters['chapterId']! == 'new' ? null : state.pathParameters['chapterId']!,
-                    ),
-                  ),
-                ],
+              ),
+              GoRoute(
+                path: 'edit/:id/chapter/:chapterId',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (_, state) => ChapterEditorScreen(
+                  workId: state.pathParameters['id']!,
+                  chapterId: state.pathParameters['chapterId']! == 'new' ? null : state.pathParameters['chapterId']!,
+                ),
               ),
             ],
           ),

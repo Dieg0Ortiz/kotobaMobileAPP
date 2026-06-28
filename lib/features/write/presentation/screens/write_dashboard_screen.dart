@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
+import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../providers/write_providers.dart';
 
 class WriteDashboardScreen extends ConsumerWidget {
   const WriteDashboardScreen({super.key});
@@ -15,7 +18,7 @@ class WriteDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentProfileProvider);
-    final lastWork = MockData.myAuthoredWorks.first;
+    final dashboardDataAsync = ref.watch(writeDashboardProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -34,74 +37,124 @@ class WriteDashboardScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         children: [
           // Last Work Card
-          GestureDetector(
-            onTap: () => context.go('/write/edit/${lastWork.id}'),
-            child: Container(
+          dashboardDataAsync.when(
+            data: (data) {
+              if (data == null) {
+                return Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLow,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Icon(Icons.edit_note, size: 48, color: AppColors.onSurfaceVariant),
+                      const SizedBox(height: 16),
+                      Text('Comienza tu viaje', style: KotobaTypography.headlineMd),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Aún no has escrito ninguna historia. ¡Crea una ahora!',
+                        textAlign: TextAlign.center,
+                        style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              final lastWork = data.latestWork;
+              return GestureDetector(
+                onTap: () => context.go('/write/edit/${lastWork.id}'),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceLow,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                  ),
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Cover
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: SizedBox(
+                          width: 70,
+                          height: 105,
+                          child: lastWork.coverUrl != null
+                              ? CachedNetworkImage(
+                                  imageUrl: lastWork.coverUrl!,
+                                  fit: BoxFit.cover,
+                                )
+                              : Container(color: AppColors.surfaceHigh),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Info
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Seguir escribiendo',
+                              style: KotobaTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              lastWork.title,
+                              style: KotobaTypography.headlineMd.copyWith(height: 1.2),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 12),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.surfaceHigh,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    '${data.publishedParts} parte${data.publishedParts == 1 ? '' : 's'} publicada${data.publishedParts == 1 ? '' : 's'}',
+                                    style: KotobaTypography.labelXs,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  '${data.drafts} borrador${data.drafts == 1 ? '' : 'es'}',
+                                  style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+            loading: () => Container(
+              height: 137,
               decoration: BoxDecoration(
                 color: AppColors.surfaceLow,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
               ),
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cover
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(
-                      width: 70,
-                      height: 105,
-                      child: lastWork.coverUrl != null
-                          ? CachedNetworkImage(
-                              imageUrl: lastWork.coverUrl!,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(color: AppColors.surfaceHigh),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Seguir escribiendo',
-                          style: KotobaTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          lastWork.title,
-                          style: KotobaTypography.headlineMd.copyWith(height: 1.2),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.surfaceHigh,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                '${lastWork.chapterCount} parte publicada',
-                                style: KotobaTypography.labelXs,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '0 borrador',
-                              style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              child: const Center(child: KotobaLoading()),
+            ),
+            error: (e, st) => Container(
+              height: 137,
+              decoration: BoxDecoration(
+                color: AppColors.surfaceLow,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
+              ),
+              child: Center(
+                child: Text('Error al cargar historias', style: KotobaTypography.labelSm.copyWith(color: AppColors.error)),
               ),
             ),
           ),

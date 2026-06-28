@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -40,22 +41,47 @@ class FontSettingsSheet extends ConsumerWidget {
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
+            runSpacing: 8,
             children: [
               _FontChip(
-                label: 'Serif',
+                label: 'Merriweather',
+                fontFamily: 'Merriweather',
+                isSelected: prefs.fontFamily == 'Merriweather',
+                onTap: () => ref
+                    .read(readerPreferencesProvider.notifier)
+                    .setFontFamily('Merriweather'),
+              ),
+              _FontChip(
+                label: 'Lora',
+                fontFamily: 'Lora',
+                isSelected: prefs.fontFamily == 'Lora',
+                onTap: () => ref
+                    .read(readerPreferencesProvider.notifier)
+                    .setFontFamily('Lora'),
+              ),
+              _FontChip(
+                label: 'Roboto',
+                fontFamily: 'Roboto',
+                isSelected: prefs.fontFamily == 'Roboto',
+                onTap: () => ref
+                    .read(readerPreferencesProvider.notifier)
+                    .setFontFamily('Roboto'),
+              ),
+              _FontChip(
+                label: 'Open Sans',
+                fontFamily: 'Open Sans',
+                isSelected: prefs.fontFamily == 'Open Sans',
+                onTap: () => ref
+                    .read(readerPreferencesProvider.notifier)
+                    .setFontFamily('Open Sans'),
+              ),
+              _FontChip(
+                label: 'Source Serif 4',
                 fontFamily: 'Source Serif 4',
                 isSelected: prefs.fontFamily == 'Source Serif 4',
                 onTap: () => ref
                     .read(readerPreferencesProvider.notifier)
                     .setFontFamily('Source Serif 4'),
-              ),
-              _FontChip(
-                label: 'Sans Serif',
-                fontFamily: 'DM Sans',
-                isSelected: prefs.fontFamily == 'DM Sans',
-                onTap: () => ref
-                    .read(readerPreferencesProvider.notifier)
-                    .setFontFamily('DM Sans'),
               ),
             ],
           ),
@@ -91,8 +117,8 @@ class _FontChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontFamily: fontFamily,
+          style: GoogleFonts.getFont(
+            fontFamily,
             fontSize: 16,
             color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
           ),

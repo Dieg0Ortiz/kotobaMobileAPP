@@ -28,6 +28,10 @@ dependencies:
   # ── Imágenes con caché ──────────────────────────────────────────
   cached_network_image: ^3.3.1
 
+  # ── Editor de texto enriquecido ─────────────────────────────────
+  flutter_quill: ^11.5.1
+  dart_quill_delta: ^10.0.0
+
   # ── Animaciones ─────────────────────────────────────────────────
   animate_do: ^3.3.4
 
@@ -54,6 +58,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^3.0.1
+  flutter_launcher_icons: ^0.14.4
 
   # ── Device Preview ─────────────────────────────────────────────
   device_preview: ^1.1.0
@@ -64,3 +69,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/kotoba_icon.png"

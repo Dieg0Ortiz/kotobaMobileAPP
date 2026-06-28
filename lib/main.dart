@@ -1,17 +1,25 @@
-import 'package:flutter/foundation.dart';
+  import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:device_preview/device_preview.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'core/router/app_router.dart';
 import 'core/theme/kotoba_theme.dart';
+import 'features/reader/presentation/providers/reader_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+
   runApp(
     ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+      ],
       child: DevicePreview(
-        enabled: !kReleaseMode,
+        enabled: false,
         builder: (context) => const KotobaApp(),
       ),
     ),

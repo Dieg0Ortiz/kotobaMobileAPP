@@ -1,13 +1,21 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:dart_quill_delta/dart_quill_delta.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../reader/data/repositories/content_repository_impl.dart';
+import '../../../reader/presentation/providers/reader_providers.dart';
+import '../providers/write_providers.dart';
+import 'my_stories_screen.dart';
 
 class ChapterEditorScreen extends ConsumerStatefulWidget {
   final String workId;
@@ -21,10 +29,13 @@ class ChapterEditorScreen extends ConsumerStatefulWidget {
 
 class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
   final _titleCtrl = TextEditingController();
-  final _contentCtrl = TextEditingController();
+  late QuillController _quillCtrl;
+  late FocusNode _focusNode;
+  late ScrollController _scrollCtrl;
   bool _saving = false;
   bool _dirty = false;
   bool _saved = false;
+  bool _autoSaveFlash = false;
   String? _currentChapterId;
   Timer? _autoSaveTimer;
   Timer? _debounceTimer;
@@ -33,8 +44,11 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
   void initState() {
     super.initState();
     _currentChapterId = widget.chapterId;
+    _focusNode = FocusNode();
+    _scrollCtrl = ScrollController();
+    _quillCtrl = QuillController.basic();
     _titleCtrl.addListener(_onChanged);
-    _contentCtrl.addListener(_onChanged);
+    _quillCtrl.addListener(_onChanged);
     if (_currentChapterId != null) _loadChapter();
   }
 
@@ -43,22 +57,24 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     _autoSaveTimer?.cancel();
     _debounceTimer?.cancel();
     _titleCtrl.removeListener(_onChanged);
-    _contentCtrl.removeListener(_onChanged);
+    _quillCtrl.removeListener(_onChanged);
     _titleCtrl.dispose();
-    _contentCtrl.dispose();
+    _quillCtrl.dispose();
+    _focusNode.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
   void _onChanged() {
     setState(() => _dirty = true);
     _debounceTimer?.cancel();
-    _debounceTimer = Timer(const Duration(seconds: 2), () {
-      if (_dirty) _save(status: 'draft', stay: true);
+    _debounceTimer = Timer(const Duration(seconds: 10), () {
+      if (_dirty && !_saving) _save(status: 'draft', stay: true);
     });
   }
 
   int get _wordCount {
-    final text = _contentCtrl.text.trim();
+    final text = _quillCtrl.document.toPlainText().trim();
     if (text.isEmpty) return 0;
     return text.split(RegExp(r'\s+')).length;
   }
@@ -71,22 +87,39 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       (_) {},
       (chapter) {
         _titleCtrl.text = chapter.title;
-        _contentCtrl.text = chapter.content;
+        _loadContent(chapter.content);
         setState(() => _dirty = false);
       },
     );
   }
 
+  void _loadContent(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is List) {
+        final delta = Delta.fromJson(decoded);
+        _quillCtrl.document = Document.fromDelta(delta);
+        return;
+      }
+    } catch (_) {}
+    final delta = Delta()..insert(raw);
+    _quillCtrl.document = Document.fromDelta(delta);
+  }
+
   Future<void> _save({required String status, bool stay = false}) async {
+    if (_saving) return;
     if (_titleCtrl.text.trim().isEmpty) return;
     setState(() => _saving = true);
+
+    final deltaJson = jsonEncode(_quillCtrl.document.toDelta().toJson());
+
     final api = ref.read(apiClientProvider);
     final repo = ContentRepositoryImpl(api);
 
     final body = {
       'work_id': widget.workId,
       'title': _titleCtrl.text.trim(),
-      'content': _contentCtrl.text,
+      'content': deltaJson,
       'status': status,
     };
 
@@ -94,22 +127,31 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
         ? await repo.updateChapter(_currentChapterId!, body)
         : await repo.createChapter(body);
 
-    setState(() {
-      _saving = false;
-      _dirty = false;
-      _saved = true;
-    });
+    // Forzar actualización del 'updated_at' de la obra principal para que suba en "Seguir escribiendo"
+    if (result.isRight()) {
+      final workRepo = ref.read(workRepositoryProvider);
+      await workRepo.updateWork(widget.workId, {'updated_at': DateTime.now().toIso8601String()});
+    }
 
     result.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${failure.message}')),
-        );
+        setState(() => _saving = false);
+        if (!stay) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${failure.message}')),
+          );
+        }
       },
       (chapter) {
         _currentChapterId ??= chapter.id;
-        ScaffoldMessenger.of(context).clearSnackBars();
-        if (stay) {
+        _invalidateProviders();
+        setState(() {
+          _saving = false;
+          _dirty = false;
+          _saved = true;
+          _autoSaveFlash = true;
+        });
+        if (!stay) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(status == 'published' ? 'Publicado' : 'Guardado'),
@@ -117,11 +159,85 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             ),
           );
         }
+        Future.delayed(const Duration(milliseconds: 800), () {
+          if (mounted) setState(() => _autoSaveFlash = false);
+        });
       },
     );
 
-    if (!stay) {
-      if (context.mounted) context.pop();
+    if (!stay && mounted) context.pop();
+  }
+
+  Future<void> _onPreview() async {
+    await _save(status: 'draft', stay: true);
+    if (_currentChapterId == null || !mounted) return;
+    context.push('/works/${widget.workId}/chapters/$_currentChapterId');
+  }
+
+  void _onHistory() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Historial de revisiones'),
+        content: const Text('Esta función se encuentra en desarrollo.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK')),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _onDelete() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('Eliminar capítulo'),
+        content: const Text('¿Estás seguro de que deseas eliminar este capítulo? Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar', style: TextStyle(color: AppColors.onSurfaceVariant)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Eliminar', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || _currentChapterId == null) {
+      if (confirm == true && mounted) context.pop();
+      return;
+    }
+
+    final api = ref.read(apiClientProvider);
+    final repo = ContentRepositoryImpl(api);
+    final result = await repo.deleteChapter(_currentChapterId!);
+    if (mounted) {
+      result.fold(
+        (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${l.message}'))),
+        (_) {
+          _invalidateProviders();
+          context.pop();
+        },
+      );
+    }
+  }
+
+  void _invalidateProviders() {
+    ref.invalidate(trendingWorksProvider);
+    ref.invalidate(recommendedWorksProvider);
+    ref.invalidate(searchResultsProvider);
+    ref.invalidate(currentProfileProvider);
+    ref.invalidate(authorDashboardProvider);
+    ref.invalidate(myWorksProvider);
+    ref.invalidate(writeDashboardProvider);
+    ref.invalidate(workDetailViewModelProvider(widget.workId));
+    if (_currentChapterId != null) {
+      ref.invalidate(chapterContentProvider(_currentChapterId!));
     }
   }
 
@@ -130,6 +246,56 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       await _save(status: 'draft', stay: true);
     }
     return true;
+  }
+
+  bool _hasAttr(Attribute? attr) {
+    if (attr == null) return false;
+    final style = _quillCtrl.getSelectionStyle();
+    return style.attributes.containsKey(attr.key);
+  }
+
+  void _onFormat(Attribute attr) {
+    if (_hasAttr(attr)) {
+      _quillCtrl.formatSelection(Attribute.clone(attr, null));
+    } else {
+      _quillCtrl.formatSelection(attr);
+    }
+  }
+
+  String? _currentAlignment() {
+    final style = _quillCtrl.getSelectionStyle();
+    final align = style.attributes['align'];
+    if (align == null) return null;
+    return align.value as String?;
+  }
+
+  IconData get _alignmentIcon {
+    return switch (_currentAlignment()) {
+      'center' => Icons.format_align_center,
+      'right' => Icons.format_align_right,
+      _ => Icons.format_align_left,
+    };
+  }
+
+  String get _alignmentLabel {
+    return switch (_currentAlignment()) {
+      'center' => 'Centro',
+      'right' => 'Derecha',
+      _ => 'Izquierda',
+    };
+  }
+
+  void _cycleAlignment() {
+    final current = _currentAlignment();
+    final next = switch (current) {
+      null => 'center',
+      'center' => 'right',
+      'right' => 'left',
+      _ => null,
+    };
+    _quillCtrl.formatSelection(
+      next != null ? Attribute.fromKeyValue('align', next) : Attribute.fromKeyValue('align', null),
+    );
   }
 
   @override
@@ -143,95 +309,305 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.background,
-          surfaceTintColor: AppColors.background,
-          leading: IconButton(
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildTopBar(),
+              _buildProgressBar(),
+              Expanded(
+                child: _buildEditorArea(),
+              ),
+              _buildToolbar(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               await _onWillPop();
-              if (context.mounted) context.pop();
+              if (mounted) context.pop();
             },
           ),
-          title: Text(
-            _currentChapterId != null ? 'Editar Capítulo' : 'Nuevo Capítulo',
-            style: KotobaTypography.headlineMd,
-          ),
-          actions: [
-            if (_dirty)
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.orangeAccent,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text('Sin guardar', style: KotobaTypography.labelXs.copyWith(color: Colors.white, fontSize: 10)),
+          Expanded(
+            child: Text(
+              'Crear',
+              style: KotobaTypography.headlineMd.copyWith(
+                color: AppColors.onSurface,
+                fontWeight: FontWeight.bold,
               ),
-            if (_saved && !_dirty)
-              Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: AppColors.action,
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text('Guardado', style: KotobaTypography.labelXs.copyWith(color: Colors.white, fontSize: 10)),
-              ),
-            TextButton(
-              onPressed: _saving ? null : () => _save(status: 'draft'),
-              child: Text('BORRADOR',
-                  style: KotobaTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant, fontWeight: FontWeight.bold)),
             ),
-            const SizedBox(width: 4),
-            TextButton(
-              onPressed: _saving ? null : () => _save(status: 'published'),
-              child: Text('PUBLICAR',
-                  style: KotobaTypography.labelSm.copyWith(color: AppColors.action, fontWeight: FontWeight.bold)),
+          ),
+          GestureDetector(
+            onTap: _saving ? null : () => _save(status: 'published'),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                _saving ? 'PUBLICANDO...' : 'PUBLICAR',
+                style: KotobaTypography.labelMd.copyWith(
+                  color: _saving ? AppColors.onSurfaceVariant : AppColors.primary,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: AppColors.onSurfaceVariant),
+            color: AppColors.surfaceHigh,
+            onSelected: (val) {
+              if (val == 'save') _save(status: 'draft', stay: true);
+              if (val == 'preview') _onPreview();
+              if (val == 'history') _onHistory();
+              if (val == 'delete') _onDelete();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'save', child: Text('Guardar', style: TextStyle(color: AppColors.onSurface))),
+              const PopupMenuItem(value: 'preview', child: Text('Vista previa', style: TextStyle(color: AppColors.onSurface))),
+              const PopupMenuItem(value: 'history', child: Text('Historial de revisiones', style: TextStyle(color: AppColors.onSurface))),
+              const PopupMenuItem(value: 'delete', child: Text('Eliminar', style: TextStyle(color: AppColors.onSurface))),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildProgressBar() {
+    return const SizedBox(
+      height: 2,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ColoredBox(color: AppColors.surfaceHigh),
+          ),
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 100,
+            child: ColoredBox(color: AppColors.secondary),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEditorArea() {
+    return SingleChildScrollView(
+      controller: _scrollCtrl,
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      child: Column(
+        children: [
+          SizedBox(
+            width: 720,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildMediaPlaceholder(),
+                const SizedBox(height: 24),
+                _buildTitleField(),
+                const SizedBox(height: 16),
+                _buildContentEditor(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMediaPlaceholder() {
+    return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.circular(4),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 40),
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          border: Border.all(
+            color: AppColors.outlineVariant.withValues(alpha: 0.3),
+            style: BorderStyle.solid, // Simulated dashed via minimal outline
+          ),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              size: 32,
+              color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Toca para añadir medios gráficos',
+              style: KotobaTypography.labelSm.copyWith(
+                color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+              ),
             ),
           ],
         ),
-        body: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-                children: [
-                  TextField(
-                    controller: _titleCtrl,
-                    style: KotobaTypography.headlineMd.copyWith(height: 1.3),
-                    decoration: const InputDecoration(
-                      hintText: 'Título del capítulo',
-                      border: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.outlineVariant)),
-                      focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.action)),
-                    ),
+      ),
+    );
+  }
+
+  Widget _buildTitleField() {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: AppColors.outlineVariant,
+            width: 1.0,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.only(bottom: 8),
+      child: TextField(
+        controller: _titleCtrl,
+        style: const TextStyle(
+          fontFamily: 'Noto Serif JP',
+          fontSize: 26,
+          fontWeight: FontWeight.w400,
+          color: AppColors.onSurface,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Ponle un título a esta parte',
+          hintStyle: TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 26,
+            fontWeight: FontWeight.w400,
+            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+          ),
+          border: InputBorder.none,
+          isCollapsed: true,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContentEditor() {
+    return Container(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Column(
+              children: [
+                QuillEditor.basic(
+                  controller: _quillCtrl,
+                  focusNode: _focusNode,
+                  scrollController: ScrollController(),
+                  config: const QuillEditorConfig(
+                    placeholder: 'Escribe tu historia aquí...',
+                    expands: false,
+                    padding: EdgeInsets.zero,
                   ),
-                  const SizedBox(height: 8),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '$_wordCount palabras',
-                      style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _contentCtrl,
-                    maxLines: null,
-                    style: KotobaTypography.bodyMd.copyWith(height: 1.8),
-                    decoration: const InputDecoration(
-                      hintText: 'Escribe tu capítulo aquí...\n\nSin límite de palabras.',
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                    ),
-                    textAlignVertical: TextAlignVertical.top,
-                  ),
-                  const SizedBox(height: 100),
-                ],
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 0,
+            child: Text(
+              '$_wordCount palabras',
+              style: KotobaTypography.labelXs.copyWith(
+                color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToolbar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.95),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 4,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: SafeArea(
+        top: false,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _ToolbarBtn(
+              icon: Icons.format_bold,
+              active: _hasAttr(Attribute.bold),
+              onTap: () => _onFormat(Attribute.bold),
+            ),
+            _ToolbarBtn(
+              icon: Icons.format_italic,
+              active: _hasAttr(Attribute.italic),
+              onTap: () => _onFormat(Attribute.italic),
+            ),
+            _ToolbarBtn(
+              icon: Icons.format_underline,
+              active: _hasAttr(Attribute.underline),
+              onTap: () => _onFormat(Attribute.underline),
+            ),
+            _ToolbarBtn(
+              icon: _alignmentIcon,
+              active: _currentAlignment() != null,
+              onTap: _cycleAlignment,
+            ),
+            _ToolbarBtn(
+              icon: Icons.format_list_bulleted,
+              active: _hasAttr(Attribute.ul),
+              onTap: () => _onFormat(Attribute.ul),
+            ),
+            _ToolbarBtn(
+              icon: Icons.format_quote,
+              active: _hasAttr(Attribute.blockQuote),
+              onTap: () => _onFormat(Attribute.blockQuote),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ToolbarBtn extends StatelessWidget {
+  final IconData icon;
+  final bool active;
+  final VoidCallback onTap;
+
+  const _ToolbarBtn({
+    required this.icon,
+    required this.active,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Icon(
+          icon,
+          size: 24,
+          color: active ? AppColors.primary : AppColors.onSurfaceVariant,
         ),
       ),
     );

@@ -19,6 +19,7 @@ class ContentRepositoryImpl implements IContentRepository {
       number: json['order_number'] as int? ?? json['number'] as int? ?? 0,
       title: json['title'] as String,
       content: json['content'] as String? ?? '',
+      status: json['status'] as String? ?? 'draft',
       wordCount: json['word_count'] as int? ?? 0,
       readTimeMinutes: json['read_time_minutes'] as int? ?? 0,
       publishedAt: DateTime.tryParse(json['published_at'] as String? ?? '') ?? DateTime.now(),
@@ -104,6 +105,17 @@ class ContentRepositoryImpl implements IContentRepository {
     return result.fold(
       (failure) => Left(failure),
       (data) => Right(_chapterFromJson(data)),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteChapter(String id) async {
+    final result = await _api.delete<dynamic>(
+      ApiConstants.chapterById(id),
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (_) => const Right(null),
     );
   }
 }

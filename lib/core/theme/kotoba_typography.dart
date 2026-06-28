@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -7,12 +8,14 @@ import 'app_colors.dart';
 /// Tres familias con roles distintos:
 /// - **Noto Serif JP**: títulos hero, nombre de la plataforma, pull quotes,
 ///   estadísticas del dashboard.
-/// - **Source Serif 4**: cuerpo de capítulos, sinopsis, lectura prolongada.
+/// - **Source Serif 4** (Dinámica): cuerpo de capítulos, sinopsis, lectura prolongada.
 /// - **DM Sans**: botones, navegación, etiquetas, metadatos, chips, badges.
 ///
 /// Todas las fuentes se cargan vía [google_fonts] en el MVP.
 class KotobaTypography {
   KotobaTypography._();
+
+  static String readerFontFamily = 'Source Serif 4';
 
   // ── DISPLAY: Noto Serif JP ────────────────────────────────────────
 
@@ -64,11 +67,11 @@ class KotobaTypography {
     color: AppColors.onSurface,
   );
 
-  // ── READING: Source Serif 4 ──────────────────────────────────────
+  // ── READING: Dinámica ──────────────────────────────────────────────
 
   /// Cuerpo de capítulo principal. Optimizado para lectura prolongada.
-  static const bodyLg = TextStyle(
-    fontFamily: 'Source Serif 4',
+  static TextStyle get bodyLg => GoogleFonts.getFont(
+    readerFontFamily,
     fontSize: 18,
     fontWeight: FontWeight.w400,
     height: 1.78,
@@ -76,8 +79,8 @@ class KotobaTypography {
   );
 
   /// Sinopsis, descripciones largas.
-  static const bodyMd = TextStyle(
-    fontFamily: 'Source Serif 4',
+  static TextStyle get bodyMd => GoogleFonts.getFont(
+    readerFontFamily,
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.625,

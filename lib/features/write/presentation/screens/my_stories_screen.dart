@@ -152,7 +152,10 @@ class _WorksList extends StatelessWidget {
                       Text(work.title, style: KotobaTypography.headlineMd.copyWith(height: 1.2),
                           maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 8),
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -163,7 +166,6 @@ class _WorksList extends StatelessWidget {
                             child: Text('${work.chapterCount} parte publicada',
                                 style: KotobaTypography.labelXs),
                           ),
-                          const SizedBox(width: 16),
                           SizedBox(
                             height: 32,
                             child: KotobaButton(

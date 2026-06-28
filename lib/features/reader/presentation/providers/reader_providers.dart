@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/repositories/content_repository_impl.dart';
@@ -22,6 +23,10 @@ final chapterContentProvider =
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.getChapter(chapterId);
   return result.fold((f) => throw f, (chapter) => chapter);
+});
+
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('sharedPreferencesProvider must be overridden in main');
 });
 
 final readerPreferencesProvider =

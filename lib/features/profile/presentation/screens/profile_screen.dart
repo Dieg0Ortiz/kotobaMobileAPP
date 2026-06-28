@@ -96,11 +96,13 @@ class ProfileScreen extends ConsumerWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Row(
                       children: [
-                        Text(
-                          'Historias de @${user.email.split('@').first}',
-                          style: KotobaTypography.headlineMd,
+                        Expanded(
+                          child: Text(
+                            'Historias de @${user.email.split('@').first}',
+                            style: KotobaTypography.headlineMd,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        const Spacer(),
                         const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
                       ],
                     ),

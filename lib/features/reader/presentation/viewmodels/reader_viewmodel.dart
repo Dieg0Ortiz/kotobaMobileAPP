@@ -1,4 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../providers/reader_providers.dart';
 
 class ReaderPreferences {
   final double fontSize;
@@ -21,14 +24,23 @@ class ReaderPreferences {
 }
 
 class ReaderPreferencesViewModel extends Notifier<ReaderPreferences> {
+  late SharedPreferences _prefs;
+
   @override
-  ReaderPreferences build() => const ReaderPreferences();
+  ReaderPreferences build() {
+    _prefs = ref.watch(sharedPreferencesProvider);
+    final size = _prefs.getDouble('reader_fontSize') ?? 18.0;
+    final family = _prefs.getString('reader_fontFamily') ?? 'Source Serif 4';
+    return ReaderPreferences(fontSize: size, fontFamily: family);
+  }
 
   void setFontSize(double size) {
     state = state.copyWith(fontSize: size);
+    _prefs.setDouble('reader_fontSize', size);
   }
 
   void setFontFamily(String family) {
     state = state.copyWith(fontFamily: family);
+    _prefs.setString('reader_fontFamily', family);
   }
 }
