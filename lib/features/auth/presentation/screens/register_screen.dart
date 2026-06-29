@@ -26,7 +26,25 @@ class RegisterScreen extends ConsumerWidget {
 
     ref.listen(registerViewModelProvider, (_, next) {
       next.whenOrNull(
-        data: (_) => context.go('/home'),
+        data: (_) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: AppColors.surface,
+              title: const Text('Cuenta creada'),
+              content: const Text('Revisa tu correo electrónico para confirmar la cuenta antes de iniciar sesión.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(ctx).pop();
+                    context.go('/auth/login');
+                  },
+                  child: const Text('Ir a iniciar sesión'),
+                ),
+              ],
+            ),
+          );
+        },
         error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(err.toString())),
         ),

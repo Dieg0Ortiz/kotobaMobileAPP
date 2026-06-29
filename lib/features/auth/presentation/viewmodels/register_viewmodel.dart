@@ -41,10 +41,7 @@ class RegisterViewModel extends AsyncNotifier<void> {
 
     state = result.fold(
       (failure) => AsyncError(failure.message, StackTrace.current),
-      (_) {
-        ref.read(authStateProvider.notifier).setLoggedIn(true);
-        return const AsyncData(null);
-      },
+      (_) => const AsyncData(null),
     );
   }
 }
