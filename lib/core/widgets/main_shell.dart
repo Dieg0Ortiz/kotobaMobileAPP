@@ -22,6 +22,9 @@ class MainShell extends StatelessWidget {
     if (location.startsWith('/profile') || location.startsWith('/author')) {
       return 4;
     }
+    if (location.startsWith('/library')) {
+      return 3;
+    }
     if (location.startsWith('/works')) {
       return 0; // detail from home
     }
@@ -54,7 +57,7 @@ class MainShell extends StatelessWidget {
               case 2:
                 context.go('/write');
               case 3:
-                context.go('/home'); // Library — placeholder
+                context.go('/library');
               case 4:
                 context.go('/profile');
             }

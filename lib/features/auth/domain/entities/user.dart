@@ -64,10 +64,10 @@ class User extends Equatable {
       avatarUrl: json['avatar_url'] as String?,
       bannerUrl: json['banner_url'] as String?,
       role: json['role'] as String? ?? 'reader',
-      followers: json['followers'] as int? ?? 0,
-      following: json['following'] as int? ?? 0,
-      worksCount: json['works_count'] as int? ?? 0,
-      totalReads: json['total_reads'] as int? ?? 0,
+      followers: (json['followers'] ?? json['followers_count'] ?? 0) as int,
+      following: (json['following'] ?? json['following_count'] ?? 0) as int,
+      worksCount: (json['works_count'] ?? json['published_works'] ?? 0) as int,
+      totalReads: (json['total_reads'] ?? 0) as int,
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
     );
   }

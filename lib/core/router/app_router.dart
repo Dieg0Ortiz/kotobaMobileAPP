@@ -16,6 +16,7 @@ import '../../features/reader/presentation/screens/work_detail_screen.dart';
 import '../../features/write/presentation/screens/chapter_editor_screen.dart';
 import '../../features/write/presentation/screens/edit_story_screen.dart';
 import '../../features/write/presentation/screens/my_stories_screen.dart';
+import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/write/presentation/screens/write_dashboard_screen.dart';
 import '../widgets/main_shell.dart';
 
@@ -112,6 +113,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 ),
               ),
             ],
+          ),
+          GoRoute(
+            path: '/library',
+            builder: (_, __) => const LibraryScreen(),
           ),
           GoRoute(
             path: '/author/dashboard',

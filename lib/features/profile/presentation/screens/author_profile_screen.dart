@@ -7,9 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
-import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
-import '../../domain/repositories/i_profile_repository.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/horizontal_work_card.dart';
 
@@ -27,7 +25,11 @@ class AuthorProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(publicAuthorProfileProvider(userId));
-    final currentUserId = ref.watch(authStateProvider);
+    final currentUserAsync = ref.watch(currentProfileProvider);
+    final currentUserId = currentUserAsync.maybeWhen(
+      data: (u) => u.id,
+      orElse: () => '',
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,

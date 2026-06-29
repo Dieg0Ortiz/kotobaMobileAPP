@@ -17,4 +17,18 @@ abstract class IContentRepository {
   // Comments
   Future<Either<Failure, List<Comment>>> getComments(String workId);
   Future<Either<Failure, Comment>> createComment(String workId, String content);
+
+  // Views
+  Future<Either<Failure, void>> incrementView(String workId);
+
+  // Votes
+  Future<Either<Failure, Map<String, dynamic>>> getMyVote(String workId);
+  Future<Either<Failure, Map<String, dynamic>>> voteWork(String workId, int vote);
+  Future<Either<Failure, Map<String, dynamic>>> unvoteWork(String workId);
+
+  // Bookmarks
+  Future<Either<Failure, bool>> isBookmarked(String workId);
+  Future<Either<Failure, void>> bookmarkWork(String workId);
+  Future<Either<Failure, void>> unbookmarkWork(String workId);
+  Future<Either<Failure, List<Work>>> getMyBookmarks();
 }

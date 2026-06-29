@@ -279,7 +279,7 @@ class _StatItem extends StatelessWidget {
 
 // ── Action Bar ──────────────────────────────────────────────────────────────
 
-class _ActionBar extends StatelessWidget {
+class _ActionBar extends ConsumerWidget {
   final dynamic work;
   final List<dynamic> chapters;
   final String workId;
@@ -291,7 +291,12 @@ class _ActionBar extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final voteAsync = ref.watch(myVoteProvider(workId));
+    final bookmarkAsync = ref.watch(myBookmarkProvider(workId));
+    final currentVote = voteAsync.maybeWhen(data: (v) => v, orElse: () => 0);
+    final isBookmarked = bookmarkAsync.maybeWhen(data: (b) => b, orElse: () => false);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Row(
@@ -331,24 +336,60 @@ class _ActionBar extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           SizedBox(
             width: 52,
             height: 52,
             child: OutlinedButton(
-              onPressed: () {},
+              onPressed: () async {
+                final repo = ref.read(contentRepositoryProvider);
+                if (currentVote != 0) {
+                  await repo.unvoteWork(workId);
+                } else {
+                  await repo.voteWork(workId, 1);
+                }
+                ref.invalidate(myVoteProvider(workId));
+              },
               style: OutlinedButton.styleFrom(
-                backgroundColor: AppColors.surfaceHigh,
-                foregroundColor: AppColors.primaryContainer,
+                backgroundColor: currentVote != 0 ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
+                foregroundColor: currentVote != 0 ? AppColors.primary : AppColors.primaryContainer,
                 side: BorderSide(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                  color: currentVote != 0 ? AppColors.primary.withValues(alpha: 0.4) : AppColors.outlineVariant.withValues(alpha: 0.5),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
                 padding: EdgeInsets.zero,
               ),
-              child: const Icon(Icons.bookmark_add_outlined),
+              child: Icon(currentVote != 0 ? Icons.thumb_up : Icons.thumb_up_outlined),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 52,
+            height: 52,
+            child: OutlinedButton(
+              onPressed: () async {
+                final repo = ref.read(contentRepositoryProvider);
+                if (isBookmarked) {
+                  await repo.unbookmarkWork(workId);
+                } else {
+                  await repo.bookmarkWork(workId);
+                }
+                ref.invalidate(myBookmarkProvider(workId));
+              },
+              style: OutlinedButton.styleFrom(
+                backgroundColor: isBookmarked ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
+                foregroundColor: isBookmarked ? AppColors.primary : AppColors.primaryContainer,
+                side: BorderSide(
+                  color: isBookmarked ? AppColors.primary.withValues(alpha: 0.4) : AppColors.outlineVariant.withValues(alpha: 0.5),
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                padding: EdgeInsets.zero,
+              ),
+              child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_add_outlined),
             ),
           ),
         ],

@@ -120,6 +120,109 @@ class ContentRepositoryImpl implements IContentRepository {
     );
   }
 
+  // ── Views ──────────────────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, void>> incrementView(String workId) async {
+    final result = await _api.post<dynamic>(
+      '${ApiConstants.works}/$workId/view',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (_) => const Right(null),
+    );
+  }
+
+  // ── Votes ──────────────────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getMyVote(String workId) async {
+    final result = await _api.get<Map<String, dynamic>>(
+      '${ApiConstants.works}/$workId/vote',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> voteWork(String workId, int vote) async {
+    final result = await _api.post<Map<String, dynamic>>(
+      '${ApiConstants.works}/$workId/vote',
+      data: {'vote': vote},
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> unvoteWork(String workId) async {
+    final result = await _api.delete<Map<String, dynamic>>(
+      '${ApiConstants.works}/$workId/vote',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data),
+    );
+  }
+
+  // ── Bookmarks ──────────────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, bool>> isBookmarked(String workId) async {
+    final result = await _api.get<Map<String, dynamic>>(
+      '${ApiConstants.bookmarks}/$workId',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data['bookmarked'] as bool? ?? false),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> bookmarkWork(String workId) async {
+    final result = await _api.post<dynamic>(
+      '${ApiConstants.bookmarks}/$workId',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (_) => const Right(null),
+    );
+  }
+
+  @override
+  Future<Either<Failure, void>> unbookmarkWork(String workId) async {
+    final result = await _api.delete<dynamic>(
+      '${ApiConstants.bookmarks}/$workId',
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (_) => const Right(null),
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<Work>>> getMyBookmarks() async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.bookmarks}/mine',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (list) {
+        final works = list.map((e) {
+          final bookmark = e as Map<String, dynamic>;
+          final workJson = bookmark['work'] as Map<String, dynamic>? ?? {};
+          return _workFromJson(workJson);
+        }).toList();
+        return Right(works);
+      },
+    );
+  }
+
   // ── Comments ─────────────────────────────────────────────────────
 
   Comment _commentFromJson(Map<String, dynamic> json) {

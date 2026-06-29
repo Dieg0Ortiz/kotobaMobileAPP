@@ -75,4 +75,44 @@ class MockContentRepository implements IContentRepository {
       username: 'MockUser',
     ));
   }
+
+  @override
+  Future<Either<Failure, void>> incrementView(String workId) async {
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getMyVote(String workId) async {
+    return const Right({'user_vote': 0});
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> voteWork(String workId, int vote) async {
+    return const Right({'rating': 4.5, 'rating_count': 10});
+  }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> unvoteWork(String workId) async {
+    return const Right({'rating': 0, 'rating_count': 0});
+  }
+
+  @override
+  Future<Either<Failure, bool>> isBookmarked(String workId) async {
+    return const Right(false);
+  }
+
+  @override
+  Future<Either<Failure, void>> bookmarkWork(String workId) async {
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, void>> unbookmarkWork(String workId) async {
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, List<Work>>> getMyBookmarks() async {
+    return const Right([]);
+  }
 }

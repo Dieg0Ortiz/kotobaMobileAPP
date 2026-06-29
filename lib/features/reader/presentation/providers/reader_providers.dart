@@ -33,6 +33,18 @@ final workCommentsProvider =
   return result.fold((f) => throw f, (comments) => comments);
 });
 
+final myVoteProvider = FutureProvider.family<int, String>((ref, workId) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.getMyVote(workId);
+  return result.fold((f) => 0, (data) => data['user_vote'] as int? ?? 0);
+});
+
+final myBookmarkProvider = FutureProvider.family<bool, String>((ref, workId) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.isBookmarked(workId);
+  return result.fold((f) => false, (data) => data);
+});
+
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   throw UnimplementedError('sharedPreferencesProvider must be overridden in main');
 });
