@@ -9,7 +9,7 @@ import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
-import '../domain/repositories/i_profile_repository.dart';
+import '../../domain/repositories/i_profile_repository.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/horizontal_work_card.dart';
 

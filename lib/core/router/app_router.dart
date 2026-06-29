@@ -44,6 +44,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/auth/register',
         builder: (_, __) => const RegisterScreen(),
       ),
+      GoRoute(
+        path: '/users/:userId',
+        builder: (_, state) => AuthorProfileScreen(
+          userId: state.pathParameters['userId']!,
+        ),
+      ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
         builder: (context, state, child) => MainShell(child: child),
@@ -81,13 +87,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const EditProfileScreen(),
               ),
             ],
-          ),
-          GoRoute(
-            path: '/users/:userId',
-            parentNavigatorKey: _rootNavigatorKey,
-            builder: (_, state) => AuthorProfileScreen(
-              userId: state.pathParameters['userId']!,
-            ),
           ),
           GoRoute(
             path: '/write',
