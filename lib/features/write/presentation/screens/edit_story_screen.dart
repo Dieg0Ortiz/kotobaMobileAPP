@@ -247,6 +247,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     if (_loading) {
       return Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.pop()),
         ),
         body: const Center(child: CircularProgressIndicator()),
@@ -306,6 +307,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: AppBar(
+            automaticallyImplyLeading: false,
             backgroundColor: AppColors.surface.withValues(alpha: 0.8),
             surfaceTintColor: Colors.transparent,
             elevation: 0,

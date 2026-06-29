@@ -20,10 +20,11 @@ class AuthorDashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: Text(AppStrings.authorDashboard, style: KotobaTypography.labelMd),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/profile'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: statsAsync.when(

@@ -72,6 +72,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Text('Editar Perfil'),
         leading: IconButton(
           icon: const Icon(Icons.close),

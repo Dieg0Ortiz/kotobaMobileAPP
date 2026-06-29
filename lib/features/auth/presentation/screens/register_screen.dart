@@ -53,9 +53,10 @@ class RegisterScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/auth/login'),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(

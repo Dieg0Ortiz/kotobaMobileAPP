@@ -29,6 +29,7 @@ class WorkDetailScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFF0D0D0F),
         extendBodyBehindAppBar: true,
         appBar: AppBar(
+          automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
