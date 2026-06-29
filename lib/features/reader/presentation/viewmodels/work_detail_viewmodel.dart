@@ -14,6 +14,7 @@ class WorkDetailState {
 class WorkDetailViewModel extends StateNotifier<AsyncValue<WorkDetailState>> {
   final IContentRepository _repository;
   final String _workId;
+  bool _viewCounted = false;
 
   WorkDetailViewModel(this._repository, this._workId)
       : super(const AsyncLoading()) {
@@ -31,7 +32,10 @@ class WorkDetailViewModel extends StateNotifier<AsyncValue<WorkDetailState>> {
         (f) => state = AsyncError(f.message, StackTrace.current),
         (chapters) {
           state = AsyncData(WorkDetailState(work: work, chapters: chapters));
-          _repository.incrementView(_workId);
+          if (!_viewCounted) {
+            _viewCounted = true;
+            _repository.incrementView(_workId);
+          }
         },
       ),
     );
