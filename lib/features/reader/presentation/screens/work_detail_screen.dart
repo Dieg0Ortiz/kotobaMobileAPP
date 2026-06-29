@@ -180,10 +180,16 @@ class _HeroSection extends StatelessWidget {
                   children: [
                     const Icon(Icons.edit, size: 16, color: AppColors.onSurfaceVariant),
                     const SizedBox(width: 6),
-                    Text(
-                      'Por ${work.authorName}',
-                      style: KotobaTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                    GestureDetector(
+                      onTap: work.authorId != null && work.authorId.isNotEmpty
+                          ? () => context.go('/users/${work.authorId}')
+                          : null,
+                      child: Text(
+                        'Por ${work.authorName.isNotEmpty ? work.authorName : 'Autor'}',
+                        style: KotobaTypography.bodyMd.copyWith(
+                          color: AppColors.primaryContainer,
+                          decoration: TextDecoration.underline,
+                        ),
                       ),
                     ),
                   ],

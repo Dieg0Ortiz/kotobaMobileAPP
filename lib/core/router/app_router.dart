@@ -8,6 +8,8 @@ import '../../features/auth/presentation/screens/register_screen.dart';
 import '../../features/catalog/presentation/screens/home_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
 import '../../features/profile/presentation/screens/author_dashboard_screen.dart';
+import '../../features/profile/presentation/screens/author_profile_screen.dart';
+import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/profile_screen.dart';
 import '../../features/reader/presentation/screens/chapter_reader_screen.dart';
 import '../../features/reader/presentation/screens/work_detail_screen.dart';
@@ -72,6 +74,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/profile',
             builder: (_, __) => const ProfileScreen(),
+            routes: [
+              GoRoute(
+                path: 'edit',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (_, __) => const EditProfileScreen(),
+              ),
+            ],
+          ),
+          GoRoute(
+            path: '/users/:userId',
+            parentNavigatorKey: _rootNavigatorKey,
+            builder: (_, state) => AuthorProfileScreen(
+              userId: state.pathParameters['userId']!,
+            ),
           ),
           GoRoute(
             path: '/write',

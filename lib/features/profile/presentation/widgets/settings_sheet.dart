@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
@@ -42,6 +43,14 @@ class SettingsSheet extends ConsumerWidget {
               onChanged: (v) {},
               activeThumbColor: AppColors.primary,
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.edit_outlined),
+            title: Text('Editar Perfil', style: KotobaTypography.labelMd),
+            onTap: () {
+              Navigator.pop(context);
+              context.go('/profile/edit');
+            },
           ),
           const Divider(color: AppColors.outlineVariant),
           ListTile(

@@ -8,4 +8,15 @@ import '../../domain/entities/dashboard_stats.dart';
 abstract class IProfileRepository {
   Future<Either<Failure, User>> getProfile(String userId);
   Future<Either<Failure, DashboardStats>> getAuthorStats(String authorId);
+
+  // Public profile with works
+  Future<Either<Failure, Map<String, dynamic>>> getAuthorProfile(String userId);
+
+  // Profile edit
+  Future<Either<Failure, User>> updateProfile(Map<String, dynamic> data);
+  Future<Either<Failure, String>> uploadAvatar(List<int> bytes, String filename);
+
+  // Follow system
+  Future<Either<Failure, void>> followUser(String userId);
+  Future<Either<Failure, void>> unfollowUser(String userId);
 }

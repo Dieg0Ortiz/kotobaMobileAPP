@@ -112,4 +112,22 @@ class ApiClient {
       return Left(_mapError(e));
     }
   }
+
+  Future<Either<Failure, T>> upload<T>(
+    String path,
+    FormData data, {
+    T Function(dynamic json)? fromJson,
+  }) async {
+    try {
+      final response = await dio.post(path, data: data, options: Options(
+        contentType: 'multipart/form-data',
+      ));
+      if (fromJson != null) {
+        return Right(fromJson(response.data));
+      }
+      return Right(response.data as T);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
 }
