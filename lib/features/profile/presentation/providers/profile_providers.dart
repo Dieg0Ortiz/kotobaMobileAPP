@@ -14,14 +14,17 @@ final profileRepositoryProvider = Provider<IProfileRepository>((ref) {
 });
 
 final currentProfileProvider = FutureProvider<User>((ref) async {
+  final isLoggedIn = ref.watch(authStateProvider);
+  if (!isLoggedIn) throw Exception('Not authenticated');
   final repo = ref.read(profileRepositoryProvider);
   final result = await repo.getProfile('me');
   return result.fold((f) => throw f, (user) => user);
 });
 
 final authorDashboardProvider = FutureProvider<DashboardStats>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
   final repo = ref.read(profileRepositoryProvider);
-  final result = await repo.getAuthorStats('current');
+  final result = await repo.getAuthorStats(user.id);
   return result.fold((f) => throw f, (stats) => stats);
 });
 
