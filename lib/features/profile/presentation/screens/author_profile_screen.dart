@@ -10,12 +10,6 @@ import '../../../auth/domain/entities/user.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../providers/profile_providers.dart';
 
-final publicAuthorProfileProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, userId) async {
-  final repo = ref.read(profileRepositoryProvider);
-  final result = await repo.getAuthorProfile(userId);
-  return result.fold((f) => throw f, (data) => data);
-});
-
 class AuthorProfileScreen extends ConsumerWidget {
   final String userId;
 
@@ -85,7 +79,10 @@ class AuthorProfileScreen extends ConsumerWidget {
                         : await repo.followUser(userId);
                     result.fold(
                       (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
-                      (_) => ref.invalidate(publicAuthorProfileProvider(userId)),
+                      (_) {
+                        ref.invalidate(publicAuthorProfileProvider(userId));
+                        ref.invalidate(followingAuthorsProvider);
+                      },
                     );
                   },
                 ),

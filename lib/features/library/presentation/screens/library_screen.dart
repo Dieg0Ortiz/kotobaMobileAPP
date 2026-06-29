@@ -175,7 +175,10 @@ class _AuthorCarousel extends ConsumerWidget {
                   final result = await repo.unfollowUser(authorId);
                   result.fold(
                     (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
-                    (_) => ref.invalidate(followingAuthorsProvider),
+                    (_) {
+                      ref.invalidate(followingAuthorsProvider);
+                      ref.invalidate(publicAuthorProfileProvider(authorId));
+                    },
                   );
                 },
                 child: Container(
