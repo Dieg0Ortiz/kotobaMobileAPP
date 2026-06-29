@@ -9,7 +9,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';
 
 class WorkDetailScreen extends ConsumerWidget {
@@ -93,7 +95,7 @@ class WorkDetailScreen extends ConsumerWidget {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: _CommunitySection(),
+                  child: _CommunitySection(workId: workId),
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: 80)),
               ],
@@ -542,11 +544,18 @@ class _ChapterItem extends StatelessWidget {
   }
 }
 
-// ── Community Preview Section ───────────────────────────────────────────────
+// ── Community Section ────────────────────────────────────────────────────────
 
-class _CommunitySection extends StatelessWidget {
+class _CommunitySection extends ConsumerWidget {
+  final String workId;
+
+  const _CommunitySection({required this.workId});
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final commentsAsync = ref.watch(workCommentsProvider(workId));
+    final isAuthenticated = ref.watch(authStateProvider);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: Column(
@@ -554,67 +563,229 @@ class _CommunitySection extends StatelessWidget {
         children: [
           const _SectionHeader(label: 'Comunidad'),
           const SizedBox(height: 16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF131318).withValues(alpha: 0.6),
-                border: Border.all(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.05),
+          // Comment input
+          if (isAuthenticated)
+            _CommentInput(workId: workId)
+          else
+            Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: Text(
+                'Inicia sesión para comentar',
+                style: KotobaTypography.bodyMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
                 ),
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceHigh,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: AppColors.outlineVariant.withValues(alpha: 0.3),
+            ),
+          // Comments list
+          commentsAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: KotobaLoading()),
+            ),
+            error: (e, _) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
+              child: Text(
+                'Error al cargar comentarios',
+                style: KotobaTypography.bodyMd.copyWith(
+                  color: AppColors.error,
+                ),
+              ),
+            ),
+            data: (comments) {
+              if (comments.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Center(
+                    child: Text(
+                      'Sé el primero en comentar',
+                      style: KotobaTypography.bodyMd.copyWith(
+                        color: AppColors.onSurfaceVariant,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.person,
-                      size: 20,
-                      color: AppColors.onSurfaceVariant,
-                    ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'LectorFantasma',
-                              style: KotobaTypography.labelMd.copyWith(
-                                color: AppColors.onSurface,
-                              ),
-                            ),
-                            Text(
-                              'hace 2 días',
-                              style: KotobaTypography.labelSm.copyWith(
-                                color: AppColors.outlineVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        const Icon(Icons.star, size: 14, color: AppColors.primaryContainer),
-                      ],
-                    ),
-                  ),
-                ],
+                );
+              }
+              return Column(
+                children: comments.map((c) => _CommentTile(comment: c)).toList(),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommentInput extends ConsumerStatefulWidget {
+  final String workId;
+
+  const _CommentInput({required this.workId});
+
+  @override
+  _CommentInputState createState() => _CommentInputState();
+}
+
+class _CommentInputState extends ConsumerState<_CommentInput> {
+  final _controller = TextEditingController();
+  bool _submitting = false;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final text = _controller.text.trim();
+    if (text.isEmpty || _submitting) return;
+    setState(() => _submitting = true);
+    final repo = ref.read(contentRepositoryProvider);
+    final result = await repo.createComment(widget.workId, text);
+    setState(() => _submitting = false);
+    result.fold(
+      (f) => ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(f.message)),
+      ),
+      (_) {
+        _controller.clear();
+        ref.invalidate(workCommentsProvider(widget.workId));
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _controller,
+              maxLines: 3,
+              minLines: 1,
+              style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurface),
+              decoration: InputDecoration(
+                hintText: 'Escribe un comentario...',
+                hintStyle: KotobaTypography.bodyMd.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+                filled: true,
+                fillColor: AppColors.surfaceLow,
+                contentPadding: const EdgeInsets.all(12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 40,
+            width: 40,
+            child: IconButton(
+              onPressed: _submitting ? null : _submit,
+              icon: _submitting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.send_rounded),
+              color: AppColors.primary,
+              style: IconButton.styleFrom(
+                backgroundColor: AppColors.surfaceLow,
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CommentTile extends StatelessWidget {
+  final Comment comment;
+
+  const _CommentTile({required this.comment});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131318).withValues(alpha: 0.6),
+            border: Border.all(
+              color: AppColors.outlineVariant.withValues(alpha: 0.05),
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceHigh,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: comment.avatarUrl != null
+                    ? ClipOval(
+                        child: CachedNetworkImage(
+                          imageUrl: comment.avatarUrl!,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.person,
+                        size: 18,
+                        color: AppColors.onSurfaceVariant,
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          comment.username ?? 'Usuario',
+                          style: KotobaTypography.labelMd.copyWith(
+                            color: AppColors.onSurface,
+                          ),
+                        ),
+                        Text(
+                          comment.timeAgo,
+                          style: KotobaTypography.labelSm.copyWith(
+                            color: AppColors.outlineVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      comment.content,
+                      style: KotobaTypography.bodyMd.copyWith(
+                        color: AppColors.onSurface.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

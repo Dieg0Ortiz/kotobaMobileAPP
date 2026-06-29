@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/domain/entities/work.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../domain/entities/dashboard_stats.dart';
 import '../../domain/repositories/i_profile_repository.dart';
@@ -21,4 +23,10 @@ final authorDashboardProvider = FutureProvider<DashboardStats>((ref) async {
   final repo = ref.read(profileRepositoryProvider);
   final result = await repo.getAuthorStats('current');
   return result.fold((f) => throw f, (stats) => stats);
+});
+
+final userWorksProvider = FutureProvider.family<List<Work>, String>((ref, userId) async {
+  final repo = ref.read(workRepositoryProvider);
+  final result = await repo.getWorksByAuthor(userId);
+  return result.fold((f) => throw f, (works) => works);
 });

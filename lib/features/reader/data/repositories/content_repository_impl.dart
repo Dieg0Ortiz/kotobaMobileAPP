@@ -5,6 +5,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../../../reader/domain/entities/chapter.dart';
+import '../../../reader/domain/entities/comment.dart';
 import '../../../reader/domain/repositories/i_content_repository.dart';
 
 class ContentRepositoryImpl implements IContentRepository {
@@ -116,6 +117,36 @@ class ContentRepositoryImpl implements IContentRepository {
     return result.fold(
       (failure) => Left(failure),
       (_) => const Right(null),
+    );
+  }
+
+  // ── Comments ─────────────────────────────────────────────────────
+
+  Comment _commentFromJson(Map<String, dynamic> json) {
+    return Comment.fromJson(json);
+  }
+
+  @override
+  Future<Either<Failure, List<Comment>>> getComments(String workId) async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.works}/$workId/comments',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (list) => Right(list.map((e) => _commentFromJson(e as Map<String, dynamic>)).toList()),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Comment>> createComment(String workId, String content) async {
+    final result = await _api.post<Map<String, dynamic>>(
+      '${ApiConstants.works}/$workId/comments',
+      data: {'content': content},
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(_commentFromJson(data)),
     );
   }
 }

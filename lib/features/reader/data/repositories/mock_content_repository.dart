@@ -4,6 +4,7 @@ import '../../../../core/errors/failures.dart';
 import '../../../../core/mock/mock_data.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../../domain/entities/chapter.dart';
+import '../../domain/entities/comment.dart';
 import '../../domain/repositories/i_content_repository.dart';
 
 /// Mock repository de contenido — retorna datos estáticos con delay simulado.
@@ -54,5 +55,24 @@ class MockContentRepository implements IContentRepository {
   Future<Either<Failure, void>> deleteChapter(String id) async {
     await Future.delayed(const Duration(milliseconds: 300));
     return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, List<Comment>>> getComments(String workId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(<Comment>[]);
+  }
+
+  @override
+  Future<Either<Failure, Comment>> createComment(String workId, String content) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(Comment(
+      id: 'mock_cmt',
+      workId: workId,
+      userId: 'mock_user',
+      content: content,
+      createdAt: DateTime.now(),
+      username: 'MockUser',
+    ));
   }
 }

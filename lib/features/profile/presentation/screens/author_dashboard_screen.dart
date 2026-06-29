@@ -77,7 +77,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
                 child: LineChart(
                   LineChartData(
                     gridData: const FlGridData(show: false),
-                    titlesData: const FlTitlesData(
+                    titlesData: FlTitlesData(
                       leftTitles:
                           AxisTitles(sideTitles: SideTitles(showTitles: false)),
                       topTitles:
@@ -88,22 +88,31 @@ class AuthorDashboardScreen extends ConsumerWidget {
                         sideTitles: SideTitles(
                           showTitles: true,
                           reservedSize: 22,
-                          interval: 1,
+                          interval: stats.engagementData.length > 10
+                              ? (stats.engagementData.length / 5).ceil().toDouble()
+                              : 1,
+                          getTitlesWidget: (value, meta) {
+                            final idx = value.toInt();
+                            if (idx < 0 || idx >= stats.engagementData.length) {
+                              return const SizedBox.shrink();
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                '${stats.engagementData[idx].date.day}',
+                                style: KotobaTypography.labelXs,
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),
                     borderData: FlBorderData(show: false),
                     lineBarsData: [
                       LineChartBarData(
-                        spots: const [
-                          FlSpot(0, 30),
-                          FlSpot(1, 40),
-                          FlSpot(2, 35),
-                          FlSpot(3, 50),
-                          FlSpot(4, 45),
-                          FlSpot(5, 70),
-                          FlSpot(6, 65),
-                        ],
+                        spots: stats.engagementData.asMap().entries.map((e) =>
+                          FlSpot(e.key.toDouble(), e.value.value),
+                        ).toList(),
                         isCurved: true,
                         color: AppColors.primary,
                         barWidth: 3,

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../data/repositories/content_repository_impl.dart';
 import '../../domain/entities/chapter.dart';
+import '../../domain/entities/comment.dart';
 import '../../domain/repositories/i_content_repository.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../viewmodels/work_detail_viewmodel.dart';
@@ -23,6 +24,13 @@ final chapterContentProvider =
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.getChapter(chapterId);
   return result.fold((f) => throw f, (chapter) => chapter);
+});
+
+final workCommentsProvider =
+    FutureProvider.family<List<Comment>, String>((ref, workId) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.getComments(workId);
+  return result.fold((f) => throw f, (comments) => comments);
 });
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

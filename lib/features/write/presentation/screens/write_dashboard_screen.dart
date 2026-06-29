@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/mock/mock_data.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
-import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/write_providers.dart';
