@@ -44,6 +44,34 @@ class Work extends Equatable {
     required this.updatedAt,
   });
 
+  Work copyWith({
+    double? rating,
+    int? ratingCount,
+    int? viewCount,
+    int? chapterCount,
+  }) {
+    return Work(
+      id: id,
+      title: title,
+      authorId: authorId,
+      authorName: authorName,
+      coverUrl: coverUrl,
+      synopsis: synopsis,
+      genre: genre,
+      tags: tags,
+      status: status,
+      chapterCount: chapterCount ?? this.chapterCount,
+      wordCount: wordCount,
+      viewCount: viewCount ?? this.viewCount,
+      rating: rating ?? this.rating,
+      ratingCount: ratingCount ?? this.ratingCount,
+      language: language,
+      frequency: frequency,
+      publishedAt: publishedAt,
+      updatedAt: updatedAt,
+    );
+  }
+
   String get formattedWordCount {
     if (wordCount >= 1000) {
       return '${(wordCount / 1000).toStringAsFixed(1)}k';

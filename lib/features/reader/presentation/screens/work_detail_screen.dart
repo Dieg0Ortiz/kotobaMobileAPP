@@ -343,13 +343,18 @@ class _ActionBar extends ConsumerWidget {
             child: OutlinedButton(
               onPressed: () async {
                 final repo = ref.read(contentRepositoryProvider);
+                final Map<String, dynamic> stats;
                 if (currentVote != 0) {
-                  await repo.unvoteWork(workId);
+                  stats = await repo.unvoteWork(workId).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
                 } else {
-                  await repo.voteWork(workId, 1);
+                  stats = await repo.voteWork(workId, 1).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
                 }
                 ref.invalidate(myVoteProvider(workId));
-                ref.invalidate(workDetailViewModelProvider(workId));
+                final viewModel = ref.read(workDetailViewModelProvider(workId).notifier);
+                viewModel.updateVoteStats(
+                  (stats['rating'] as num?)?.toDouble() ?? 0,
+                  (stats['rating_count'] as int?) ?? 0,
+                );
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor: currentVote != 0 ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
