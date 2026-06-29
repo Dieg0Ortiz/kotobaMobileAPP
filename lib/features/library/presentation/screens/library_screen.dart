@@ -138,7 +138,7 @@ class LibraryScreen extends ConsumerWidget {
   }
 }
 
-class _AuthorCarousel extends StatelessWidget {
+class _AuthorCarousel extends ConsumerWidget {
   final String username;
   final String authorId;
   final List<Work> works;
@@ -150,21 +150,52 @@ class _AuthorCarousel extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
-          child: InkWell(
-            onTap: () => context.go('/users/$authorId'),
-            child: Row(
-              children: [
-                Text('@$username', style: KotobaTypography.labelMd),
-                const SizedBox(width: 4),
-                const Icon(Icons.chevron_right, size: 16, color: AppColors.onSurfaceVariant),
-              ],
-            ),
+          padding: const EdgeInsets.fromLTRB(24, 4, 24, 4),
+          child: Row(
+            children: [
+              InkWell(
+                onTap: () => context.go('/users/$authorId'),
+                child: Row(
+                  children: [
+                    Text('@$username', style: KotobaTypography.labelMd),
+                    const SizedBox(width: 4),
+                    const Icon(Icons.chevron_right, size: 16, color: AppColors.onSurfaceVariant),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () async {
+                  final repo = ref.read(profileRepositoryProvider);
+                  final result = await repo.unfollowUser(authorId);
+                  result.fold(
+                    (f) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message))),
+                    (_) => ref.invalidate(followingAuthorsProvider),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.surfaceHigh,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.outlineVariant),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check, size: 14, color: AppColors.onSurfaceVariant),
+                      SizedBox(width: 4),
+                      Text('Siguiendo', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
         SizedBox(
