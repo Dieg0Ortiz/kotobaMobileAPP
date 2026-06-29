@@ -46,10 +46,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   String? _actualWorkId;
   bool get _isNew => _actualWorkId == null;
+  bool get _canPublish =>
+      _titleCtrl.text.trim().isNotEmpty && _synopsisCtrl.text.trim().isNotEmpty;
 
   @override
   void initState() {
     super.initState();
+    _titleCtrl.addListener(_onFieldChanged);
+    _synopsisCtrl.addListener(_onFieldChanged);
     if (widget.storyId == 'new') {
       _actualWorkId = null;
       _loading = false;
@@ -58,6 +62,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       _loadWork();
     }
   }
+
+  void _onFieldChanged() => setState(() {});
 
   @override
   void didUpdateWidget(covariant EditStoryScreen old) {
@@ -131,7 +137,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     }
   }
 
-  Future<bool> _saveStory({bool replaceRoute = false}) async {
+  Future<bool> _saveStory({required String status, bool replaceRoute = false}) async {
     final title = _titleCtrl.text.trim().isEmpty ? 'Historia sin título' : _titleCtrl.text.trim();
     setState(() => _saving = true);
     final repo = ref.read(workRepositoryProvider);
@@ -140,7 +146,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       'synopsis': _synopsisCtrl.text.trim(),
       'tags': _tags,
       'genre': 'Sin género',
-      'status': isCompleted ? 'completed' : 'draft',
+      'status': status,
       'language': 'es',
     };
 
@@ -159,7 +165,6 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           if (replaceRoute && mounted) context.replace('/write/edit/${work.id}');
         }
         if (_localCoverFile != null) await _uploadCover(work.id);
-        // Invalidate cached providers so other screens reflect changes
         _invalidateProviders();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_isNew ? 'Historia creada' : 'Guardado')));
@@ -170,14 +175,29 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     );
   }
 
+  Future<bool> _saveDraft({bool replaceRoute = false}) {
+    return _saveStory(status: 'draft', replaceRoute: replaceRoute);
+  }
+
+  Future<bool> _savePublished({bool replaceRoute = false}) async {
+    if (_titleCtrl.text.trim().isEmpty || _synopsisCtrl.text.trim().isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Completa el título y la sinopsis antes de publicar')),
+        );
+      }
+      return false;
+    }
+    return _saveStory(status: 'published', replaceRoute: replaceRoute);
+  }
+
   Future<void> _onNewChapter() async {
     if (_isNew) {
-      final saved = await _saveStory(replaceRoute: true);
+      final saved = await _saveDraft(replaceRoute: true);
       if (!saved) return;
     }
     if (!mounted) return;
     await context.push('/write/edit/$_actualWorkId/chapter/new');
-    // Reload chapters after returning from editor
     if (mounted) _loadChapters();
   }
 
@@ -304,7 +324,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: _saving ? null : () => _saveStory(replaceRoute: true),
+                onPressed: _saving ? null : () => _saveDraft(replaceRoute: true),
                 child: _saving
                     ? const SizedBox(
                         width: 16,
@@ -942,7 +962,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               // Draft button
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _saving ? null : () => _saveStory(),
+                  onPressed: _saving ? null : () => _saveDraft(),
                   icon: const Icon(Icons.save_outlined, size: 18),
                   label: Text(
                     'Borrador',
@@ -964,17 +984,23 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               // Publish button
               Expanded(
                 child: FilledButton.icon(
-                  onPressed: _saving ? null : () => _saveStory(replaceRoute: true),
+                  onPressed: (_saving || !_canPublish) ? null : () => _savePublished(replaceRoute: true),
                   icon: const Icon(Icons.publish, size: 18),
                   label: Text(
                     'Publicar',
                     style: KotobaTypography.labelMd.copyWith(
-                      color: AppColors.background,
+                      color: !_canPublish
+                          ? AppColors.onSurfaceVariant
+                          : AppColors.background,
                     ),
                   ),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.primaryContainer,
-                    foregroundColor: AppColors.background,
+                    backgroundColor: !_canPublish
+                        ? AppColors.surfaceHigh
+                        : AppColors.primaryContainer,
+                    foregroundColor: !_canPublish
+                        ? AppColors.onSurfaceVariant
+                        : AppColors.background,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),

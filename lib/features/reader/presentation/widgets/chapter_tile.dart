@@ -15,7 +15,8 @@ class ChapterTile extends StatelessWidget {
     super.key,
   });
 
-  @override 
+  @override
+  Widget build(BuildContext context) {
     return ListTile(
       onTap: chapter.isLocked ? null : onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),

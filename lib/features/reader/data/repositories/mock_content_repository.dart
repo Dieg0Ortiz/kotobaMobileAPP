@@ -49,4 +49,10 @@ class MockContentRepository implements IContentRepository {
     await Future.delayed(const Duration(milliseconds: 300));
     return Right(MockData.sampleChapters.first);
   }
+
+  @override
+  Future<Either<Failure, void>> deleteChapter(String id) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return const Right(null);
+  }
 }
