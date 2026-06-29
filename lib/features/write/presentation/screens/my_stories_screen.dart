@@ -52,7 +52,7 @@ class _MyStoriesBody extends ConsumerWidget {
           automaticallyImplyLeading: false,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+            onPressed: () { if (context.canPop()) context.pop(); },
           ),
           title: const Text('Mis Historias', style: KotobaTypography.headlineMd),
           actions: [

@@ -61,7 +61,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Perfil actualizado')),
         );
-        context.pop();
+        if (context.canPop()) context.pop();
       },
     );
   }
@@ -76,7 +76,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         title: const Text('Editar Perfil'),
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => context.pop(),
+          onPressed: () { if (context.canPop()) context.pop(); },
         ),
         actions: [
           TextButton(

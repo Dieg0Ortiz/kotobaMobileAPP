@@ -165,7 +165,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       },
     );
 
-    if (!stay && mounted) context.pop();
+    if (!stay && mounted && context.canPop()) context.pop();
   }
 
   Future<void> _onPreview() async {
@@ -209,7 +209,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
 
     if (confirm != true || _currentChapterId == null) {
-      if (confirm == true && mounted) context.pop();
+      if (confirm == true && mounted && context.canPop()) context.pop();
       return;
     }
 
@@ -221,7 +221,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
         (l) => ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${l.message}'))),
         (_) {
           _invalidateProviders();
-          context.pop();
+          if (context.canPop()) context.pop();
         },
       );
     }
@@ -305,7 +305,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         await _onWillPop();
-        if (context.mounted) context.pop();
+        if (context.mounted && context.canPop()) context.pop();
       },
       child: Scaffold(
         backgroundColor: AppColors.background,
@@ -334,7 +334,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             icon: const Icon(Icons.arrow_back),
             onPressed: () async {
               await _onWillPop();
-              if (mounted) context.pop();
+              if (mounted && context.canPop()) context.pop();
             },
           ),
           Expanded(

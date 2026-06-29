@@ -32,7 +32,7 @@ class AuthorProfileScreen extends ConsumerWidget {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () { if (context.canPop()) context.pop(); },
         ),
       ),
       body: profileAsync.when(

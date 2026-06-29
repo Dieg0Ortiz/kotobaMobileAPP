@@ -36,7 +36,7 @@ class WorkDetailScreen extends ConsumerWidget {
           systemOverlayStyle: SystemUiOverlayStyle.light,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () => context.pop(),
+            onPressed: () { if (context.canPop()) context.pop(); },
           ),
           title: Text(
             'Kotoba',

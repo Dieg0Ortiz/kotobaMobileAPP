@@ -24,7 +24,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
         title: Text(AppStrings.authorDashboard, style: KotobaTypography.labelMd),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+          onPressed: () { if (context.canPop()) context.pop(); },
         ),
       ),
       body: statsAsync.when(

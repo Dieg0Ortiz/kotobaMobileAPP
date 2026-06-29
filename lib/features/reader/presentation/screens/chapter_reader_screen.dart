@@ -151,7 +151,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.arrow_back),
-                          onPressed: () => context.pop(),
+                          onPressed: () { if (context.canPop()) context.pop(); },
                         ),
                         const Spacer(),
                         IconButton(

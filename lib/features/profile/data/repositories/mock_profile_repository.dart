@@ -21,4 +21,34 @@ class MockProfileRepository implements IProfileRepository {
     await Future.delayed(const Duration(milliseconds: 600));
     return Right(MockData.dashboardStats);
   }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getAuthorProfile(String userId) async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
+
+  @override
+  Future<Either<Failure, User>> updateProfile(Map<String, dynamic> data) async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
+
+  @override
+  Future<Either<Failure, String>> uploadAvatar(List<int> bytes, String filename) async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
+
+  @override
+  Future<Either<Failure, void>> followUser(String userId) async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
+
+  @override
+  Future<Either<Failure, void>> unfollowUser(String userId) async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
+
+  @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors() async {
+    return Left(ServerFailure('Mock no implementado'));
+  }
 }

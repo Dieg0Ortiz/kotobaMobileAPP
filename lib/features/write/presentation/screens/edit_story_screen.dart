@@ -248,7 +248,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       return Scaffold(
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          leading: IconButton(icon: const Icon(Icons.close), onPressed: () => context.pop()),
+          leading: IconButton(icon: const Icon(Icons.close), onPressed: () { if (context.canPop()) context.pop(); }),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -314,7 +314,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             scrolledUnderElevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
-              onPressed: () => context.pop(),
+              onPressed: () { if (context.canPop()) context.pop(); },
             ),
             centerTitle: true,
             title: Text(
