@@ -138,9 +138,9 @@ class AuthorProfileScreen extends ConsumerWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(work.title, style: KotobaTypography.bodyLg, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                      Text(work.title, style: KotobaTypography.labelMd, maxLines: 2, overflow: TextOverflow.ellipsis),
                                       const SizedBox(height: 4),
-                                      Text('${work.chapterCount} capítulos', style: KotobaTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant)),
+                                      Text('${work.chapterCount} capítulos', style: KotobaTypography.labelXs),
                                     ],
                                   ),
                                 ),

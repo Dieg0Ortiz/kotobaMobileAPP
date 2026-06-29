@@ -33,3 +33,9 @@ final userWorksProvider = FutureProvider.family<List<Work>, String>((ref, userId
   final result = await repo.getWorksByAuthor(userId);
   return result.fold((f) => throw f, (works) => works);
 });
+
+final followingAuthorsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final repo = ref.read(profileRepositoryProvider);
+  final result = await repo.getFollowingAuthors();
+  return result.fold((f) => throw f, (data) => data);
+});

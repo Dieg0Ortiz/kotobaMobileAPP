@@ -78,6 +78,15 @@ class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   @override
+  Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors() async {
+    final result = await _api.get<List<dynamic>>(ApiConstants.followingAuthors);
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data.cast<Map<String, dynamic>>()),
+    );
+  }
+
+  @override
   Future<Either<Failure, void>> followUser(String userId) async {
     final result = await _api.post<dynamic>(
       '${ApiConstants.users}/$userId/follow',

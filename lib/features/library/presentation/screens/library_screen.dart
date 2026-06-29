@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../catalog/domain/entities/work.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../reader/presentation/providers/reader_providers.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -15,6 +16,7 @@ class LibraryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarksAsync = ref.watch(myBookmarksProvider);
+    final followingAsync = ref.watch(followingAuthorsProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -25,38 +27,214 @@ class LibraryScreen extends ConsumerWidget {
         loading: () => const Center(child: KotobaLoading()),
         error: (e, _) => Center(child: Text('Error: $e')),
         data: (works) {
-          if (works.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.bookmark_border, size: 64, color: AppColors.onSurfaceVariant),
-                  SizedBox(height: 16),
-                  Text(
-                    'No tienes obras guardadas',
-                    style: TextStyle(color: AppColors.onSurfaceVariant),
-                  ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Guarda obras para leerlas después',
-                    style: TextStyle(color: AppColors.outlineVariant, fontSize: 14),
-                  ),
-                ],
+          return CustomScrollView(
+            slivers: [
+
+              // ── Sección: Autores Seguidos ───────────────
+              followingAsync.when(
+                loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+                data: (authors) {
+                  if (authors.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  final carousels = <Widget>[];
+                  for (final authorData in authors) {
+                    final userJson = authorData['user'] as Map<String, dynamic>? ?? {};
+                    final worksList = (authorData['works'] as List<dynamic>?)
+                        ?.map((w) => Work(
+                              id: w['id'] as String,
+                              title: w['title'] as String,
+                              authorId: w['author_id'] as String? ?? '',
+                              authorName: w['author_name'] as String? ?? userJson['username'] as String? ?? '',
+                              coverUrl: w['cover_url'] as String?,
+                              synopsis: w['synopsis'] as String? ?? '',
+                              genre: w['genre'] as String? ?? '',
+                              tags: (w['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+                              status: w['status'] as String? ?? 'ongoing',
+                              chapterCount: w['chapter_count'] as int? ?? 0,
+                              wordCount: w['word_count'] as int? ?? 0,
+                              viewCount: w['view_count'] as int? ?? 0,
+                              rating: (w['rating'] as num?)?.toDouble() ?? 0,
+                              ratingCount: w['rating_count'] as int? ?? 0,
+                              publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
+                              updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
+                            ))
+                        .toList() ?? [];
+
+                    if (worksList.isEmpty) continue;
+
+                    carousels.add(
+                      _AuthorCarousel(
+                        username: userJson['username'] as String? ?? 'Autor',
+                        authorId: userJson['id'] as String? ?? '',
+                        works: worksList,
+                      ),
+                    );
+                  }
+                  if (carousels.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+                  return SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+                          child: Text('Autores Seguidos', style: KotobaTypography.headlineMd),
+                        ),
+                        ...carousels,
+                        const Divider(color: AppColors.outlineVariant, height: 32, indent: 24, endIndent: 24),
+                      ],
+                    ),
+                  );
+                },
               ),
-            );
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+
+              // ── Sección: Obras Guardadas ────────────────
+              if (works.isEmpty)
+                const SliverFillRemaining(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.bookmark_border, size: 64, color: AppColors.onSurfaceVariant),
+                        SizedBox(height: 16),
+                        Text(
+                          'No tienes obras guardadas',
+                          style: TextStyle(color: AppColors.onSurfaceVariant),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Guarda obras para leerlas después',
+                          style: TextStyle(color: AppColors.outlineVariant, fontSize: 14),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              else
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+                    child: Text('Guardados', style: KotobaTypography.headlineMd),
+                  ),
+                ),
+              if (works.isNotEmpty)
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final work = works[index];
+                      return Padding(
+                        padding: EdgeInsets.fromLTRB(24, 0, 24, 12),
+                        child: _LibraryWorkCard(work: work, onTap: () => context.go('/works/${work.id}')),
+                      );
+                    },
+                    childCount: works.length,
+                  ),
+                ),
+              const SliverToBoxAdapter(child: SizedBox(height: 40)),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _AuthorCarousel extends StatelessWidget {
+  final String username;
+  final String authorId;
+  final List<Work> works;
+
+  const _AuthorCarousel({
+    required this.username,
+    required this.authorId,
+    required this.works,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+          child: InkWell(
+            onTap: () => context.go('/users/$authorId'),
+            child: Row(
+              children: [
+                Text('@$username', style: KotobaTypography.labelMd),
+                const SizedBox(width: 4),
+                const Icon(Icons.chevron_right, size: 16, color: AppColors.onSurfaceVariant),
+              ],
+            ),
+          ),
+        ),
+        SizedBox(
+          height: 160,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.only(left: 24),
             itemCount: works.length,
             itemBuilder: (context, index) {
               final work = works[index];
               return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: _LibraryWorkCard(work: work, onTap: () => context.go('/works/${work.id}')),
+                padding: const EdgeInsets.only(right: 12),
+                child: HorizontalWorkCarouselCard(
+                  work: work,
+                  onTap: () => context.go('/works/${work.id}'),
+                ),
               );
             },
-          );
-        },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class HorizontalWorkCarouselCard extends StatelessWidget {
+  final Work work;
+  final VoidCallback? onTap;
+
+  const HorizontalWorkCarouselCard({required this.work, this.onTap, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 140,
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLow,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.onSurface.withValues(alpha: 0.05)),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: work.coverUrl != null
+                  ? CachedNetworkImage(imageUrl: work.coverUrl!, fit: BoxFit.cover, width: double.infinity)
+                  : Container(color: AppColors.surfaceHigh, child: const Center(child: Icon(Icons.book, color: AppColors.onSurfaceVariant))),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(work.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KotobaTypography.labelMd),
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, size: 10, color: AppColors.onSurfaceVariant),
+                      const SizedBox(width: 2),
+                      Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

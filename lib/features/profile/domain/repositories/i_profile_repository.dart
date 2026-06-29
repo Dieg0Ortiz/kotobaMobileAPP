@@ -19,4 +19,5 @@ abstract class IProfileRepository {
   // Follow system
   Future<Either<Failure, void>> followUser(String userId);
   Future<Either<Failure, void>> unfollowUser(String userId);
+  Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors();
 }
