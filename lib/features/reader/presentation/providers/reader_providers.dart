@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/domain/entities/work.dart';
 import '../../data/repositories/content_repository_impl.dart';
 import '../../domain/entities/chapter.dart';
 import '../../domain/entities/comment.dart';
@@ -43,6 +44,12 @@ final myBookmarkProvider = FutureProvider.family<bool, String>((ref, workId) asy
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.isBookmarked(workId);
   return result.fold((f) => false, (data) => data);
+});
+
+final myBookmarksProvider = FutureProvider<List<Work>>((ref) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.getMyBookmarks();
+  return result.fold((f) => throw f, (works) => works);
 });
 
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

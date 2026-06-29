@@ -349,6 +349,7 @@ class _ActionBar extends ConsumerWidget {
                   await repo.voteWork(workId, 1);
                 }
                 ref.invalidate(myVoteProvider(workId));
+                ref.invalidate(workDetailViewModelProvider(workId));
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor: currentVote != 0 ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
@@ -377,6 +378,7 @@ class _ActionBar extends ConsumerWidget {
                   await repo.bookmarkWork(workId);
                 }
                 ref.invalidate(myBookmarkProvider(workId));
+                ref.invalidate(myBookmarksProvider);
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor: isBookmarked ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,

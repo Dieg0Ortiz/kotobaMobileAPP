@@ -9,12 +9,6 @@ import '../../../catalog/domain/entities/work.dart';
 import '../../../profile/presentation/widgets/horizontal_work_card.dart';
 import '../../../reader/presentation/providers/reader_providers.dart';
 
-final myBookmarksProvider = FutureProvider<List<Work>>((ref) async {
-  final repo = ref.read(contentRepositoryProvider);
-  final result = await repo.getMyBookmarks();
-  return result.fold((f) => throw f, (works) => works);
-});
-
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 
