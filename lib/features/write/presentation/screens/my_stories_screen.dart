@@ -167,13 +167,10 @@ class _WorksList extends StatelessWidget {
                             child: Text('${work.chapterCount} parte publicada',
                                 style: KotobaTypography.labelXs),
                           ),
-                          SizedBox(
-                            height: 32,
-                            child: KotobaButton(
-                              label: 'Escribir capítulo',
-                              fullWidth: false,
-                              onPressed: () => context.go('/write/edit/${work.id}/chapter/new'),
-                            ),
+                          KotobaButton(
+                            label: 'Escribir capítulo',
+                            fullWidth: false,
+                            onPressed: () => context.go('/write/edit/${work.id}/chapter/new'),
                           ),
                         ],
                       ),
