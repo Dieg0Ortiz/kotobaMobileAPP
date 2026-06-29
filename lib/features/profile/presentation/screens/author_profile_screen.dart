@@ -9,7 +9,6 @@ import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../providers/profile_providers.dart';
-import '../widgets/horizontal_work_card.dart';
 
 final publicAuthorProfileProvider = FutureProvider.family<Map<String, dynamic>, String>((ref, userId) async {
   final repo = ref.read(profileRepositoryProvider);
@@ -44,32 +43,33 @@ class AuthorProfileScreen extends ConsumerWidget {
       ),
       body: profileAsync.when(
         loading: () => const Center(child: KotobaLoading()),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => Center(child: Text(e.toString(), style: const TextStyle(color: AppColors.onSurface))),
         data: (data) {
-          final user = User.fromJson(data);
-          final works = (data['works'] as List<dynamic>?)
-              ?.map((w) => Work(
-                    id: w['id'] as String,
-                    title: w['title'] as String,
-                    authorId: w['author_id'] as String? ?? '',
-                    authorName: w['author_name'] as String? ?? user.username,
-                    coverUrl: w['cover_url'] as String?,
-                    synopsis: w['synopsis'] as String? ?? '',
-                    genre: w['genre'] as String? ?? '',
-                    tags: (w['tags'] as List<dynamic>?)?.cast<String>() ?? [],
-                    status: w['status'] as String? ?? 'ongoing',
-                    chapterCount: w['chapter_count'] as int? ?? 0,
-                    wordCount: w['word_count'] as int? ?? 0,
-                    viewCount: w['view_count'] as int? ?? 0,
-                    rating: (w['rating'] as num?)?.toDouble() ?? 0,
-                    ratingCount: w['rating_count'] as int? ?? 0,
-                    publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
-                    updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
-                  ))
-              .toList() ??
-              [];
-          final isFollowedByMe = data['is_followed_by_me'] as bool? ?? false;
-          final isMe = currentUserId == user.id;
+          try {
+            final user = User.fromJson(data);
+            final works = (data['works'] as List<dynamic>?)
+                ?.map((w) => Work(
+                      id: w['id'] as String,
+                      title: w['title'] as String,
+                      authorId: w['author_id'] as String? ?? '',
+                      authorName: w['author_name'] as String? ?? user.username,
+                      coverUrl: w['cover_url'] as String?,
+                      synopsis: w['synopsis'] as String? ?? '',
+                      genre: w['genre'] as String? ?? '',
+                      tags: (w['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+                      status: w['status'] as String? ?? 'ongoing',
+                      chapterCount: w['chapter_count'] as int? ?? 0,
+                      wordCount: w['word_count'] as int? ?? 0,
+                      viewCount: w['view_count'] as int? ?? 0,
+                      rating: (w['rating'] as num?)?.toDouble() ?? 0,
+                      ratingCount: w['rating_count'] as int? ?? 0,
+                      publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
+                      updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
+                    ))
+                .toList() ??
+                [];
+            final isFollowedByMe = data['is_followed_by_me'] as bool? ?? false;
+            final isMe = currentUserId == user.id;
 
           return CustomScrollView(
             slivers: [
@@ -106,9 +106,48 @@ class AuthorProfileScreen extends ConsumerWidget {
                     final work = works[index];
                     return Padding(
                       padding: EdgeInsets.fromLTRB(24, index == 0 ? 8 : 0, 24, 12),
-                      child: HorizontalWorkCard(
-                        work: work,
-                        onTap: () => context.go('/works/${work.id}'),
+                      child: SizedBox(
+                        height: 120,
+                        child: InkWell(
+                          onTap: () => context.go('/works/${work.id}'),
+                          borderRadius: BorderRadius.circular(12),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.all(12),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: SizedBox(
+                                    width: 72,
+                                    height: 96,
+                                    child: work.coverUrl != null
+                                        ? Image.network(work.coverUrl!, fit: BoxFit.cover)
+                                        : Container(
+                                            color: AppColors.primary.withValues(alpha: 0.2),
+                                            child: const Icon(Icons.book, color: AppColors.primary),
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(work.title, style: KotobaTypography.bodyLg, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                      const SizedBox(height: 4),
+                                      Text('${work.chapterCount} capítulos', style: KotobaTypography.bodySm.copyWith(color: AppColors.onSurfaceVariant)),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     );
                   },
@@ -125,6 +164,14 @@ class AuthorProfileScreen extends ConsumerWidget {
               const SliverToBoxAdapter(child: SizedBox(height: 40)),
             ],
           );
+        } catch (e, st) {
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('Error: $e\n$st', style: const TextStyle(color: AppColors.onSurface)),
+            ),
+          );
+        }
         },
       ),
     );
