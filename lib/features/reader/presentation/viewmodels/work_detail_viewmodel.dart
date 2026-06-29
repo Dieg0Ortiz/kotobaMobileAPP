@@ -31,7 +31,6 @@ class WorkDetailViewModel extends StateNotifier<AsyncValue<WorkDetailState>> {
         (f) => state = AsyncError(f.message, StackTrace.current),
         (chapters) {
           state = AsyncData(WorkDetailState(work: work, chapters: chapters));
-          _repository.incrementView(_workId);
         },
       ),
     );

@@ -27,6 +27,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   bool _showOverlay = true;
   QuillController? _quillCtrl;
   String? _lastContent;
+  bool _viewCounted = false;
 
   @override
   void dispose() {
@@ -71,6 +72,10 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
         loading: () => const Center(child: KotobaLoading()),
         error: (e, _) => Center(child: Text(e.toString())),
         data: (chapter) {
+          if (!_viewCounted && chapter.workId.isNotEmpty) {
+            _viewCounted = true;
+            ref.read(contentRepositoryProvider).incrementView(chapter.workId);
+          }
           if (chapter.content != _lastContent) {
             _lastContent = chapter.content;
             _quillCtrl?.dispose();
