@@ -119,7 +119,7 @@ class ApiClient {
     T Function(dynamic json)? fromJson,
   }) async {
     try {
-      final response = await dio.post(path, data: data, options: Options(
+      final response = await dio.put(path, data: data, options: Options(
         contentType: 'multipart/form-data',
       ));
       if (fromJson != null) {
