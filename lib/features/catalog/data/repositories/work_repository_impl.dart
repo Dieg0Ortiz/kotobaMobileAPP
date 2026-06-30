@@ -53,8 +53,26 @@ class WorkRepositoryImpl implements IWorkRepository {
 
   @override
   Future<Either<Failure, List<Work>>> search(String query, {String? genre}) async {
+    // Semantic search via BETO cuando hay query textual
+    if (query.isNotEmpty) {
+      final params = <String, dynamic>{'q': query};
+      if (genre != null && genre != 'Todos') params['genre'] = genre;
+
+      final result = await _api.get<Map<String, dynamic>>(
+        ApiConstants.search,
+        queryParameters: params,
+      );
+      return result.fold(
+        (failure) => Left(failure),
+        (data) {
+          final results = (data['results'] as List<dynamic>?) ?? [];
+          return Right(results.map((e) => _workFromJson(e as Map<String, dynamic>)).toList());
+        },
+      );
+    }
+
+    // Sin query: filtrar por género con endpoint tradicional
     final params = <String, dynamic>{};
-    if (query.isNotEmpty) params['q'] = query;
     if (genre != null && genre != 'Todos') params['genre'] = genre;
 
     final result = await _api.get<List<dynamic>>(

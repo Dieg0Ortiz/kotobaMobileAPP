@@ -19,6 +19,7 @@ class ApiConstants {
   static const String comments = '/comments';
   static const String bookmarks = '/bookmarks';
   static const String uploadCover = '/upload/cover';
+  static const String search = '/search';
 
   static String userById(String id) => '$users/$id';
   static String userStats(String authorId) => '$users/$authorId/stats';
