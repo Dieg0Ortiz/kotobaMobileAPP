@@ -23,32 +23,49 @@ class MockProfileRepository implements IProfileRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getAuthorProfile(String userId) async {
-    return Left(ServerFailure('Mock no implementado'));
+  Future<Either<Failure, Map<String, dynamic>>> getAuthorProfile(
+      String userId) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    final user = MockData.currentUser;
+    return Right({
+      'id': user.id,
+      'name': user.name,
+      'username': user.username,
+      'avatarUrl': user.avatarUrl,
+      'bio': user.bio,
+      'works': [],
+    });
   }
 
   @override
-  Future<Either<Failure, User>> updateProfile(Map<String, dynamic> data) async {
-    return Left(ServerFailure('Mock no implementado'));
+  Future<Either<Failure, User>> updateProfile(
+      Map<String, dynamic> data) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return Right(MockData.currentUser);
   }
 
   @override
-  Future<Either<Failure, String>> uploadAvatar(List<int> bytes, String filename) async {
-    return Left(ServerFailure('Mock no implementado'));
+  Future<Either<Failure, String>> uploadAvatar(
+      List<int> bytes, String filename) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return const Right('https://mock.example.com/avatars/mock_avatar.png');
   }
 
   @override
   Future<Either<Failure, void>> followUser(String userId) async {
-    return Left(ServerFailure('Mock no implementado'));
+    await Future.delayed(const Duration(milliseconds: 300));
+    return const Right(null);
   }
 
   @override
   Future<Either<Failure, void>> unfollowUser(String userId) async {
-    return Left(ServerFailure('Mock no implementado'));
+    await Future.delayed(const Duration(milliseconds: 300));
+    return const Right(null);
   }
 
   @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors() async {
-    return Left(ServerFailure('Mock no implementado'));
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const Right([]);
   }
 }
