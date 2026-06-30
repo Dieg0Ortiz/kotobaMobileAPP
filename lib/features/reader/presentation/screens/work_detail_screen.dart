@@ -67,7 +67,7 @@ class WorkDetailScreen extends ConsumerWidget {
 
             final profileAsync = ref.watch(currentProfileProvider);
             final currentUserId = profileAsync.maybeWhen(
-              data: (u) => u.id,
+              data:   (u) => u.id,
               orElse: () => '',
             );
             final isAuthor = currentUserId.isNotEmpty && currentUserId == work.authorId;

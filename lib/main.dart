@@ -5,24 +5,31 @@ import 'package:device_preview/device_preview.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/network/secure_storage_service.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'features/auth/presentation/providers/auth_providers.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/kotoba_theme.dart';
 import 'core/theme/theme_provider.dart';
-import 'features/auth/presentation/providers/auth_providers.dart';
 import 'features/reader/presentation/providers/reader_providers.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await dotenv.load(fileName: '.env');
+
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
+  );
+
   final prefs = await SharedPreferences.getInstance();
-  final storage = SecureStorageService();
-  final isLoggedIn = await storage.hasTokens();
 
   runApp(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
-        authStateProvider.overrideWith((ref) => isLoggedIn),
       ],
       child: DevicePreview(
         enabled: !kReleaseMode,

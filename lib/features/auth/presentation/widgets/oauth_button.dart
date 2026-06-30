@@ -1,22 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../providers/auth_providers.dart';
 
 /// Proveedor de OAuth soportado.
 enum OAuthProvider { google, discord }
 
-/// Botón de OAuth — visual only en esta fase.
-///
-/// 🔄 BACKEND INTEGRATION: implementar OAuth real con
-/// google_sign_in / discord OAuth2 flow.
-class OAuthButton extends StatelessWidget {
+/// Botón de OAuth.
+class OAuthButton extends ConsumerWidget {
   final OAuthProvider provider;
 
   const OAuthButton({required this.provider, super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final (icon, label) = switch (provider) {
       OAuthProvider.google => (
           'G',
@@ -33,13 +32,16 @@ class OAuthButton extends StatelessWidget {
       height: 48,
       child: OutlinedButton(
         onPressed: () {
-          // 🔄 BACKEND INTEGRATION: OAuth flow real
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('$label — próximamente'),
-              backgroundColor: AppColors.surfaceHigh,
-            ),
-          );
+          if (provider == OAuthProvider.discord) {
+            ref.read(loginViewModelProvider.notifier).signInWithDiscord();
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('$label — próximamente'),
+                backgroundColor: AppColors.surfaceHigh,
+              ),
+            );
+          }
         },
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.onSurface,

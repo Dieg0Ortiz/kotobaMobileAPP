@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../domain/usecases/login_usecase.dart';
 import '../providers/auth_providers.dart';
@@ -73,5 +74,24 @@ class LoginViewModel extends AsyncNotifier<void> {
         return const AsyncData(null);
       },
     );
+  }
+
+  Future<void> signInWithDiscord() async {
+    state = const AsyncLoading();
+    try {
+      await Supabase.instance.client.auth.signInWithOAuth(
+        OAuthProvider.discord,
+        redirectTo: 'com.devshainyv.kotobaapp://login-callback/',
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+      
+      // Reseteamos el estado porque el navegador se abre externamente.
+      // Si hay un error al volver, lo manejaremos en onAuthStateChange,
+      // pero no queremos que la app se quede con el spinner infinito.
+      state = const AsyncData(null);
+      
+    } catch (e) {
+      state = AsyncError('Error al iniciar sesión con Discord', StackTrace.current);
+    }
   }
 }

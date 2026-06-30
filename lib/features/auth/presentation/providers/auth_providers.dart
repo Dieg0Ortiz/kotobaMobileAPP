@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/secure_storage_service.dart';
@@ -47,6 +48,54 @@ final loginViewModelProvider =
 final registerViewModelProvider =
     AsyncNotifierProvider<RegisterViewModel, void>(RegisterViewModel.new);
 
+
+
 /// Estado global de autenticación.
-/// Se inicializa desde [main] verificando si hay tokens guardados.
-final authStateProvider = StateProvider<bool>((ref) => false);
+/// Se inicializa con la sesión actual de Supabase y se mantiene sincronizado
+/// escuchando [onAuthStateChange]. También sincroniza los tokens con
+/// [SecureStorageService] para que el [ApiClient] siempre tenga un token válido.
+final authStateProvider = StateProvider<bool>((ref) {
+  final auth = Supabase.instance.client.auth;
+
+  // Sincronizar sesión inicial al arrancar la app
+  final currentSession = auth.currentSession;
+  if (currentSession != null) {
+    _syncTokens(currentSession);
+  }
+
+  ref.onDispose(auth.onAuthStateChange.listen((data) {
+    final session = data.session;
+
+    if (session != null) {
+      _syncTokens(session);
+      // Fire-and-forget: asegura que el usuario exista en public.users
+      _syncDiscordUser();
+    }
+
+    ref.controller.state = session != null;
+  }).cancel);
+
+  return currentSession != null;
+});
+
+/// Guarda los tokens en SecureStorage para que el ApiClient pueda usarlos.
+void _syncTokens(Session session) {
+  final storage = SecureStorageService();
+  storage.saveTokens(
+    accessToken: session.accessToken,
+    refreshToken: session.refreshToken ?? '',
+  );
+}
+
+/// Llama al backend para asegurar que el usuario de Discord existe en la tabla
+/// `public.users`. Es un fire-and-forget porque el trigger `handle_new_user()`
+/// ya debió crearlo automáticamente — este es solo un safety net.
+Future<void> _syncDiscordUser() async {
+  try {
+    final storage = SecureStorageService();
+    final api = ApiClient(storage);
+    (await api.post('/auth/discord', data: {})).fold((_) => null, (_) => null);
+  } catch (_) {
+    // Non-fatal
+  }
+}
