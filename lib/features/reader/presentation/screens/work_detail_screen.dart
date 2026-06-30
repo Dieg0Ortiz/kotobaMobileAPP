@@ -499,7 +499,7 @@ class _GlassQuote extends StatelessWidget {
 
 // ── Chapter Index Section ───────────────────────────────────────────────────
 
-class _ChapterIndexSection extends StatelessWidget {
+class _ChapterIndexSection extends StatefulWidget {
   final List<dynamic> chapters;
   final String workId;
 
@@ -509,8 +509,17 @@ class _ChapterIndexSection extends StatelessWidget {
   });
 
   @override
+  State<_ChapterIndexSection> createState() => _ChapterIndexSectionState();
+}
+
+class _ChapterIndexSectionState extends State<_ChapterIndexSection> {
+  bool _showAll = false;
+
+  @override
   Widget build(BuildContext context) {
-    final displayed = chapters.take(5).toList();
+    const previewCount = 3;
+    final limit = _showAll ? widget.chapters.length : previewCount;
+    final displayed = widget.chapters.take(limit).toList();
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -521,11 +530,11 @@ class _ChapterIndexSection extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const _SectionHeader(label: AppStrings.chapterIndex),
-              if (chapters.length > 5)
+              if (widget.chapters.length > previewCount)
                 TextButton(
-                  onPressed: () {},
+                  onPressed: () => setState(() => _showAll = !_showAll),
                   child: Text(
-                    'Ver Todos',
+                    _showAll ? 'Ver menos' : 'Ver Todos (${widget.chapters.length})',
                     style: KotobaTypography.labelSm.copyWith(
                       color: AppColors.primaryContainer,
                     ),
@@ -538,7 +547,7 @@ class _ChapterIndexSection extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12),
             child: _ChapterItem(
               chapter: ch,
-              onTap: () => context.go('/works/$workId/chapters/${ch.id}'),
+              onTap: () => context.go('/works/${widget.workId}/chapters/${ch.id}'),
             ),
           )),
         ],

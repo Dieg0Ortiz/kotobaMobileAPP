@@ -209,11 +209,12 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     ref.invalidate(searchResultsProvider);
     ref.invalidate(currentProfileProvider);
     ref.invalidate(authorDashboardProvider);
-    // Invalidate entire family — clears cache for all author IDs
     ref.invalidate(myWorksProvider);
     ref.invalidate(writeDashboardProvider);
+    ref.invalidate(workDetailViewModelProvider(widget.storyId));
     if (_actualWorkId != null) {
       ref.invalidate(workDetailViewModelProvider(_actualWorkId!));
+      ref.invalidate(workCommentsProvider(_actualWorkId!));
     }
   }
 

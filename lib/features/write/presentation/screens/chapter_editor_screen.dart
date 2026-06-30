@@ -236,6 +236,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     ref.invalidate(myWorksProvider);
     ref.invalidate(writeDashboardProvider);
     ref.invalidate(workDetailViewModelProvider(widget.workId));
+    ref.invalidate(workCommentsProvider(widget.workId));
     if (_currentChapterId != null) {
       ref.invalidate(chapterContentProvider(_currentChapterId!));
     }
