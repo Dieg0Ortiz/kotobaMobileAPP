@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:device_preview/device_preview.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -22,7 +24,10 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
         authStateProvider.overrideWith((ref) => isLoggedIn),
       ],
-      child: const KotobaApp(),
+      child: DevicePreview(
+        enabled: !kReleaseMode,
+        builder: (context) => const KotobaApp(),
+      ),
     ),
   );
 }
@@ -38,6 +43,8 @@ class KotobaApp extends ConsumerWidget {
 
     return MaterialApp.router(
       title: 'Kotoba',
+      locale: DevicePreview.locale(context),
+      builder: DevicePreview.appBuilder,
 
       theme: KotobaTheme.lightTheme,
       darkTheme: KotobaTheme.darkTheme,

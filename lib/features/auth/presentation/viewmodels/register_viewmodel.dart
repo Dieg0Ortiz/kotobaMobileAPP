@@ -28,20 +28,24 @@ class RegisterViewModel extends AsyncNotifier<void> {
     }
 
     state = const AsyncLoading();
-    final usecase = ref.read(registerUseCaseProvider);
-    final result = await usecase.execute(
-      RegisterParams(
-        email: _email,
-        password: _password,
-        username: _username,
-        age: _age,
-        country: _country.isNotEmpty ? _country : null,
-      ),
-    );
+    try {
+      final usecase = ref.read(registerUseCaseProvider);
+      final result = await usecase.execute(
+        RegisterParams(
+          email: _email,
+          password: _password,
+          username: _username,
+          age: _age,
+          country: _country.isNotEmpty ? _country : null,
+        ),
+      );
 
-    state = result.fold(
-      (failure) => AsyncError(failure.message, StackTrace.current),
-      (_) => const AsyncData(null),
-    );
+      state = result.fold(
+        (failure) => AsyncError('Error del servidor: ${failure.message}', StackTrace.current),
+        (_) => const AsyncData(null),
+      );
+    } catch (e, s) {
+      state = AsyncError('Excepción inesperada (${e.runtimeType}): $e', s);
+    }
   }
 }

@@ -45,9 +45,12 @@ class RegisterScreen extends ConsumerWidget {
             ),
           );
         },
-        error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(err.toString())),
-        ),
+        error: (err, _) {
+          final msg = err is String ? err : err.toString();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $msg')),
+          );
+        },
       );
     });
 

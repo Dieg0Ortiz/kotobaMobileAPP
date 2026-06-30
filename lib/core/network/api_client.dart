@@ -31,6 +31,16 @@ class ApiClient {
     ));
   }
 
+  String _extractMessage(DioException e) {
+    final data = e.response?.data;
+    if (data == null) return 'Error del servidor';
+    if (data is Map) {
+      final val = data['error'] ?? data['message'] ?? data['msg'] ?? '';
+      if (val is String && val.isNotEmpty) return val;
+    }
+    return 'Error del servidor';
+  }
+
   Failure _mapError(DioException e) {
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
@@ -41,7 +51,7 @@ class ApiClient {
         return const NetworkFailure('Sin conexión al servidor');
       case DioExceptionType.badResponse:
         final statusCode = e.response?.statusCode;
-        final message = e.response?.data?['error'] as String? ?? 'Error del servidor';
+        final message = _extractMessage(e);
         if (statusCode == 401) return AuthFailure(message);
         if (statusCode == 404) return NotFoundFailure(message);
         return ServerFailure(message, statusCode: statusCode);
