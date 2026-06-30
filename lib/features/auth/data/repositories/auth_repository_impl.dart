@@ -58,14 +58,13 @@ class AuthRepositoryImpl implements IAuthRepository {
 
     return result.fold(
       (failure) => Left(failure),
-      (data) {
-        final userData = data['user'] as Map<String, dynamic>;
-        final token = AuthToken(
-          accessToken: userData['access_token'] as String? ?? '',
+      (_) {
+        // Registration successful — user must confirm email
+        return Right(AuthToken(
+          accessToken: '',
           refreshToken: '',
           expiresAt: DateTime.now().add(const Duration(hours: 1)),
-        );
-        return Right(token);
+        ));
       },
     );
   }
