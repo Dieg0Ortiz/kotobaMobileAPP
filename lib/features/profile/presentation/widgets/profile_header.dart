@@ -9,8 +9,9 @@ import '../../../auth/domain/entities/user.dart';
 
 class ProfileHeader extends StatelessWidget {
   final User user;
+  final VoidCallback? onSettingsTap;
 
-  const ProfileHeader({required this.user, super.key});
+  const ProfileHeader({required this.user, this.onSettingsTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -108,10 +109,56 @@ class ProfileHeader extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 32),
+                // Acerca De (Bio)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ACERCA DE',
+                        style: KotobaTypography.labelMd.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        user.bio ?? 'Sin biografía.',
+                        style: KotobaTypography.bodyMd,
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          const Icon(Icons.location_on, size: 14, color: AppColors.onSurfaceVariant),
+                          const SizedBox(width: 4),
+                          Text(user.country ?? '', style: KotobaTypography.labelSm),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Se unió el ${_formatDate(user.createdAt)}', 
+                        style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
         ),
+
+        // Settings Button at the top right
+        if (onSettingsTap != null)
+          Positioned(
+            top: MediaQuery.paddingOf(context).top + 8,
+            right: 8,
+            child: IconButton(
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              onPressed: onSettingsTap,
+            ),
+          ),
       ],
     );
   }
@@ -124,5 +171,13 @@ class ProfileHeader extends StatelessWidget {
         Text(label, style: KotobaTypography.labelXs.copyWith(letterSpacing: 1.0)),
       ],
     );
+  }
+
+  String _formatDate(DateTime date) {
+    const months = [
+      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
+      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
+    ];
+    return '${months[date.month - 1]} ${date.year}';
   }
 }

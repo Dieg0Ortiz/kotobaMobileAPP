@@ -78,6 +78,25 @@ class ProfileRepositoryImpl implements IProfileRepository {
   }
 
   @override
+  Future<Either<Failure, String>> uploadBanner(List<int> bytes, String filename) async {
+    try {
+      final formData = FormData.fromMap({
+        'image': MultipartFile.fromBytes(bytes, filename: filename),
+      });
+      final result = await _api.upload<Map<String, dynamic>>(
+        '${ApiConstants.users}/me/banner',
+        formData,
+      );
+      return result.fold(
+        (failure) => Left(failure),
+        (data) => Right(data['url'] as String),
+      );
+    } catch (e) {
+      return Left(ServerFailure('Error al subir banner'));
+    }
+  }
+
+  @override
   Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors() async {
     final result = await _api.get<List<dynamic>>(ApiConstants.followingAuthors);
     return result.fold(
@@ -105,6 +124,22 @@ class ProfileRepositoryImpl implements IProfileRepository {
     return result.fold(
       (failure) => Left(failure),
       (_) => const Right(null),
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<User>>> getNewAuthors() async {
+    final result = await _api.get<List<dynamic>>(ApiConstants.newAuthors);
+    return result.fold(
+      (failure) => Left(failure),
+      (data) {
+        try {
+          final users = data.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
+          return Right(users);
+        } catch (e) {
+          return const Left(ServerFailure('Error parsing authors data'));
+        }
+      },
     );
   }
 }

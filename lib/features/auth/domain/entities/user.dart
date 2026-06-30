@@ -10,6 +10,7 @@ class User extends Equatable {
   final String? bio;
   final String? avatarUrl;
   final String? bannerUrl;
+  final Map<String, String>? socialLinks;
   final String role;
   final int followers;
   final int following;
@@ -26,6 +27,7 @@ class User extends Equatable {
     this.bio,
     this.avatarUrl,
     this.bannerUrl,
+    this.socialLinks,
     this.role = 'reader',
     this.followers = 0,
     this.following = 0,
@@ -49,6 +51,7 @@ class User extends Equatable {
       username: username,
       age: age,
       country: country,
+      socialLinks: const {},
       createdAt: DateTime.now(),
     );
   }
@@ -63,6 +66,9 @@ class User extends Equatable {
       bio: json['bio'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       bannerUrl: json['banner_url'] as String?,
+      socialLinks: (json['social_links'] as Map<String, dynamic>?)?.map(
+        (k, v) => MapEntry(k, v.toString()),
+      ),
       role: json['role'] as String? ?? 'reader',
       followers: (json['followers'] ?? json['followers_count'] ?? 0) as int,
       following: (json['following'] ?? json['following_count'] ?? 0) as int,

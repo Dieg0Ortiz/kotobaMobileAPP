@@ -69,10 +69,6 @@ class AppStrings {
   static const tabAbout = 'Sobre mí';
   static const tabActivity = 'Actividad';
   static const tabLists = 'Listas';
-  static const achievements = 'LOGROS';
-  static const genres = 'GÉNEROS';
-  static const recentActivity = 'ACTIVIDAD RECIENTE';
-  static const similarAuthors = 'AUTORES SIMILARES';
 
   // ── Dashboard ───────────────────────────────────────────────────
   static const authorDashboard = 'Panel de Autor';

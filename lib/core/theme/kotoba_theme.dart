@@ -164,4 +164,142 @@ class KotobaTheme {
         iconTheme: const IconThemeData(
             color: AppColors.onSurfaceVariant, size: 20),
       );
+
+  static ThemeData get lightTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: AppColorsLight.background,
+
+        colorScheme: const ColorScheme.light(
+          surface: AppColorsLight.surface,
+          onSurface: AppColorsLight.onSurface,
+          onSurfaceVariant: AppColorsLight.onSurfaceVariant,
+          primary: AppColorsLight.primary,
+          onPrimary: AppColorsLight.onPrimary,
+          primaryContainer: AppColorsLight.primaryContainer,
+          secondary: AppColorsLight.secondary,
+          onSecondary: AppColorsLight.onSecondary,
+          secondaryContainer: AppColorsLight.secondaryContainer,
+          tertiary: AppColorsLight.action,
+          onTertiary: AppColorsLight.onAction,
+          tertiaryContainer: AppColorsLight.actionContainer,
+          error: AppColorsLight.error,
+          onError: AppColorsLight.onError,
+          errorContainer: AppColorsLight.errorContainer,
+          outline: AppColorsLight.outline,
+          outlineVariant: AppColorsLight.outlineVariant,
+          surfaceContainerLowest: AppColorsLight.surfaceLowest,
+          surfaceContainerLow: AppColorsLight.surfaceLow,
+          surfaceContainer: AppColorsLight.surface,
+          surfaceContainerHigh: AppColorsLight.surfaceHigh,
+          surfaceContainerHighest: AppColorsLight.surfaceHighest,
+        ),
+
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColorsLight.background,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          titleTextStyle: TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColorsLight.primary,
+          ),
+          iconTheme: IconThemeData(color: AppColorsLight.onSurface),
+        ),
+
+        cardTheme: CardThemeData(
+          color: AppColorsLight.surfaceLowest,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+            side: BorderSide(
+              color: AppColorsLight.onSurface.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+        ),
+
+        navigationRailTheme: const NavigationRailThemeData(
+          backgroundColor: AppColorsLight.surfaceLowest,
+          selectedIconTheme: IconThemeData(color: AppColorsLight.primary),
+          unselectedIconTheme: IconThemeData(color: AppColorsLight.onSurfaceVariant),
+          selectedLabelTextStyle: TextStyle(
+            fontFamily: 'DM Sans',
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColorsLight.primary,
+          ),
+          unselectedLabelTextStyle: TextStyle(
+            fontFamily: 'DM Sans',
+            fontSize: 14,
+            color: AppColorsLight.onSurfaceVariant,
+          ),
+          indicatorColor: Colors.transparent,
+        ),
+
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: AppColorsLight.surfaceLowest,
+          selectedItemColor: AppColorsLight.primary,
+          unselectedItemColor: AppColorsLight.onSurfaceVariant,
+          type: BottomNavigationBarType.fixed,
+          elevation: 0,
+        ),
+
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColorsLight.background,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColorsLight.outline, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColorsLight.outline, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColorsLight.primaryContainer, width: 1),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(4),
+            borderSide: const BorderSide(color: AppColorsLight.error, width: 1),
+          ),
+          hintStyle: const TextStyle(
+            fontFamily: 'DM Sans',
+            fontSize: 14,
+            color: AppColorsLight.outline,
+          ),
+          labelStyle: const TextStyle(
+            fontFamily: 'DM Sans',
+            fontSize: 14,
+            color: AppColorsLight.onSurfaceVariant,
+          ),
+        ),
+
+        chipTheme: ChipThemeData(
+          backgroundColor: AppColorsLight.surfaceHigh,
+          selectedColor: AppColorsLight.primaryFixed,
+          labelStyle: const TextStyle(
+            fontFamily: 'DM Sans',
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColorsLight.onSurface,
+          ),
+          side: const BorderSide(color: AppColorsLight.outlineVariant, width: 1),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        ),
+
+        dividerTheme: const DividerThemeData(
+          color: AppColorsLight.outlineVariant,
+          thickness: 1,
+          space: 0,
+        ),
+
+        iconTheme: const IconThemeData(color: AppColorsLight.onSurfaceVariant, size: 20),
+      );
 }

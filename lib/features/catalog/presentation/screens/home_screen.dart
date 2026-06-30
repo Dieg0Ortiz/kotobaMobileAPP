@@ -8,6 +8,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/catalog_providers.dart';
 import '../widgets/featured_card.dart';
 import '../widgets/work_card.dart';
@@ -22,6 +23,7 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final trendingAsync = ref.watch(trendingWorksProvider);
+    final newAuthorsAsync = ref.watch(newAuthorsProvider);
 
     return Scaffold(
       body: SafeArea(
@@ -142,30 +144,44 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             SliverToBoxAdapter(
-              child: SizedBox(
-                height: 80,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  itemCount: MockData.newAuthors.length,
-                  separatorBuilder: (_, __) => const SizedBox(width: 16),
-                  itemBuilder: (_, i) {
-                    final author = MockData.newAuthors[i];
-                    return Column(
-                      children: [
-                        KotobaAvatar(
-                          imageUrl: author.avatarUrl,
-                          size: KotobaAvatarSize.md,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          author.username,
-                          style: KotobaTypography.labelXs,
-                        ),
-                      ],
-                    );
-                  },
+              child: newAuthorsAsync.when(
+                loading: () => const SizedBox(
+                  height: 80,
+                  child: Center(child: KotobaLoading()),
                 ),
+                error: (e, _) => const SizedBox.shrink(),
+                data: (authors) {
+                  if (authors.isEmpty) return const SizedBox.shrink();
+                  
+                  return SizedBox(
+                    height: 85,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      itemCount: authors.length,
+                      separatorBuilder: (_, __) => const SizedBox(width: 16),
+                      itemBuilder: (_, i) {
+                        final author = authors[i];
+                        return GestureDetector(
+                          onTap: () => context.go('/profile/${author.id}'),
+                          child: Column(
+                            children: [
+                              KotobaAvatar(
+                                imageUrl: author.avatarUrl,
+                                size: KotobaAvatarSize.md,
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                author.username,
+                                style: KotobaTypography.labelXs,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ),
 

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
+import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 /// Modal con opciones de configuración (tema, notificaciones, cerrar sesión).
@@ -18,20 +19,27 @@ class SettingsSheet extends ConsumerWidget {
         color: AppColors.surface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
           Text('Ajustes', style: KotobaTypography.headlineMd),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined),
-            title: Text('Modo Oscuro (Fijo en MVP)',
-                style: KotobaTypography.labelMd),
-            trailing: Switch(
-              value: true,
-              onChanged: null,
-              activeThumbColor: AppColors.primary,
+            title: const Text('Tema'),
+            trailing: SegmentedButton<ThemeMode>(
+              segments: const [
+                ButtonSegment(value: ThemeMode.light, icon: Icon(Icons.light_mode)),
+                ButtonSegment(value: ThemeMode.dark, icon: Icon(Icons.dark_mode)),
+                ButtonSegment(value: ThemeMode.system, icon: Icon(Icons.brightness_auto)),
+              ],
+              selected: {ref.watch(themeModeProvider)},
+              onSelectionChanged: (Set<ThemeMode> newSelection) {
+                ref.read(themeModeProvider.notifier).setThemeMode(newSelection.first);
+              },
             ),
           ),
           ListTile(
@@ -60,12 +68,14 @@ class SettingsSheet extends ConsumerWidget {
                     .copyWith(color: AppColors.error)),
             onTap: () {
               ref.read(logoutUseCaseProvider).execute();
-              ref.read(authStateProvider.notifier).logout();
+              ref.read(authStateProvider.notifier).state = false;
               Navigator.pop(context);
             },
           ),
           const SizedBox(height: 32),
         ],
+      ),
+        ),
       ),
     );
   }

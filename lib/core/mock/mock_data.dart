@@ -19,6 +19,13 @@ class MockData {
     bio: 'Escribo mundos donde la física es opcional...',
     avatarUrl: 'https://picsum.photos/seed/kotoba-user/200',
     bannerUrl: 'https://picsum.photos/seed/kotoba-banner/800/300',
+    age: 28,
+    country: 'México',
+    socialLinks: const {
+      'x': 'https://x.com/akvarela',
+      'instagram': 'https://instagram.com/akvarela',
+      'website': 'https://akvarela.com',
+    },
     role: 'author',
     followers: 1204,
     following: 87,
@@ -405,13 +412,6 @@ A long pause filled the room, broken only by the muffled percussion of rain on t
     'Poesía',
   ];
 
-  // ── Pull quotes para decoración ─────────────────────────────────
-  static const pullQuotes = [
-    '"La tinta es la sangre de mundos que aún no existen."',
-    '"To seek the silence is not to find emptiness, but to hear the roar of everything that has been forgotten."',
-    '"The rain in Neo-Kyoto didn\'t wash away sins; it merely diluted them into the gutters."',
-  ];
-
   // ── Reseñas ─────────────────────────────────────────────────────
   static const sampleReviews = [
     {
@@ -425,26 +425,4 @@ A long pause filled the room, broken only by the muffled percussion of rain on t
     },
   ];
 
-  // ── Logros ──────────────────────────────────────────────────────
-  static const achievements = [
-    {'icon': 'verified', 'color': 'gold'},
-    {'icon': 'local_fire_department', 'color': 'action'},
-    {'icon': 'menu_book', 'color': 'primary'},
-  ];
-
-  // ── Actividad Reciente ──────────────────────────────────────────
-  static const recentActivity = [
-    {
-      'action': 'Publicó un nuevo capítulo',
-      'target': 'El Silencio de Neón',
-      'time': 'Hace 2 horas',
-      'isHighlight': true,
-    },
-    {
-      'action': 'Recomendó',
-      'target': 'Lágrimas en la Lluvia',
-      'time': 'Ayer',
-      'isHighlight': false,
-    },
-  ];
 }

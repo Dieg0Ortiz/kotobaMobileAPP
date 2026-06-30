@@ -70,6 +70,7 @@ class AuthorProfileScreen extends ConsumerWidget {
               SliverToBoxAdapter(
                 child: _ProfileHeaderSection(
                   user: user,
+                  worksLength: works.length,
                   isMe: isMe,
                   isFollowedByMe: isFollowedByMe,
                   onFollow: () async {
@@ -177,12 +178,14 @@ class AuthorProfileScreen extends ConsumerWidget {
 
 class _ProfileHeaderSection extends StatelessWidget {
   final User user;
+  final int worksLength;
   final bool isMe;
   final bool isFollowedByMe;
   final VoidCallback onFollow;
 
   const _ProfileHeaderSection({
     required this.user,
+    required this.worksLength,
     required this.isMe,
     required this.isFollowedByMe,
     required this.onFollow,
@@ -222,7 +225,7 @@ class _ProfileHeaderSection extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _StatColumn(value: '${user.worksCount}', label: 'OBRAS'),
+              _StatColumn(value: '${worksLength > 0 ? worksLength : user.worksCount}', label: 'OBRAS'),
               const SizedBox(width: 32),
               _StatColumn(value: '${user.followers}', label: 'SEGUIDORES'),
               const SizedBox(width: 32),

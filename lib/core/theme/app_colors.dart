@@ -51,3 +51,44 @@ class AppColors {
   static const errorContainer = Color(0xFF93000A);
   static const onError = Color(0xFF690005);
 }
+
+class AppColorsLight {
+  AppColorsLight._();
+
+  // ── Fondos (de más claro a más oscuro) ──────────────────────────
+  static const background = Color(0xFFFBF9F4);
+  static const surfaceLowest = Color(0xFFFFFFFF);
+  static const surfaceLow = Color(0xFFF5F3EE);
+  static const surface = Color(0xFFFBF9F4);
+  static const surfaceHigh = Color(0xFFEAE8E3);
+  static const surfaceHighest = Color(0xFFE4E2DD);
+  static const surfaceBright = Color(0xFFFBF9F4);
+
+  // ── Texto ────────────────────────────────────────────────────────
+  static const onSurface = Color(0xFF1B1C19);
+  static const onSurfaceVariant = Color(0xFF4D463A);
+  static const outline = Color(0xFF7F7668);
+  static const outlineVariant = Color(0xFFD0C5B5);
+
+  // ── Primario: Amber Gold / Ochre ─────────────────────────────────
+  static const primary = Color(0xFF735B28);
+  static const primaryDim = Color(0xFFE3C285);
+  static const primaryContainer = Color(0xFFC8A96E);
+  static const onPrimary = Color(0xFFFFFFFF);
+  static const primaryFixed = Color(0xFFFFDEA3);
+
+  // ── Secundario: Terracotta ───────────────────────────────────────
+  static const secondary = Color(0xFF9A442D);
+  static const secondaryContainer = Color(0xFFFC9174);
+  static const onSecondary = Color(0xFFFFFFFF);
+
+  // ── Terciario / Acción: Grey ─────────────────────────────────────
+  static const action = Color(0xFF5F5E5E);
+  static const actionContainer = Color(0xFFAEADAD);
+  static const onAction = Color(0xFFFFFFFF);
+
+  // ── Error ────────────────────────────────────────────────────────
+  static const error = Color(0xFFBA1A1A);
+  static const errorContainer = Color(0xFFFFDAD6);
+  static const onError = Color(0xFFFFFFFF);
+}

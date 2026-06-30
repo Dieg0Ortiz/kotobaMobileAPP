@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/domain/entities/work.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/horizontal_work_card.dart';
 import '../widgets/profile_header.dart';
@@ -12,14 +14,6 @@ import '../widgets/settings_sheet.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
-
-  String _formatDate(DateTime date) {
-    const months = [
-      'ene', 'feb', 'mar', 'abr', 'may', 'jun',
-      'jul', 'ago', 'sep', 'oct', 'nov', 'dic'
-    ];
-    return '${months[date.month - 1]} ${date.year}';
-  }
 
   void _showSettings(BuildContext context) {
     showModalBottomSheet(
@@ -36,65 +30,33 @@ class ProfileScreen extends ConsumerWidget {
     return Scaffold(
       body: profileAsync.when(
         loading: () => const Center(child: KotobaLoading()),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(e.toString(), style: const TextStyle(color: AppColors.error)),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(logoutUseCaseProvider).execute();
+                  ref.read(authStateProvider.notifier).state = false;
+                },
+                child: const Text('Cerrar sesión'),
+              ),
+            ],
+          ),
+        ),
         data: (user) => CustomScrollView(
           slivers: [
-            // 1. Cabecera Extendida
-            SliverAppBar(
-              expandedHeight: 480, 
-              pinned: true,
-              title: Text(user.username),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.settings_outlined),
-                  onPressed: () => _showSettings(context),
-                ),
-              ],
-              flexibleSpace: FlexibleSpaceBar(
-                background: ProfileHeader(user: user),
-              ),
-            ),
-
-            // 2. Sección: Acerca De (Bio)
+            // 1. Cabecera
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'ACERCA DE',
-                      style: KotobaTypography.labelMd.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      user.bio ?? 'Sin biografía.',
-                      style: KotobaTypography.bodyMd,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on, size: 14, color: AppColors.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text(user.country ?? '', style: KotobaTypography.labelSm),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Se unió el ${_formatDate(user.createdAt)}', 
-                      style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
-                    ),
-                    const SizedBox(height: 16),
-                    const Divider(color: AppColors.outlineVariant),
-                  ],
-                ),
+              child: ProfileHeader(
+                user: user,
+                onSettingsTap: () => _showSettings(context),
               ),
             ),
 
-            // 3. Sección: Historias (Carrusel Horizontal)
+            // 2. Sección: Historias (Carrusel Horizontal)
             SliverToBoxAdapter(
               child: _UserWorksCarousel(userId: user.id, username: user.username, worksCount: user.worksCount),
             ),
@@ -111,34 +73,174 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
-            // 5. Sección: Logros y Géneros
-            const SliverToBoxAdapter(
-              child: AchievementsCard(),
-            ),
-            const SliverToBoxAdapter(
-              child: GenresCard(),
-            ),
-
-            // 6. Sección: Actividad
-            const SliverToBoxAdapter(
-              child: ActivityTimeline(),
-            ),
-
-            // 7. Pull Quote al final
+            // 5. Sección: Géneros que escribe (desde tags reales de las obras)
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-                child: Text(
-                  '"La tinta es la sangre de mundos que aún no existen."',
-                  textAlign: TextAlign.center,
-                  style: KotobaTypography.pullQuote,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _UserTags(userId: user.id),
               ),
             ),
+
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Divider(color: AppColors.outlineVariant),
+              ),
+            ),
+
+            // 6. Sección: Actividad Reciente
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: _UserActivity(userId: user.id),
+              ),
+            ),
+
           ],
         ),
       ),
     );
+  }
+}
+
+/// Tags extraídos de las obras del usuario (los más usados).
+class _UserTags extends ConsumerWidget {
+  final String userId;
+  const _UserTags({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final worksAsync = ref.watch(userWorksProvider(userId));
+
+    return worksAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (works) {
+        final tagCount = <String, int>{};
+        for (final work in works) {
+          for (final tag in work.tags) {
+            tagCount[tag] = (tagCount[tag] ?? 0) + 1;
+          }
+        }
+        if (tagCount.isEmpty) return const SizedBox.shrink();
+        final sorted = tagCount.entries.toList()
+          ..sort((a, b) => b.value.compareTo(a.value));
+        final topTags = sorted.take(6).map((e) => e.key).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'GÉNEROS QUE ESCRIBE',
+              style: KotobaTypography.labelMd.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: topTags.map((tag) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppColors.outlineVariant),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(tag, style: KotobaTypography.labelXs),
+                );
+              }).toList(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Actividad reciente basada en datos reales de las obras.
+class _UserActivity extends ConsumerWidget {
+  final String userId;
+  const _UserActivity({required this.userId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final worksAsync = ref.watch(userWorksProvider(userId));
+
+    return worksAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (works) {
+        if (works.isEmpty) return const SizedBox.shrink();
+        final sorted = List<Work>.from(works)
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+        final recent = sorted.take(5).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'ACTIVIDAD RECIENTE',
+              style: KotobaTypography.labelMd.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...recent.map((work) {
+              final timeAgo = _timeAgo(work.updatedAt);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      margin: const EdgeInsets.only(top: 4, right: 12),
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppColors.action,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    Expanded(
+                      child: RichText(
+                        text: TextSpan(
+                          style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurface),
+                          children: [
+                            const TextSpan(
+                              text: 'Actualizó ',
+                              style: TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            TextSpan(
+                              text: work.title,
+                              style: const TextStyle(fontStyle: FontStyle.italic),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Text(
+                      timeAgo,
+                      style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
+  }
+
+  String _timeAgo(DateTime date) {
+    final diff = DateTime.now().difference(date);
+    if (diff.inMinutes < 60) return 'Hace ${diff.inMinutes}m';
+    if (diff.inHours < 24) return 'Hace ${diff.inHours}h';
+    if (diff.inDays < 7) return 'Hace ${diff.inDays}d';
+    return '${date.day}/${date.month}/${date.year}';
   }
 }
 
@@ -157,6 +259,10 @@ class _UserWorksCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final worksAsync = ref.watch(userWorksProvider(userId));
+    final displayedCount = worksAsync.maybeWhen(
+      data: (works) => works.length,
+      orElse: () => worksCount,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,7 +285,7 @@ class _UserWorksCarousel extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(left: 24, top: 4, bottom: 16),
           child: Text(
-            '$worksCount Historias publicadas',
+            '$displayedCount Historias publicadas',
             style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ),

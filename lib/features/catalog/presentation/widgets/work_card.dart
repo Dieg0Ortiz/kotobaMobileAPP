@@ -83,11 +83,11 @@ class WorkCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star_rounded,
+                            const Icon(Icons.thumb_up_rounded,
                                 size: 12, color: AppColors.primary),
                             const SizedBox(width: 3),
                             Text(
-                              work.rating.toStringAsFixed(1),
+                              work.ratingCount.toString(),
                               style: KotobaTypography.labelXs
                                   .copyWith(color: AppColors.primary),
                             ),

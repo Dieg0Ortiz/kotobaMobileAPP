@@ -15,9 +15,13 @@ abstract class IProfileRepository {
   // Profile edit
   Future<Either<Failure, User>> updateProfile(Map<String, dynamic> data);
   Future<Either<Failure, String>> uploadAvatar(List<int> bytes, String filename);
+  Future<Either<Failure, String>> uploadBanner(List<int> bytes, String filename);
 
   // Follow system
   Future<Either<Failure, void>> followUser(String userId);
   Future<Either<Failure, void>> unfollowUser(String userId);
   Future<Either<Failure, List<Map<String, dynamic>>>> getFollowingAuthors();
+  
+  // Discovery
+  Future<Either<Failure, List<User>>> getNewAuthors();
 }

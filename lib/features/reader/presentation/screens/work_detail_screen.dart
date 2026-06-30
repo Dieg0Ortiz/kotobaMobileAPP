@@ -11,6 +11,7 @@ import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';
 
@@ -215,13 +216,21 @@ class _HeroSection extends StatelessWidget {
 
 // ── Stats Bar ───────────────────────────────────────────────────────────────
 
-class _StatsBar extends StatelessWidget {
+class _StatsBar extends ConsumerWidget {
   final dynamic work;
 
   const _StatsBar({required this.work});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final voteAsync = ref.watch(myVoteProvider(work.id));
+    final currentVote = voteAsync.maybeWhen(data: (v) => v, orElse: () => 0);
+    
+    int displayVotes = work.ratingCount;
+    if (displayVotes == 0 && currentVote != 0) {
+      displayVotes = 1;
+    }
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
@@ -235,7 +244,7 @@ class _StatsBar extends StatelessWidget {
         children: [
           Expanded(child: _StatItem(value: work.formattedViewCount, label: 'Lecturas')),
           Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
-          Expanded(child: _StatItem(value: work.ratingCount.toString(), label: 'Votos')),
+          Expanded(child: _StatItem(value: displayVotes.toString(), label: 'Votos')),
           Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
           Expanded(child: _StatItem(value: work.chapterCount.toString(), label: 'Capítulos')),
         ],
@@ -350,11 +359,22 @@ class _ActionBar extends ConsumerWidget {
                   stats = await repo.voteWork(workId, 1).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
                 }
                 ref.invalidate(myVoteProvider(workId));
+                
+                // Invalidate catalog providers so the Home screen updates with the new vote count
+                ref.invalidate(trendingWorksProvider);
+                ref.invalidate(recommendedWorksProvider);
+                
                 final viewModel = ref.read(workDetailViewModelProvider(workId).notifier);
-                viewModel.updateVoteStats(
-                  (stats['rating'] as num?)?.toDouble() ?? 0,
-                  (stats['rating_count'] as int?) ?? 0,
-                );
+                
+                if (stats.containsKey('rating_count')) {
+                  viewModel.updateVoteStats(
+                    (stats['rating'] as num?)?.toDouble() ?? work.rating,
+                    (stats['rating_count'] as int?) ?? work.ratingCount,
+                  );
+                } else {
+                  final newCount = work.ratingCount + (currentVote != 0 ? -1 : 1);
+                  viewModel.updateVoteStats(work.rating, newCount < 0 ? 0 : newCount);
+                }
               },
               style: OutlinedButton.styleFrom(
                 backgroundColor: currentVote != 0 ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
@@ -421,14 +441,7 @@ class _SynopsisSection extends StatelessWidget {
         children: [
           const _SectionHeader(label: AppStrings.synopsis),
           const SizedBox(height: 16),
-          Text(
-            work.synopsis,
-            style: KotobaTypography.bodyLg.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.9),
-            ),
-          ),
-          const SizedBox(height: 24),
-          _GlassQuote(),
+          _GlassQuote(text: work.synopsis),
           const SizedBox(height: 32),
         ],
       ),
@@ -437,6 +450,10 @@ class _SynopsisSection extends StatelessWidget {
 }
 
 class _GlassQuote extends StatelessWidget {
+  final String text;
+
+  const _GlassQuote({required this.text});
+
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -466,7 +483,7 @@ class _GlassQuote extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(
-                '"Las palabras no son solo símbolos; son jaulas para atrapar el tiempo antes de que se evapore en el olvido."',
+                text,
                 style: KotobaTypography.pullQuote.copyWith(
                   fontSize: 18,
                   fontStyle: FontStyle.italic,

@@ -29,7 +29,6 @@ class MockProfileRepository implements IProfileRepository {
     final user = MockData.currentUser;
     return Right({
       'id': user.id,
-      'name': user.name,
       'username': user.username,
       'avatarUrl': user.avatarUrl,
       'bio': user.bio,
@@ -52,6 +51,13 @@ class MockProfileRepository implements IProfileRepository {
   }
 
   @override
+  Future<Either<Failure, String>> uploadBanner(
+      List<int> bytes, String filename) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return const Right('https://mock.example.com/banners/mock_banner.png');
+  }
+
+  @override
   Future<Either<Failure, void>> followUser(String userId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     return const Right(null);
@@ -61,6 +67,12 @@ class MockProfileRepository implements IProfileRepository {
   Future<Either<Failure, void>> unfollowUser(String userId) async {
     await Future.delayed(const Duration(milliseconds: 300));
     return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, List<User>>> getNewAuthors() async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(MockData.newAuthors);
   }
 
   @override

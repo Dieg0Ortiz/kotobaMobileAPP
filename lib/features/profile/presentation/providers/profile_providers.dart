@@ -45,3 +45,9 @@ final publicAuthorProfileProvider = FutureProvider.family<Map<String, dynamic>, 
   final result = await repo.getAuthorProfile(userId);
   return result.fold((f) => throw f, (data) => data);
 });
+
+final newAuthorsProvider = FutureProvider<List<User>>((ref) async {
+  final repo = ref.read(profileRepositoryProvider);
+  final result = await repo.getNewAuthors();
+  return result.fold((f) => throw f, (authors) => authors);
+});

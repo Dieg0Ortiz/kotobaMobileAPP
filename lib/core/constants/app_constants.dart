@@ -23,6 +23,7 @@ class ApiConstants {
   static String userById(String id) => '$users/$id';
   static String userStats(String authorId) => '$users/$authorId/stats';
   static const String followingAuthors = '$users/me/following-authors';
+  static const String newAuthors = '$users/new-authors';
   static String workById(String id) => '$works/$id';
   static String chapterById(String id) => '$chapters/$id';
 }

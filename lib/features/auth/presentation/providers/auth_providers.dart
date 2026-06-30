@@ -7,7 +7,6 @@ import '../../domain/repositories/i_auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
-import '../viewmodels/auth_state_viewmodel.dart';
 import '../viewmodels/login_viewmodel.dart';
 import '../viewmodels/register_viewmodel.dart';
 
@@ -48,5 +47,6 @@ final loginViewModelProvider =
 final registerViewModelProvider =
     AsyncNotifierProvider<RegisterViewModel, void>(RegisterViewModel.new);
 
-final authStateProvider =
-    NotifierProvider<AuthStateViewModel, bool>(AuthStateViewModel.new);
+/// Estado global de autenticación.
+/// Se inicializa desde [main] verificando si hay tokens guardados.
+final authStateProvider = StateProvider<bool>((ref) => false);
