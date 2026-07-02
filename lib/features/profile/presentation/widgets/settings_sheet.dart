@@ -57,7 +57,7 @@ class SettingsSheet extends ConsumerWidget {
             title: Text('Editar Perfil', style: KotobaTypography.labelMd),
             onTap: () {
               Navigator.pop(context);
-              context.go('/profile/edit');
+              context.push('/profile/edit');
             },
           ),
           const Divider(color: AppColors.outlineVariant),

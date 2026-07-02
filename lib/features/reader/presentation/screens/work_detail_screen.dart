@@ -184,7 +184,7 @@ class _HeroSection extends StatelessWidget {
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: work.authorId != null && work.authorId.isNotEmpty
-                          ? () => context.go('/users/${work.authorId}')
+                          ? () => context.push('/users/${work.authorId}')
                           : null,
                       child: Text(
                         'Por ${work.authorName.isNotEmpty ? work.authorName : 'Autor'}',
@@ -205,7 +205,7 @@ class _HeroSection extends StatelessWidget {
               right: 16,
               child: IconButton(
                 icon: const Icon(Icons.edit_outlined),
-                onPressed: () => context.go('/write/edit/$workId'),
+                onPressed: () => context.push('/write/edit/$workId'),
               ),
             ),
         ],
@@ -316,7 +316,7 @@ class _ActionBar extends ConsumerWidget {
               child: FilledButton(
                 onPressed: () {
                   if (chapters.isNotEmpty) {
-                    context.go('/works/$workId/chapters/${chapters.first.id}');
+                    context.push('/works/$workId/chapters/${chapters.first.id}');
                   }
                 },
                 style: FilledButton.styleFrom(
@@ -547,7 +547,7 @@ class _ChapterIndexSectionState extends State<_ChapterIndexSection> {
             padding: const EdgeInsets.only(bottom: 12),
             child: _ChapterItem(
               chapter: ch,
-              onTap: () => context.go('/works/${widget.workId}/chapters/${ch.id}'),
+              onTap: () => context.push('/works/${widget.workId}/chapters/${ch.id}'),
             ),
           )),
         ],

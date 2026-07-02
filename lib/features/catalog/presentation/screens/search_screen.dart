@@ -100,7 +100,7 @@ class SearchScreen extends ConsumerWidget {
                     itemCount: works.length,
                     itemBuilder: (_, i) => WorkCard(
                       work: works[i],
-                      onTap: () => context.go('/works/${works[i].id}'),
+                      onTap: () => context.push('/works/${works[i].id}'),
                     ),
                   );
                 },

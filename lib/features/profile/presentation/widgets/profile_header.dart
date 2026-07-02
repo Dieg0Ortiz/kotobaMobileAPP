@@ -63,7 +63,7 @@ class ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  user.username,
+                  user.fullName?.isNotEmpty == true ? user.fullName! : user.username,
                   style: KotobaTypography.headlineLg.copyWith(
                     color: AppColors.onSurface,
                   ),
@@ -71,7 +71,7 @@ class ProfileHeader extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '@${user.email.split('@').first}', // Pseudo handle
+                  '@${user.username}',
                   style: KotobaTypography.labelMd.copyWith(
                     color: AppColors.onSurfaceVariant,
                   ),
@@ -82,7 +82,7 @@ class ProfileHeader extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     _buildStat('${user.worksCount}', 'OBRAS'),
-                    _buildStat('2', 'LISTAS'), // Fixed for UI demonstration
+                    _buildStat('0', 'LISTAS'),
                     _buildStat('${user.followers}', 'SEGUIDORES'),
                   ],
                 ),

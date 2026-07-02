@@ -32,7 +32,7 @@ void main() async {
         sharedPreferencesProvider.overrideWithValue(prefs),
       ],
       child: DevicePreview(
-        enabled: !kReleaseMode,
+        enabled: false,
         builder: (context) => const KotobaApp(),
       ),
     ),

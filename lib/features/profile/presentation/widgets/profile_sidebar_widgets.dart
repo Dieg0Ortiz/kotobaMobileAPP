@@ -55,7 +55,7 @@ class SimilarAuthorsCard extends ConsumerWidget {
                   return Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: GestureDetector(
-                      onTap: () => context.go('/users/$authorId'),
+                      onTap: () => context.push('/users/$authorId'),
                       child: Column(
                         children: [
                           KotobaAvatar(imageUrl: avatarUrl, size: KotobaAvatarSize.lg),

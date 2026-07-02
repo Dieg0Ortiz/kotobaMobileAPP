@@ -10,6 +10,9 @@ class User extends Equatable {
   final String? bio;
   final String? avatarUrl;
   final String? bannerUrl;
+  final String? fullName;
+  final String? pronouns;
+  final DateTime? birthDate;
   final Map<String, String>? socialLinks;
   final String role;
   final int followers;
@@ -27,6 +30,9 @@ class User extends Equatable {
     this.bio,
     this.avatarUrl,
     this.bannerUrl,
+    this.fullName,
+    this.pronouns,
+    this.birthDate,
     this.socialLinks,
     this.role = 'reader',
     this.followers = 0,
@@ -66,6 +72,9 @@ class User extends Equatable {
       bio: json['bio'] as String?,
       avatarUrl: json['avatar_url'] as String?,
       bannerUrl: json['banner_url'] as String?,
+      fullName: json['full_name'] as String?,
+      pronouns: json['pronouns'] as String?,
+      birthDate: DateTime.tryParse(json['birth_date'] as String? ?? ''),
       socialLinks: (json['social_links'] as Map<String, dynamic>?)?.map(
         (k, v) => MapEntry(k, v.toString()),
       ),

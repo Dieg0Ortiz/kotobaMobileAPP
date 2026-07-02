@@ -57,7 +57,7 @@ class _MyStoriesBody extends ConsumerWidget {
           title: const Text('Mis Historias', style: KotobaTypography.headlineMd),
           actions: [
             TextButton(
-              onPressed: () => context.go('/write/edit/new'),
+              onPressed: () => context.push('/write/edit/new'),
               child: Text(
                 'HISTORIA NUEVA',
                 style: KotobaTypography.labelSm.copyWith(color: AppColors.action),
@@ -114,7 +114,7 @@ class _WorksList extends StatelessWidget {
               KotobaButton(
                 label: 'Crear historia',
                 fullWidth: false,
-                onPressed: () => context.go('/write/edit/new'),
+                onPressed: () => context.push('/write/edit/new'),
               ),
             ],
           ),
@@ -129,7 +129,7 @@ class _WorksList extends StatelessWidget {
       itemBuilder: (context, index) {
         final work = works[index];
         return InkWell(
-          onTap: () => context.go('/write/edit/${work.id}'),
+          onTap: () => context.push('/write/edit/${work.id}'),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
@@ -170,7 +170,7 @@ class _WorksList extends StatelessWidget {
                           KotobaButton(
                             label: 'Escribir capítulo',
                             fullWidth: false,
-                            onPressed: () => context.go('/write/edit/${work.id}/chapter/new'),
+                            onPressed: () => context.push('/write/edit/${work.id}/chapter/new'),
                           ),
                         ],
                       ),

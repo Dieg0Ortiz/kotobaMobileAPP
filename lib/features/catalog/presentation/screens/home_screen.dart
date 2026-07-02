@@ -98,7 +98,7 @@ class HomeScreen extends ConsumerWidget {
                     separatorBuilder: (_, __) => const SizedBox(width: 16),
                     itemBuilder: (_, i) => WorkCard(
                       work: works[i],
-                      onTap: () => context.go('/works/${works[i].id}'),
+                      onTap: () => context.push('/works/${works[i].id}'),
                     ),
                   ),
                 ),
@@ -126,7 +126,7 @@ class HomeScreen extends ConsumerWidget {
                 data: (works) => works.isNotEmpty
                     ? FeaturedCard(
                         work: works.first,
-                        onTap: () => context.go('/works/${works.first.id}'),
+                        onTap: () => context.push('/works/${works.first.id}'),
                       )
                     : const SizedBox.shrink(),
               ),
@@ -163,7 +163,7 @@ class HomeScreen extends ConsumerWidget {
                       itemBuilder: (_, i) {
                         final author = authors[i];
                         return GestureDetector(
-                          onTap: () => context.go('/profile/${author.id}'),
+                          onTap: () => context.push('/users/${author.id}'),
                           child: Column(
                             children: [
                               KotobaAvatar(

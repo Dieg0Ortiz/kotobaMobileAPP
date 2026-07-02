@@ -123,7 +123,7 @@ class LibraryScreen extends ConsumerWidget {
                       final work = works[index];
                       return Padding(
                         padding: EdgeInsets.fromLTRB(24, 0, 24, 12),
-                        child: _LibraryWorkCard(work: work, onTap: () => context.go('/works/${work.id}')),
+                        child: _LibraryWorkCard(work: work, onTap: () => context.push('/works/${work.id}')),
                       );
                     },
                     childCount: works.length,
@@ -159,7 +159,7 @@ class _AuthorCarousel extends ConsumerWidget {
           child: Row(
             children: [
               InkWell(
-                onTap: () => context.go('/users/$authorId'),
+                onTap: () => context.push('/users/$authorId'),
                 child: Row(
                   children: [
                     Text('@$username', style: KotobaTypography.labelMd),
@@ -213,7 +213,7 @@ class _AuthorCarousel extends ConsumerWidget {
                 padding: const EdgeInsets.only(right: 12),
                 child: HorizontalWorkCarouselCard(
                   work: work,
-                  onTap: () => context.go('/works/${work.id}'),
+                  onTap: () => context.push('/works/${work.id}'),
                 ),
               );
             },
@@ -308,9 +308,14 @@ class _LibraryWorkCard extends StatelessWidget {
                   children: [
                     Text(work.title, style: KotobaTypography.headlineMd, maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
-                    Text(work.synopsis, maxLines: 2, overflow: TextOverflow.ellipsis,
-                      style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant)),
-                    const Spacer(),
+                    Expanded(
+                      child: Text(
+                        work.synopsis, 
+                        maxLines: 2, 
+                        overflow: TextOverflow.ellipsis,
+                        style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                      ),
+                    ),
                     Row(
                       children: [
                         const Icon(Icons.visibility, size: 14, color: AppColors.onSurfaceVariant),

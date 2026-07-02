@@ -19,6 +19,7 @@ class AuthorProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(publicAuthorProfileProvider(userId));
     final currentUserAsync = ref.watch(currentProfileProvider);
+    final followingAsync = ref.watch(followingAuthorsProvider);
     final currentUserId = currentUserAsync.maybeWhen(
       data: (u) => u.id,
       orElse: () => '',
@@ -26,6 +27,7 @@ class AuthorProfileScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
@@ -60,9 +62,14 @@ class AuthorProfileScreen extends ConsumerWidget {
                       publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
                       updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
                     ))
+                .where((w) => w.status != 'draft')
                 .toList() ??
                 [];
-            final isFollowedByMe = data['is_followed_by_me'] as bool? ?? false;
+            final isFollowedInList = followingAsync.maybeWhen(
+              data: (list) => list.any((a) => a['id'] == userId),
+              orElse: () => false,
+            );
+            final isFollowedByMe = (data['is_followed_by_me'] as bool?) == true || isFollowedInList;
             final isMe = currentUserId == user.id;
 
           return CustomScrollView(
@@ -107,7 +114,7 @@ class AuthorProfileScreen extends ConsumerWidget {
                       child: SizedBox(
                         height: 120,
                         child: InkWell(
-                          onTap: () => context.go('/works/${work.id}'),
+                          onTap: () => context.push('/works/${work.id}'),
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
                             decoration: BoxDecoration(
@@ -176,7 +183,7 @@ class AuthorProfileScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileHeaderSection extends StatelessWidget {
+class _ProfileHeaderSection extends StatefulWidget {
   final User user;
   final int worksLength;
   final bool isMe;
@@ -192,64 +199,177 @@ class _ProfileHeaderSection extends StatelessWidget {
   });
 
   @override
+  State<_ProfileHeaderSection> createState() => _ProfileHeaderSectionState();
+}
+
+class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
+  late bool _isFollowed;
+  late int _followersCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFollowed = widget.isFollowedByMe;
+    _followersCount = widget.user.followers;
+  }
+
+  @override
+  void didUpdateWidget(covariant _ProfileHeaderSection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isFollowedByMe != widget.isFollowedByMe) {
+      _isFollowed = widget.isFollowedByMe;
+    }
+    if (oldWidget.user.followers != widget.user.followers) {
+      _followersCount = widget.user.followers;
+    }
+  }
+
+  void _handleFollow() {
+    setState(() {
+      _isFollowed = !_isFollowed;
+      _followersCount += _isFollowed ? 1 : -1;
+    });
+    widget.onFollow();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 48,
-            backgroundImage: user.avatarUrl != null
-                ? CachedNetworkImageProvider(user.avatarUrl!)
-                : null,
-            child: user.avatarUrl == null
-                ? const Icon(Icons.person, size: 48, color: AppColors.onSurfaceVariant)
-                : null,
+    return Stack(
+      children: [
+        // Banner Image
+        if (widget.user.bannerUrl != null)
+          Positioned.fill(
+            child: CachedNetworkImage(
+              imageUrl: widget.user.bannerUrl!,
+              fit: BoxFit.cover,
+            ),
+          )
+        else
+          Positioned.fill(
+            child: Container(color: AppColors.surfaceHigh),
           ),
-          const SizedBox(height: 16),
-          Text(
-            user.username,
-            style: KotobaTypography.headlineLg.copyWith(color: AppColors.onSurface),
-          ),
-          const SizedBox(height: 4),
-          if (user.bio != null && user.bio!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                user.bio!,
-                textAlign: TextAlign.center,
-                style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+
+        // Dark gradient overlay for readability (darker at bottom)
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  AppColors.background.withValues(alpha: 0.5),
+                  AppColors.background.withValues(alpha: 0.95),
+                  AppColors.background,
+                ],
+                stops: const [0.0, 0.7, 1.0],
               ),
             ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _StatColumn(value: '${worksLength > 0 ? worksLength : user.worksCount}', label: 'OBRAS'),
-              const SizedBox(width: 32),
-              _StatColumn(value: '${user.followers}', label: 'SEGUIDORES'),
-              const SizedBox(width: 32),
-              _StatColumn(value: '${user.following}', label: 'SIGUIENDO'),
-            ],
           ),
-          const SizedBox(height: 20),
-          if (!isMe)
-            SizedBox(
-              width: double.infinity,
-              height: 44,
-              child: FilledButton(
-                onPressed: onFollow,
-                style: FilledButton.styleFrom(
-                  backgroundColor: isFollowedByMe ? AppColors.outlineVariant : AppColors.primary,
-                  foregroundColor: isFollowedByMe ? AppColors.onSurface : AppColors.onPrimary,
+        ),
+
+        // Content
+        SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 52,
+                  backgroundColor: AppColors.background,
+                  child: CircleAvatar(
+                    radius: 48,
+                    backgroundImage: widget.user.avatarUrl != null
+                        ? CachedNetworkImageProvider(widget.user.avatarUrl!)
+                        : null,
+                    child: widget.user.avatarUrl == null
+                        ? const Icon(Icons.person, size: 48, color: AppColors.onSurfaceVariant)
+                        : null,
+                  ),
                 ),
-                child: Text(isFollowedByMe ? 'Siguiendo' : 'Seguir'),
-              ),
+                const SizedBox(height: 16),
+                Text(
+                  widget.user.fullName?.isNotEmpty == true ? widget.user.fullName! : widget.user.username,
+                  style: KotobaTypography.headlineLg.copyWith(color: AppColors.onSurface),
+                ),
+                const SizedBox(height: 4),
+                const SizedBox(height: 4),
+                Text(
+                  '@${widget.user.username}',
+                  style: KotobaTypography.labelMd.copyWith(color: AppColors.onSurfaceVariant),
+                ),
+                if (widget.user.bio != null && widget.user.bio!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      widget.user.bio!,
+                      textAlign: TextAlign.center,
+                      style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _StatColumn(value: '${widget.worksLength > 0 ? widget.worksLength : widget.user.worksCount}', label: 'OBRAS'),
+                    const SizedBox(width: 32),
+                    _StatColumn(value: '$_followersCount', label: 'SEGUIDORES'),
+                    const SizedBox(width: 32),
+                    _StatColumn(value: '${widget.user.following}', label: 'SIGUIENDO'),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                if (!widget.isMe)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 44,
+                          child: _isFollowed
+                              ? OutlinedButton(
+                                  onPressed: _handleFollow,
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: AppColors.onSurface,
+                                    side: const BorderSide(color: AppColors.outlineVariant),
+                                  ),
+                                  child: const Text('Siguiendo'),
+                                )
+                              : FilledButton(
+                                  onPressed: _handleFollow,
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    foregroundColor: AppColors.onPrimary,
+                                  ),
+                                  child: const Text('Seguir'),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 44,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Perfil completo no disponible en el mock.')),
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.onSurface,
+                            side: const BorderSide(color: AppColors.outlineVariant),
+                          ),
+                          child: const Text('Perfil Completo'),
+                        ),
+                      ),
+                    ],
+                  ),
+                const SizedBox(height: 24),
+                const Divider(color: AppColors.outlineVariant),
+              ],
             ),
-          const SizedBox(height: 24),
-          const Divider(color: AppColors.outlineVariant),
-        ],
-      ),
+          ),
+        ),
+      ],
     );
   }
 }

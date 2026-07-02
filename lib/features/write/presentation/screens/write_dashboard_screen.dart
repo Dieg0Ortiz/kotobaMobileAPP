@@ -64,7 +64,7 @@ class WriteDashboardScreen extends ConsumerWidget {
 
               final lastWork = data.latestWork;
               return GestureDetector(
-                onTap: () => context.go('/write/edit/${lastWork.id}'),
+                onTap: () => context.push('/write/edit/${lastWork.id}'),
                 child: Container(
                   decoration: BoxDecoration(
                     color: AppColors.surfaceLow,
@@ -162,7 +162,7 @@ class WriteDashboardScreen extends ConsumerWidget {
           _buildMenuOption(
             icon: Icons.menu_book,
             title: 'Historias',
-            onTap: () => context.go('/write/stories'),
+            onTap: () => context.push('/write/stories'),
           ),
           _buildMenuOption(
             icon: Icons.collections_bookmark,
@@ -172,7 +172,7 @@ class WriteDashboardScreen extends ConsumerWidget {
           _buildMenuOption(
             icon: Icons.add_box_outlined,
             title: 'Crea una historia nueva',
-            onTap: () => context.go('/write/edit/new'),
+            onTap: () => context.push('/write/edit/new'),
           ),
 
         ],
