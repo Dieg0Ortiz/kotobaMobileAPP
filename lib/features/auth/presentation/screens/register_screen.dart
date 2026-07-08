@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../../core/widgets/common/kotoba_text_field.dart';
@@ -23,6 +23,7 @@ class RegisterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final registerState = ref.watch(registerViewModelProvider);
+    final c = KotobaColors.of(context);
 
     ref.listen(registerViewModelProvider, (_, next) {
       next.whenOrNull(
@@ -30,7 +31,7 @@ class RegisterScreen extends ConsumerWidget {
           showDialog(
             context: context,
             builder: (ctx) => AlertDialog(
-              backgroundColor: AppColors.surface,
+              backgroundColor: c.surface,
               title: const Text('Cuenta creada'),
               content: const Text('Revisa tu correo electrónico para confirmar la cuenta antes de iniciar sesión.'),
               actions: [
@@ -71,13 +72,13 @@ class RegisterScreen extends ConsumerWidget {
               const SizedBox(height: 24),
               Text(
                 AppStrings.registerTitle,
-                style: KotobaTypography.headlineLg,
+                style: KotobaTypography.headlineLg.copyWith(color: c.onSurface),
               ),
               const SizedBox(height: 8),
               Text(
                 'Únete a la comunidad literaria de Kotoba',
                 style: KotobaTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: c.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 40),
@@ -124,9 +125,9 @@ class RegisterScreen extends ConsumerWidget {
                   prefixIcon: Icon(Icons.public_outlined),
                   border: UnderlineInputBorder(),
                 ),
-                style: KotobaTypography.bodyMd,
-                dropdownColor: AppColors.surfaceHigh,
-                items: _countries.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
+                dropdownColor: c.surfaceHigh,
+                items: _countries.map((country) => DropdownMenuItem(value: country, child: Text(country))).toList(),
                 onChanged: (v) {
                   if (v != null) {
                     ref.read(registerViewModelProvider.notifier).updateCountry(v);
@@ -148,13 +149,13 @@ class RegisterScreen extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(AppStrings.hasAccount, style: KotobaTypography.labelSm),
+                  Text(AppStrings.hasAccount, style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
                   TextButton(
                     onPressed: () => context.go('/auth/login'),
                     child: Text(
                       'Inicia sesión',
                       style: KotobaTypography.labelSm.copyWith(
-                        color: AppColors.primary,
+                        color: c.primary,
                       ),
                     ),
                   ),

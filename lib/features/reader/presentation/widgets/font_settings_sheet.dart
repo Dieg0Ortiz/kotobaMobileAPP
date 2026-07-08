@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../providers/reader_providers.dart';
 
@@ -13,31 +13,32 @@ class FontSettingsSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final prefs = ref.watch(readerPreferencesProvider);
+    final c = KotobaColors.of(context);
 
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(AppStrings.fontSettings, style: KotobaTypography.headlineMd),
+          Text(AppStrings.fontSettings, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
           const SizedBox(height: 24),
-          Text(AppStrings.fontSize, style: KotobaTypography.labelSm),
+          Text(AppStrings.fontSize, style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
           Slider(
             value: prefs.fontSize,
             min: 14,
             max: 32,
             divisions: 9,
-            activeColor: AppColors.primary,
+            activeColor: c.primary,
             onChanged: (v) =>
                 ref.read(readerPreferencesProvider.notifier).setFontSize(v),
           ),
           const SizedBox(height: 16),
-          Text(AppStrings.fontFamily, style: KotobaTypography.labelSm),
+          Text(AppStrings.fontFamily, style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -107,12 +108,13 @@ class _FontChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryContainer : AppColors.surfaceHigh,
+          color: isSelected ? c.primaryContainer : c.surfaceHigh,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -120,7 +122,7 @@ class _FontChip extends StatelessWidget {
           style: GoogleFonts.getFont(
             fontFamily,
             fontSize: 16,
-            color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
+            color: isSelected ? c.onPrimary : c.onSurface,
           ),
         ),
       ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../providers/profile_providers.dart';
@@ -13,6 +13,7 @@ class SimilarAuthorsCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final followingAsync = ref.watch(followingAuthorsProvider);
+    final c = KotobaColors.of(context);
 
     return followingAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -32,10 +33,11 @@ class SimilarAuthorsCard extends ConsumerWidget {
                     style: KotobaTypography.labelMd.copyWith(
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.5,
+                      color: c.onSurface,
                     ),
                   ),
                   const Spacer(),
-                  const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+                  Icon(Icons.chevron_right, color: c.onSurfaceVariant),
                 ],
               ),
             ),
@@ -60,8 +62,8 @@ class SimilarAuthorsCard extends ConsumerWidget {
                         children: [
                           KotobaAvatar(imageUrl: avatarUrl, size: KotobaAvatarSize.lg),
                           const SizedBox(height: 8),
-                          Text(username, style: KotobaTypography.labelSm),
-                          Text('Autor', style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant)),
+                          Text(username, style: KotobaTypography.labelSm.copyWith(color: c.onSurface)),
+                          Text('Autor', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         ],
                       ),
                     ),

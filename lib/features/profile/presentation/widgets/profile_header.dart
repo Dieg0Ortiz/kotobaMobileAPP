@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../../core/widgets/common/kotoba_button.dart';
@@ -15,6 +15,7 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Stack(
       children: [
         // Banner Image
@@ -27,10 +28,10 @@ class ProfileHeader extends StatelessWidget {
           )
         else
           Positioned.fill(
-            child: Container(color: AppColors.surfaceHigh),
+            child: Container(color: c.surfaceHigh),
           ),
         
-        // Dark gradient overlay for readability (darker at bottom)
+        // Gradient overlay for readability (darker at bottom)
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -38,9 +39,9 @@ class ProfileHeader extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.background.withValues(alpha: 0.5),
-                  AppColors.background.withValues(alpha: 0.95),
-                  AppColors.background,
+                  c.background.withValues(alpha: 0.5),
+                  c.background.withValues(alpha: 0.95),
+                  c.background,
                 ],
                 stops: const [0.0, 0.7, 1.0],
               ),
@@ -65,7 +66,7 @@ class ProfileHeader extends StatelessWidget {
                 Text(
                   user.fullName?.isNotEmpty == true ? user.fullName! : user.username,
                   style: KotobaTypography.headlineLg.copyWith(
-                    color: AppColors.onSurface,
+                    color: c.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -73,7 +74,7 @@ class ProfileHeader extends StatelessWidget {
                 Text(
                   '@${user.username}',
                   style: KotobaTypography.labelMd.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                    color: c.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -81,9 +82,9 @@ class ProfileHeader extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildStat('${user.worksCount}', 'OBRAS'),
-                    _buildStat('0', 'LISTAS'),
-                    _buildStat('${user.followers}', 'SEGUIDORES'),
+                    _buildStat(context, '${user.worksCount}', 'OBRAS'),
+                    _buildStat(context, '0', 'LISTAS'),
+                    _buildStat(context, '${user.followers}', 'SEGUIDORES'),
                   ],
                 ),
                 const SizedBox(height: 32),
@@ -121,25 +122,26 @@ class ProfileHeader extends StatelessWidget {
                         style: KotobaTypography.labelMd.copyWith(
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.5,
+                          color: c.onSurface,
                         ),
                       ),
                       const SizedBox(height: 16),
                       Text(
                         user.bio ?? 'Sin biografía.',
-                        style: KotobaTypography.bodyMd,
+                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 14, color: AppColors.onSurfaceVariant),
+                          Icon(Icons.location_on, size: 14, color: c.onSurfaceVariant),
                           const SizedBox(width: 4),
-                          Text(user.country ?? '', style: KotobaTypography.labelSm),
+                          Text(user.country ?? '', style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Se unió el ${_formatDate(user.createdAt)}', 
-                        style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                        style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -155,7 +157,7 @@ class ProfileHeader extends StatelessWidget {
             top: MediaQuery.paddingOf(context).top + 8,
             right: 8,
             child: IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              icon: Icon(Icons.settings_outlined, color: c.onSurface),
               onPressed: onSettingsTap,
             ),
           ),
@@ -163,12 +165,13 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildStat(String value, String label) {
+  Widget _buildStat(BuildContext context, String value, String label) {
+    final c = KotobaColors.of(context);
     return Column(
       children: [
-        Text(value, style: KotobaTypography.headlineMd),
+        Text(value, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
         const SizedBox(height: 4),
-        Text(label, style: KotobaTypography.labelXs.copyWith(letterSpacing: 1.0)),
+        Text(label, style: KotobaTypography.labelXs.copyWith(letterSpacing: 1.0, color: c.onSurfaceVariant)),
       ],
     );
   }

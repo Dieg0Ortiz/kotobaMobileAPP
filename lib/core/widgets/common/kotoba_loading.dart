@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/kotoba_colors.dart';
 
 /// Shimmer loading skeleton para diferentes tipos de contenido.
 enum KotobaLoadingType { card, text, profile, fullScreen }
@@ -13,42 +13,43 @@ class KotobaLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     switch (type) {
       case KotobaLoadingType.fullScreen:
-        return const Center(
+        return Center(
           child: CircularProgressIndicator(
-            color: AppColors.primary,
+            color: c.primary,
             strokeWidth: 2,
           ),
         );
       case KotobaLoadingType.card:
-        return _shimmerCard();
+        return _shimmerCard(c);
       case KotobaLoadingType.text:
-        return _shimmerText();
+        return _shimmerText(c);
       case KotobaLoadingType.profile:
-        return _shimmerProfile();
+        return _shimmerProfile(c);
     }
   }
 
-  Widget _shimmerCard() {
+  Widget _shimmerCard(KotobaColors c) {
     return Shimmer.fromColors(
-      baseColor: AppColors.surfaceLow,
-      highlightColor: AppColors.surfaceHigh,
+      baseColor: c.surfaceLow,
+      highlightColor: c.surfaceHigh,
       child: Container(
         width: 140,
         height: 210,
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(8),
         ),
       ),
     );
   }
 
-  Widget _shimmerText() {
+  Widget _shimmerText(KotobaColors c) {
     return Shimmer.fromColors(
-      baseColor: AppColors.surfaceLow,
-      highlightColor: AppColors.surfaceHigh,
+      baseColor: c.surfaceLow,
+      highlightColor: c.surfaceHigh,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -56,7 +57,7 @@ class KotobaLoading extends StatelessWidget {
             height: 16,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: AppColors.surfaceLow,
+              color: c.surfaceLow,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -65,7 +66,7 @@ class KotobaLoading extends StatelessWidget {
             height: 16,
             width: 200,
             decoration: BoxDecoration(
-              color: AppColors.surfaceLow,
+              color: c.surfaceLow,
               borderRadius: BorderRadius.circular(4),
             ),
           ),
@@ -74,19 +75,19 @@ class KotobaLoading extends StatelessWidget {
     );
   }
 
-  Widget _shimmerProfile() {
+  Widget _shimmerProfile(KotobaColors c) {
     return Shimmer.fromColors(
-      baseColor: AppColors.surfaceLow,
-      highlightColor: AppColors.surfaceHigh,
+      baseColor: c.surfaceLow,
+      highlightColor: c.surfaceHigh,
       child: Column(
         children: [
-          const CircleAvatar(radius: 48, backgroundColor: AppColors.surfaceLow),
+          CircleAvatar(radius: 48, backgroundColor: c.surfaceLow),
           const SizedBox(height: 16),
           Container(
             height: 20,
             width: 150,
             decoration: BoxDecoration(
-              color: AppColors.surfaceLow,
+              color: c.surfaceLow,
               borderRadius: BorderRadius.circular(4),
             ),
           ),

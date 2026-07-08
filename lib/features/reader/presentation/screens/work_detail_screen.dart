@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
@@ -23,11 +23,12 @@ class WorkDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final stateAsync = ref.watch(workDetailViewModelProvider(workId));
+    final c = KotobaColors.of(context);
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
-        backgroundColor: const Color(0xFF0D0D0F),
+        backgroundColor: c.background,
         extendBodyBehindAppBar: true,
         appBar: AppBar(
           automaticallyImplyLeading: false,
@@ -42,7 +43,7 @@ class WorkDetailScreen extends ConsumerWidget {
           title: Text(
             'Kotoba',
             style: KotobaTypography.labelSm.copyWith(
-              color: AppColors.primary,
+              color: c.primary,
               fontSize: 14,
               letterSpacing: 0.08,
             ),
@@ -124,6 +125,7 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     final tags = <String>{work.genre};
     for (final t in (work.tags as List<dynamic>? ?? [])) {
       tags.add(t.toString());
@@ -140,15 +142,15 @@ class _HeroSection extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
                   Colors.transparent,
-                  Color(0xFF0D0D0F),
+                  c.background,
                 ],
-                stops: [0.4, 1.0],
+                stops: const [0.4, 1.0],
               ),
             ),
           ),
@@ -169,18 +171,18 @@ class _HeroSection extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   work.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Noto Serif JP',
                     fontSize: 32,
                     fontWeight: FontWeight.w600,
                     height: 1.25,
-                    color: AppColors.onSurface,
+                    color: c.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const Icon(Icons.edit, size: 16, color: AppColors.onSurfaceVariant),
+                    Icon(Icons.edit, size: 16, color: c.onSurfaceVariant),
                     const SizedBox(width: 6),
                     GestureDetector(
                       onTap: work.authorId != null && work.authorId.isNotEmpty
@@ -189,7 +191,7 @@ class _HeroSection extends StatelessWidget {
                       child: Text(
                         'Por ${work.authorName.isNotEmpty ? work.authorName : 'Autor'}',
                         style: KotobaTypography.bodyMd.copyWith(
-                          color: AppColors.primaryContainer,
+                          color: c.primaryContainer,
                           decoration: TextDecoration.underline,
                         ),
                       ),
@@ -223,6 +225,7 @@ class _StatsBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     final voteAsync = ref.watch(myVoteProvider(work.id));
     final currentVote = voteAsync.maybeWhen(data: (v) => v, orElse: () => 0);
     
@@ -234,18 +237,18 @@ class _StatsBar extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.5),
+        color: c.surface.withValues(alpha: 0.5),
         border: Border(
-          top: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.1)),
-          bottom: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.1)),
+          top: BorderSide(color: c.outlineVariant.withValues(alpha: 0.1)),
+          bottom: BorderSide(color: c.outlineVariant.withValues(alpha: 0.1)),
         ),
       ),
       child: Row(
         children: [
           Expanded(child: _StatItem(value: work.formattedViewCount, label: 'Lecturas')),
-          Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+          Container(width: 1, height: 32, color: c.outlineVariant.withValues(alpha: 0.3)),
           Expanded(child: _StatItem(value: displayVotes.toString(), label: 'Votos')),
-          Container(width: 1, height: 32, color: AppColors.outlineVariant.withValues(alpha: 0.3)),
+          Container(width: 1, height: 32, color: c.outlineVariant.withValues(alpha: 0.3)),
           Expanded(child: _StatItem(value: work.chapterCount.toString(), label: 'Capítulos')),
         ],
       ),
@@ -261,23 +264,24 @@ class _StatItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Column(
       children: [
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             fontFamily: 'Noto Serif JP',
             fontSize: 28,
             fontWeight: FontWeight.w500,
             height: 1.1,
-            color: AppColors.primaryContainer,
+            color: c.primaryContainer,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label.toUpperCase(),
           style: KotobaTypography.labelSm.copyWith(
-            color: AppColors.onSurfaceVariant,
+            color: c.onSurfaceVariant,
             letterSpacing: 0.1,
           ),
         ),
@@ -301,6 +305,7 @@ class _ActionBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     final voteAsync = ref.watch(myVoteProvider(workId));
     final bookmarkAsync = ref.watch(myBookmarkProvider(workId));
     final currentVote = voteAsync.maybeWhen(data: (v) => v, orElse: () => 0);
@@ -320,8 +325,8 @@ class _ActionBar extends ConsumerWidget {
                   }
                 },
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primaryContainer,
-                  foregroundColor: AppColors.onPrimary,
+                  backgroundColor: c.primaryContainer,
+                  foregroundColor: c.onPrimary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -335,7 +340,7 @@ class _ActionBar extends ConsumerWidget {
                     Text(
                       'LEER AHORA',
                       style: KotobaTypography.labelMd.copyWith(
-                        color: AppColors.onPrimary,
+                        color: c.onPrimary,
                         letterSpacing: 0.1,
                         fontWeight: FontWeight.w700,
                       ),
@@ -377,10 +382,10 @@ class _ActionBar extends ConsumerWidget {
                 }
               },
               style: OutlinedButton.styleFrom(
-                backgroundColor: currentVote != 0 ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
-                foregroundColor: currentVote != 0 ? AppColors.primary : AppColors.primaryContainer,
+                backgroundColor: currentVote != 0 ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                foregroundColor: currentVote != 0 ? c.primary : c.primaryContainer,
                 side: BorderSide(
-                  color: currentVote != 0 ? AppColors.primary.withValues(alpha: 0.4) : AppColors.outlineVariant.withValues(alpha: 0.5),
+                  color: currentVote != 0 ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -406,10 +411,10 @@ class _ActionBar extends ConsumerWidget {
                 ref.invalidate(myBookmarksProvider);
               },
               style: OutlinedButton.styleFrom(
-                backgroundColor: isBookmarked ? AppColors.primaryContainer.withValues(alpha: 0.2) : AppColors.surfaceHigh,
-                foregroundColor: isBookmarked ? AppColors.primary : AppColors.primaryContainer,
+                backgroundColor: isBookmarked ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                foregroundColor: isBookmarked ? c.primary : c.primaryContainer,
                 side: BorderSide(
-                  color: isBookmarked ? AppColors.primary.withValues(alpha: 0.4) : AppColors.outlineVariant.withValues(alpha: 0.5),
+                  color: isBookmarked ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
@@ -456,17 +461,18 @@ class _GlassQuote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: const Color(0xFF131318).withValues(alpha: 0.8),
+          color: c.surfaceLow.withValues(alpha: 0.8),
           border: Border(
-            left: const BorderSide(color: AppColors.primaryContainer, width: 4),
-            top: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
-            right: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
-            bottom: BorderSide(color: AppColors.primaryContainer.withValues(alpha: 0.2)),
+            left: BorderSide(color: c.primaryContainer, width: 4),
+            top: BorderSide(color: c.primaryContainer.withValues(alpha: 0.2)),
+            right: BorderSide(color: c.primaryContainer.withValues(alpha: 0.2)),
+            bottom: BorderSide(color: c.primaryContainer.withValues(alpha: 0.2)),
           ),
         ),
         child: Stack(
@@ -477,7 +483,7 @@ class _GlassQuote extends StatelessWidget {
               child: Icon(
                 Icons.format_quote,
                 size: 48,
-                color: AppColors.outlineVariant.withValues(alpha: 0.2),
+                color: c.outlineVariant.withValues(alpha: 0.2),
               ),
             ),
             Padding(
@@ -487,6 +493,7 @@ class _GlassQuote extends StatelessWidget {
                 style: KotobaTypography.pullQuote.copyWith(
                   fontSize: 18,
                   fontStyle: FontStyle.italic,
+                  color: c.onSurface,
                 ),
               ),
             ),
@@ -517,6 +524,7 @@ class _ChapterIndexSectionState extends State<_ChapterIndexSection> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     const previewCount = 3;
     final limit = _showAll ? widget.chapters.length : previewCount;
     final displayed = widget.chapters.take(limit).toList();
@@ -536,7 +544,7 @@ class _ChapterIndexSectionState extends State<_ChapterIndexSection> {
                   child: Text(
                     _showAll ? 'Ver menos' : 'Ver Todos (${widget.chapters.length})',
                     style: KotobaTypography.labelSm.copyWith(
-                      color: AppColors.primaryContainer,
+                      color: c.primaryContainer,
                     ),
                   ),
                 ),
@@ -564,6 +572,7 @@ class _ChapterItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     final locked = chapter.isLocked == true;
 
     return GestureDetector(
@@ -571,10 +580,10 @@ class _ChapterItem extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
-            color: AppColors.outlineVariant.withValues(alpha: 0.1),
+            color: c.outlineVariant.withValues(alpha: 0.1),
           ),
         ),
         child: Row(
@@ -584,13 +593,13 @@ class _ChapterItem extends StatelessWidget {
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: c.surface,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 chapter.number.toString().padLeft(2, '0'),
                 style: KotobaTypography.headlineMd.copyWith(
-                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
+                  color: c.onSurfaceVariant.withValues(alpha: 0.8),
                   fontSize: 28,
                 ),
               ),
@@ -604,8 +613,8 @@ class _ChapterItem extends StatelessWidget {
                     chapter.title,
                     style: KotobaTypography.bodyMd.copyWith(
                       color: locked
-                          ? AppColors.onSurfaceVariant.withValues(alpha: 0.5)
-                          : AppColors.onSurface,
+                          ? c.onSurfaceVariant.withValues(alpha: 0.5)
+                          : c.onSurface,
                     ),
                   ),
                 ],
@@ -615,8 +624,8 @@ class _ChapterItem extends StatelessWidget {
               locked ? Icons.lock_outline : Icons.play_arrow,
               size: 20,
               color: locked
-                  ? AppColors.outlineVariant
-                  : AppColors.primaryContainer,
+                  ? c.outlineVariant
+                  : c.primaryContainer,
             ),
           ],
         ),
@@ -634,6 +643,7 @@ class _CommunitySection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     final commentsAsync = ref.watch(workCommentsProvider(workId));
     final isAuthenticated = ref.watch(authStateProvider);
 
@@ -653,7 +663,7 @@ class _CommunitySection extends ConsumerWidget {
               child: Text(
                 'Inicia sesión para comentar',
                 style: KotobaTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: c.onSurfaceVariant,
                 ),
               ),
             ),
@@ -668,7 +678,7 @@ class _CommunitySection extends ConsumerWidget {
               child: Text(
                 'Error al cargar comentarios',
                 style: KotobaTypography.bodyMd.copyWith(
-                  color: AppColors.error,
+                  color: c.error,
                 ),
               ),
             ),
@@ -680,14 +690,14 @@ class _CommunitySection extends ConsumerWidget {
                     child: Text(
                       'Sé el primero en comentar',
                       style: KotobaTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: c.onSurfaceVariant,
                       ),
                     ),
                   ),
                 );
               }
               return Column(
-                children: comments.map((c) => _CommentTile(comment: c)).toList(),
+                children: comments.map((comment) => _CommentTile(comment: comment)).toList(),
               );
             },
           ),
@@ -736,6 +746,7 @@ class _CommentInputState extends ConsumerState<_CommentInput> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
@@ -746,14 +757,14 @@ class _CommentInputState extends ConsumerState<_CommentInput> {
               controller: _controller,
               maxLines: 3,
               minLines: 1,
-              style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurface),
+              style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
               decoration: InputDecoration(
                 hintText: 'Escribe un comentario...',
                 hintStyle: KotobaTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: c.onSurfaceVariant,
                 ),
                 filled: true,
-                fillColor: AppColors.surfaceLow,
+                fillColor: c.surfaceLow,
                 contentPadding: const EdgeInsets.all(12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -775,9 +786,9 @@ class _CommentInputState extends ConsumerState<_CommentInput> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.send_rounded),
-              color: AppColors.primary,
+              color: c.primary,
               style: IconButton.styleFrom(
-                backgroundColor: AppColors.surfaceLow,
+                backgroundColor: c.surfaceLow,
               ),
             ),
           ),
@@ -794,6 +805,7 @@ class _CommentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -801,9 +813,9 @@ class _CommentTile extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF131318).withValues(alpha: 0.6),
+            color: c.surfaceLow.withValues(alpha: 0.6),
             border: Border.all(
-              color: AppColors.outlineVariant.withValues(alpha: 0.05),
+              color: c.outlineVariant.withValues(alpha: 0.05),
             ),
           ),
           child: Row(
@@ -813,10 +825,10 @@ class _CommentTile extends StatelessWidget {
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceHigh,
+                  color: c.surfaceHigh,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                    color: c.outlineVariant.withValues(alpha: 0.3),
                   ),
                 ),
                 child: comment.avatarUrl != null
@@ -826,10 +838,10 @@ class _CommentTile extends StatelessWidget {
                           fit: BoxFit.cover,
                         ),
                       )
-                    : const Icon(
+                    : Icon(
                         Icons.person,
                         size: 18,
-                        color: AppColors.onSurfaceVariant,
+                        color: c.onSurfaceVariant,
                       ),
               ),
               const SizedBox(width: 12),
@@ -843,13 +855,13 @@ class _CommentTile extends StatelessWidget {
                         Text(
                           comment.username ?? 'Usuario',
                           style: KotobaTypography.labelMd.copyWith(
-                            color: AppColors.onSurface,
+                            color: c.onSurface,
                           ),
                         ),
                         Text(
                           comment.timeAgo,
                           style: KotobaTypography.labelSm.copyWith(
-                            color: AppColors.outlineVariant,
+                            color: c.outlineVariant,
                           ),
                         ),
                       ],
@@ -858,7 +870,7 @@ class _CommentTile extends StatelessWidget {
                     Text(
                       comment.content,
                       style: KotobaTypography.bodyMd.copyWith(
-                        color: AppColors.onSurface.withValues(alpha: 0.85),
+                        color: c.onSurface.withValues(alpha: 0.85),
                       ),
                     ),
                   ],
@@ -881,17 +893,18 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Container(
       padding: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: AppColors.outlineVariant.withValues(alpha: 0.2)),
+          bottom: BorderSide(color: c.outlineVariant.withValues(alpha: 0.2)),
         ),
       ),
       child: Text(
         label.toUpperCase(),
         style: KotobaTypography.labelSm.copyWith(
-          color: AppColors.onSurfaceVariant,
+          color: c.onSurfaceVariant,
           letterSpacing: 0.1,
         ),
       ),

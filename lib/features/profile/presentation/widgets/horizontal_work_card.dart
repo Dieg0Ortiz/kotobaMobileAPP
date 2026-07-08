@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../catalog/domain/entities/work.dart';
 
@@ -13,15 +13,16 @@ class HorizontalWorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.85, // Takes up most of the screen width
         margin: const EdgeInsets.only(right: 16),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.onSurface.withValues(alpha: 0.05)),
+          border: Border.all(color: c.onSurface.withValues(alpha: 0.05)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -35,7 +36,7 @@ class HorizontalWorkCard extends StatelessWidget {
                       imageUrl: work.coverUrl!,
                       fit: BoxFit.cover,
                     )
-                  : Container(color: AppColors.surfaceHigh),
+                  : Container(color: c.surfaceHigh),
             ),
             // Content
             Expanded(
@@ -46,7 +47,7 @@ class HorizontalWorkCard extends StatelessWidget {
                   children: [
                     Text(
                       work.title,
-                      style: KotobaTypography.headlineMd,
+                      style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -55,14 +56,14 @@ class HorizontalWorkCard extends StatelessWidget {
                       crossAxisAlignment: WrapCrossAlignment.center,
                       spacing: 4,
                       children: [
-                        const Icon(Icons.visibility, size: 14, color: AppColors.onSurfaceVariant),
-                        Text(work.formattedViewCount, style: KotobaTypography.labelXs),
+                        Icon(Icons.visibility, size: 14, color: c.onSurfaceVariant),
+                        Text(work.formattedViewCount, style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         const SizedBox(width: 4),
-                        const Icon(Icons.thumb_up_rounded, size: 14, color: AppColors.onSurfaceVariant),
-                        Text('${work.ratingCount}', style: KotobaTypography.labelXs),
+                        Icon(Icons.thumb_up_rounded, size: 14, color: c.onSurfaceVariant),
+                        Text('${work.ratingCount}', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         const SizedBox(width: 4),
-                        const Icon(Icons.menu_book, size: 14, color: AppColors.onSurfaceVariant),
-                        Text('${work.chapterCount}', style: KotobaTypography.labelXs),
+                        Icon(Icons.menu_book, size: 14, color: c.onSurfaceVariant),
+                        Text('${work.chapterCount}', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                       ],
                     ),
                     const SizedBox(height: 12),
@@ -71,7 +72,7 @@ class HorizontalWorkCard extends StatelessWidget {
                         work.synopsis,
                         maxLines: 3,
                         overflow: TextOverflow.ellipsis,
-                        style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -80,12 +81,12 @@ class HorizontalWorkCard extends StatelessWidget {
                         Icon(
                           work.status == 'completed' ? Icons.library_add_check : Icons.edit_note,
                           size: 14,
-                          color: AppColors.primary,
+                          color: c.primary,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           work.status == 'completed' ? 'Completada' : 'En Progreso',
-                          style: KotobaTypography.labelXs.copyWith(color: AppColors.primary),
+                          style: KotobaTypography.labelXs.copyWith(color: c.primary),
                         ),
                       ],
                     ),

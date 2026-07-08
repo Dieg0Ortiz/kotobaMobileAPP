@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/kotoba_colors.dart';
 
 /// Botón de Kotoba con tres variantes: action, primary, ghost.
 ///
@@ -30,13 +30,14 @@ class KotobaButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     final child = isLoading
-        ? const SizedBox(
+        ? SizedBox(
             height: 18,
             width: 18,
             child: CircularProgressIndicator(
               strokeWidth: 2,
-              color: AppColors.onSurface,
+              color: c.onSurface,
             ),
           )
         : Row(
@@ -63,7 +64,7 @@ class KotobaButton extends StatelessWidget {
             ],
           );
 
-    final style = _buttonStyle(context);
+    final style = _buttonStyle(c);
 
     return SizedBox(
       width: fullWidth ? double.infinity : null,
@@ -82,12 +83,12 @@ class KotobaButton extends StatelessWidget {
     );
   }
 
-  ButtonStyle _buttonStyle(BuildContext context) {
+  ButtonStyle _buttonStyle(KotobaColors c) {
     switch (variant) {
       case KotobaButtonVariant.action:
         return FilledButton.styleFrom(
-          backgroundColor: AppColors.actionContainer,
-          foregroundColor: AppColors.onAction,
+          backgroundColor: c.actionContainer,
+          foregroundColor: c.onAction,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
@@ -95,8 +96,8 @@ class KotobaButton extends StatelessWidget {
         );
       case KotobaButtonVariant.primary:
         return FilledButton.styleFrom(
-          backgroundColor: AppColors.primaryContainer,
-          foregroundColor: AppColors.onPrimary,
+          backgroundColor: c.primaryContainer,
+          foregroundColor: c.onPrimary,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
@@ -104,8 +105,8 @@ class KotobaButton extends StatelessWidget {
         );
       case KotobaButtonVariant.ghost:
         return OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          side: const BorderSide(color: AppColors.outline, width: 1),
+          foregroundColor: c.onSurface,
+          side: BorderSide(color: c.outline, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../providers/auth_providers.dart';
 
 /// Proveedor de OAuth soportado.
@@ -16,6 +16,7 @@ class OAuthButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     final (icon, label) = switch (provider) {
       OAuthProvider.google => (
           'G',
@@ -38,14 +39,14 @@ class OAuthButton extends ConsumerWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('$label — próximamente'),
-                backgroundColor: AppColors.surfaceHigh,
+                backgroundColor: c.surfaceHigh,
               ),
             );
           }
         },
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.onSurface,
-          side: const BorderSide(color: AppColors.outlineVariant),
+          foregroundColor: c.onSurface,
+          side: BorderSide(color: c.outlineVariant),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
           ),
@@ -57,17 +58,17 @@ class OAuthButton extends ConsumerWidget {
               width: 24,
               height: 24,
               decoration: BoxDecoration(
-                color: AppColors.surfaceHigh,
+                color: c.surfaceHigh,
                 borderRadius: BorderRadius.circular(4),
               ),
               alignment: Alignment.center,
               child: Text(
                 icon,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'DM Sans',
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.onSurface,
+                  color: c.onSurface,
                 ),
               ),
             ),

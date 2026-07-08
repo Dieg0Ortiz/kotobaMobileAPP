@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/mock/mock_data.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
@@ -24,6 +24,7 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final trendingAsync = ref.watch(trendingWorksProvider);
     final newAuthorsAsync = ref.watch(newAuthorsProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -39,20 +40,20 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       'Kotoba',
                       style: KotobaTypography.displayXL.copyWith(
-                        color: AppColors.primary,
+                        color: c.primary,
                       ),
                     ),
                     Text(
                       '言葉',
                       style: KotobaTypography.headlineMd.copyWith(
-                        color: AppColors.primaryDim,
+                        color: c.primaryDim,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Tu historia, sin límites.',
                       style: KotobaTypography.bodyMd.copyWith(
-                        color: AppColors.onSurfaceVariant,
+                        color: c.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -69,13 +70,13 @@ class HomeScreen extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(AppStrings.trending,
-                        style: KotobaTypography.headlineMd),
+                        style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                     TextButton(
                       onPressed: () => context.go('/search'),
                       child: Text(
                         AppStrings.seeAll,
                         style: KotobaTypography.labelSm
-                            .copyWith(color: AppColors.primary),
+                            .copyWith(color: c.primary),
                       ),
                     ),
                   ],
@@ -112,7 +113,7 @@ class HomeScreen extends ConsumerWidget {
                     left: 24, right: 24, top: 32, bottom: 16),
                 child: Text(
                   AppStrings.selectionForYou,
-                  style: KotobaTypography.headlineMd,
+                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                 ),
               ),
             ),
@@ -139,7 +140,7 @@ class HomeScreen extends ConsumerWidget {
                     left: 24, right: 24, top: 32, bottom: 16),
                 child: Text(
                   AppStrings.newAuthors,
-                  style: KotobaTypography.headlineMd,
+                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                 ),
               ),
             ),
@@ -173,7 +174,7 @@ class HomeScreen extends ConsumerWidget {
                               const SizedBox(height: 6),
                               Text(
                                 author.username,
-                                style: KotobaTypography.labelXs,
+                                style: KotobaTypography.labelXs.copyWith(color: c.onSurface),
                               ),
                             ],
                           ),

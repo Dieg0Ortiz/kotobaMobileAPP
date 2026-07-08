@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../domain/entities/work.dart';
@@ -16,15 +16,16 @@ class FeaturedCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 24),
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.outlineVariant.withValues(alpha: 0.3),
+            color: c.outlineVariant.withValues(alpha: 0.3),
           ),
         ),
         child: Column(
@@ -44,7 +45,7 @@ class FeaturedCard extends StatelessWidget {
                             imageUrl: work.coverUrl!,
                             fit: BoxFit.cover,
                           )
-                        : Container(color: AppColors.surface),
+                        : Container(color: c.surface),
                     // Gradient overlay
                     Container(
                       decoration: BoxDecoration(
@@ -53,7 +54,7 @@ class FeaturedCard extends StatelessWidget {
                           end: Alignment.bottomCenter,
                           colors: [
                             Colors.transparent,
-                            AppColors.surfaceLow.withValues(alpha: 0.9),
+                            c.surfaceLow.withValues(alpha: 0.9),
                           ],
                         ),
                       ),
@@ -66,13 +67,13 @@ class FeaturedCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
+                          color: c.primaryContainer,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           AppStrings.mainRecommendation,
                           style: KotobaTypography.genreLabel.copyWith(
-                            color: AppColors.onPrimary,
+                            color: c.onPrimary,
                           ),
                         ),
                       ),
@@ -89,14 +90,14 @@ class FeaturedCard extends StatelessWidget {
                 children: [
                   Text(
                     work.title,
-                    style: KotobaTypography.headlineMd,
+                    style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     '${work.authorName} · ${work.genre} · ${work.chapterCount} caps',
-                    style: KotobaTypography.labelSm,
+                    style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant),
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -104,7 +105,7 @@ class FeaturedCard extends StatelessWidget {
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: KotobaTypography.bodyMd.copyWith(
-                      color: AppColors.onSurfaceVariant,
+                      color: c.onSurfaceVariant,
                     ),
                   ),
                   const SizedBox(height: 16),

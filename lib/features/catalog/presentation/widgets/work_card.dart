@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../domain/entities/work.dart';
 
@@ -14,6 +14,7 @@ class WorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
@@ -34,21 +35,21 @@ class WorkCard extends StatelessWidget {
                             imageUrl: work.coverUrl!,
                             fit: BoxFit.cover,
                             placeholder: (_, __) => Container(
-                              color: AppColors.surfaceLow,
+                              color: c.surfaceLow,
                             ),
                             errorWidget: (_, __, ___) => Container(
-                              color: AppColors.surfaceLow,
-                              child: const Icon(
+                              color: c.surfaceLow,
+                              child: Icon(
                                 Icons.menu_book,
-                                color: AppColors.onSurfaceVariant,
+                                color: c.onSurfaceVariant,
                               ),
                             ),
                           )
                         : Container(
-                            color: AppColors.surfaceLow,
-                            child: const Icon(
+                            color: c.surfaceLow,
+                            child: Icon(
                               Icons.menu_book,
-                              color: AppColors.onSurfaceVariant,
+                              color: c.onSurfaceVariant,
                               size: 32,
                             ),
                           ),
@@ -60,12 +61,12 @@ class WorkCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.background.withValues(alpha: 0.85),
+                          color: c.background.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           work.genre.toUpperCase(),
-                          style: KotobaTypography.genreLabel,
+                          style: KotobaTypography.genreLabel.copyWith(color: c.onSurface),
                         ),
                       ),
                     ),
@@ -77,19 +78,19 @@ class WorkCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 3),
                         decoration: BoxDecoration(
-                          color: AppColors.background.withValues(alpha: 0.85),
+                          color: c.background.withValues(alpha: 0.85),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.thumb_up_rounded,
-                                size: 12, color: AppColors.primary),
+                            Icon(Icons.thumb_up_rounded,
+                                size: 12, color: c.primary),
                             const SizedBox(width: 3),
                             Text(
                               work.ratingCount.toString(),
                               style: KotobaTypography.labelXs
-                                  .copyWith(color: AppColors.primary),
+                                  .copyWith(color: c.primary),
                             ),
                           ],
                         ),
@@ -105,7 +106,7 @@ class WorkCard extends StatelessWidget {
               work.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: KotobaTypography.labelMd,
+              style: KotobaTypography.labelMd.copyWith(color: c.onSurface),
             ),
             const SizedBox(height: 2),
             // Autor
@@ -113,7 +114,7 @@ class WorkCard extends StatelessWidget {
               work.authorName,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: KotobaTypography.labelXs,
+              style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
             ),
           ],
         ),

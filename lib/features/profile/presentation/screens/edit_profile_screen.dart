@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
@@ -83,12 +83,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     TextInputType keyboardType = TextInputType.text,
   }) {
     final ctrl = TextEditingController(text: initialValue);
+    final c = KotobaColors.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: c.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (context) {
+        final sheetC = KotobaColors.of(context);
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -100,16 +102,16 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Editar $title', style: KotobaTypography.headlineMd),
+              Text('Editar $title', style: KotobaTypography.headlineMd.copyWith(color: sheetC.onSurface)),
               const SizedBox(height: 16),
               TextField(
                 controller: ctrl,
                 maxLines: maxLines,
                 keyboardType: keyboardType,
-                style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurface),
+                style: KotobaTypography.bodyMd.copyWith(color: sheetC.onSurface),
                 decoration: InputDecoration(
                   filled: true,
-                  fillColor: AppColors.surfaceLow,
+                  fillColor: sheetC.surfaceLow,
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
                 ),
@@ -138,6 +140,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Future<void> _selectDate(DateTime? initialDate) async {
+    final c = KotobaColors.of(context);
     final picked = await showDatePicker(
       context: context,
       initialDate: initialDate ?? DateTime(2004, 6, 3),
@@ -146,11 +149,11 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onPrimary: AppColors.onPrimary,
-              surface: AppColors.surface,
-              onSurface: AppColors.onSurface,
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: c.primary,
+              onPrimary: c.onPrimary,
+              surface: c.surface,
+              onSurface: c.onSurface,
             ),
           ),
           child: child!,
@@ -170,19 +173,20 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     VoidCallback? onTap,
     bool isDestructive = false,
   }) {
+    final c = KotobaColors.of(context);
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       title: Text(
         title,
         style: KotobaTypography.labelMd.copyWith(
-          color: isDestructive ? AppColors.error : AppColors.onSurface,
+          color: isDestructive ? c.error : c.onSurface,
         ),
       ),
       subtitle: subtitle != null
           ? Text(
               subtitle,
               style: KotobaTypography.bodyMd.copyWith(
-                color: isDestructive ? AppColors.error.withValues(alpha: 0.8) : AppColors.onSurfaceVariant,
+                color: isDestructive ? c.error.withValues(alpha: 0.8) : c.onSurfaceVariant,
               ),
             )
           : null,
@@ -192,17 +196,18 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   }
 
   Widget _buildSectionHeader(String title, {String? description}) {
+    final c = KotobaColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: KotobaTypography.headlineMd),
+          Text(title, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
           if (description != null) ...[
             const SizedBox(height: 8),
             Text(
               description,
-              style: KotobaTypography.labelMd.copyWith(color: AppColors.onSurfaceVariant),
+              style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant),
             ),
           ]
         ],
@@ -213,11 +218,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(currentProfileProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
-        title: const Text('Perfil & cuenta', style: KotobaTypography.headlineMd),
+        title: Text('Perfil & cuenta', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -243,13 +249,13 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     subtitle: 'Pulsa aquí para cambiarla',
                     trailing: CircleAvatar(
                       radius: 24,
-                      backgroundColor: AppColors.surfaceLow,
+                      backgroundColor: c.surfaceLow,
                       backgroundImage: user.avatarUrl != null ? CachedNetworkImageProvider(user.avatarUrl!) : null,
-                      child: user.avatarUrl == null ? const Icon(Icons.person, color: AppColors.onSurfaceVariant) : null,
+                      child: user.avatarUrl == null ? Icon(Icons.person, color: c.onSurfaceVariant) : null,
                     ),
                     onTap: () => _pickImage(false),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Imagen de fondo',
                     subtitle: 'Pulsa aquí para cambiarla',
@@ -257,67 +263,67 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       width: 80,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceLow,
+                        color: c.surfaceLow,
                         borderRadius: BorderRadius.circular(4),
                         image: user.bannerUrl != null
                             ? DecorationImage(image: CachedNetworkImageProvider(user.bannerUrl!), fit: BoxFit.cover)
                             : null,
                       ),
-                      child: user.bannerUrl == null ? const Icon(Icons.wallpaper, color: AppColors.onSurfaceVariant) : null,
+                      child: user.bannerUrl == null ? Icon(Icons.wallpaper, color: c.onSurfaceVariant) : null,
                     ),
                     onTap: () => _pickImage(true),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Info',
                     subtitle: user.bio?.isNotEmpty == true ? user.bio : 'Añadir información',
                     onTap: () => _showEditSheet(title: 'Info', initialValue: user.bio ?? '', fieldKey: 'bio', maxLines: 4),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Nombre de usuario',
                     subtitle: user.username,
                     onTap: () => _showEditSheet(title: 'Nombre de usuario', initialValue: user.username, fieldKey: 'username'),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Nombre Completo',
                     subtitle: user.fullName?.isNotEmpty == true ? user.fullName : 'Añadir nombre',
                     onTap: () => _showEditSheet(title: 'Nombre Completo', initialValue: user.fullName ?? '', fieldKey: 'full_name'),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Pronombres',
                     subtitle: user.pronouns?.isNotEmpty == true ? user.pronouns : 'Añadir pronombres',
                     onTap: () => _showEditSheet(title: 'Pronombres', initialValue: user.pronouns ?? '', fieldKey: 'pronouns'),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Ubicación',
                     subtitle: user.country?.isNotEmpty == true ? user.country : 'Añadir ubicación',
                     onTap: () => _showEditSheet(title: 'Ubicación', initialValue: user.country ?? '', fieldKey: 'country'),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Sitio web',
                     subtitle: user.socialLinks?['website']?.isNotEmpty == true ? user.socialLinks!['website'] : 'Configura un sitio web',
                     onTap: () => _showEditSheet(title: 'Sitio web', initialValue: user.socialLinks?['website'] ?? '', fieldKey: 'social_links.website', keyboardType: TextInputType.url),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 32),
+                  Divider(color: c.surfaceLow, height: 32),
                   
                   _buildSectionHeader('Redes Sociales'),
                   _buildListTile(
                     title: 'Google',
                     subtitle: 'Desvincula Diego Ortiz', // Mock
-                    trailing: Checkbox(value: true, onChanged: (v) {}, activeColor: AppColors.primary),
+                    trailing: Checkbox(value: true, onChanged: (v) {}, activeColor: c.primary),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Facebook',
                     subtitle: 'Vincular tu cuenta de Facebook', // Mock
-                    trailing: Checkbox(value: false, onChanged: (v) {}, activeColor: AppColors.primary),
+                    trailing: Checkbox(value: false, onChanged: (v) {}, activeColor: c.primary),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 32),
+                  Divider(color: c.surfaceLow, height: 32),
 
                   _buildSectionHeader(
                     'Configuración de la Cuenta',
@@ -327,23 +333,23 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     title: 'Correo electrónico',
                     subtitle: user.email,
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Contraseña',
                     subtitle: '********',
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: '¿Olvidaste tu contraseña?',
                     onTap: () {},
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Fecha de nacimiento',
                     subtitle: user.birthDate != null ? DateFormat('MMM d, yyyy').format(user.birthDate!) : 'Añadir fecha',
                     onTap: () => _selectDate(user.birthDate),
                   ),
-                  const Divider(color: AppColors.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
                   _buildListTile(
                     title: 'Cerrar Cuenta',
                     subtitle: 'Visita el sitio web para cerrar tu cuenta',

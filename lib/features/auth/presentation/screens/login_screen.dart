@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../providers/auth_providers.dart';
 import '../widgets/login_form.dart';
@@ -18,6 +18,7 @@ class LoginScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginState = ref.watch(loginViewModelProvider);
+    final c = KotobaColors.of(context);
 
     ref.listen(loginViewModelProvider, (_, next) {
       next.whenOrNull(
@@ -25,7 +26,7 @@ class LoginScreen extends ConsumerWidget {
         error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(err.toString()),
-            backgroundColor: AppColors.errorContainer,
+            backgroundColor: c.errorContainer,
           ),
         ),
       );
@@ -43,14 +44,14 @@ class LoginScreen extends ConsumerWidget {
               Text(
                 'Kotoba',
                 style: KotobaTypography.displayXL.copyWith(
-                  color: AppColors.primary,
+                  color: c.primary,
                 ),
                 textAlign: TextAlign.center,
               ),
               Text(
                 '言葉',
                 style: KotobaTypography.headlineMd.copyWith(
-                  color: AppColors.primaryDim,
+                  color: c.primaryDim,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -58,7 +59,7 @@ class LoginScreen extends ConsumerWidget {
               Text(
                 'Tu historia, sin límites.',
                 style: KotobaTypography.bodyMd.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: c.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -79,15 +80,15 @@ class LoginScreen extends ConsumerWidget {
               // Separador
               Row(
                 children: [
-                  const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                  Expanded(child: Divider(color: c.outlineVariant)),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Text(
                       AppStrings.orContinueWith,
-                      style: KotobaTypography.labelXs,
+                      style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                     ),
                   ),
-                  const Expanded(child: Divider(color: AppColors.outlineVariant)),
+                  Expanded(child: Divider(color: c.outlineVariant)),
                 ],
               ),
               const SizedBox(height: 24),
@@ -104,14 +105,14 @@ class LoginScreen extends ConsumerWidget {
                 children: [
                   Text(
                     AppStrings.noAccount,
-                    style: KotobaTypography.labelSm,
+                    style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant),
                   ),
                   TextButton(
                     onPressed: () => context.go('/auth/register'),
                     child: Text(
                       'Regístrate',
                       style: KotobaTypography.labelSm.copyWith(
-                        color: AppColors.primary,
+                        color: c.primary,
                       ),
                     ),
                   ),

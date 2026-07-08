@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../providers/profile_providers.dart';
@@ -17,11 +17,12 @@ class AuthorDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(authorDashboardProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(AppStrings.authorDashboard, style: KotobaTypography.labelMd),
+        title: Text(AppStrings.authorDashboard, style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () { if (context.canPop()) context.pop(); },
@@ -35,7 +36,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Resumen Global', style: KotobaTypography.headlineMd),
+              Text('Resumen Global', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
               const SizedBox(height: 16),
               // Grid de estadísticas
               GridView.count(
@@ -70,7 +71,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 32),
               Text('Vistas (Últimos 7 días)',
-                  style: KotobaTypography.headlineMd),
+                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
               const SizedBox(height: 24),
               // Gráfico (fl_chart)
               SizedBox(
@@ -101,7 +102,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
                               padding: const EdgeInsets.only(top: 8),
                               child: Text(
                                 '${stats.engagementData[idx].date.day}',
-                                style: KotobaTypography.labelXs,
+                                style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                               ),
                             );
                           },
@@ -115,13 +116,13 @@ class AuthorDashboardScreen extends ConsumerWidget {
                           FlSpot(e.key.toDouble(), e.value.value),
                         ).toList(),
                         isCurved: true,
-                        color: AppColors.primary,
+                        color: c.primary,
                         barWidth: 3,
                         isStrokeCapRound: true,
                         dotData: const FlDotData(show: false),
                         belowBarData: BarAreaData(
                           show: true,
-                          color: AppColors.primary.withValues(alpha: 0.15),
+                          color: c.primary.withValues(alpha: 0.15),
                         ),
                       ),
                     ],

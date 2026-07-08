@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/kotoba_colors.dart';
 
 /// Campo de texto de Kotoba con estilo "Ink & Silence".
 ///
-/// Fondo oscuro, borde gris, focus glow en gold.
+/// Fondo adaptado al tema activo, borde gris, focus glow en gold.
 class KotobaTextField extends StatelessWidget {
   final String label;
   final String? hint;
@@ -33,6 +33,7 @@ class KotobaTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return TextFormField(
       controller: controller,
       obscureText: obscureText,
@@ -40,16 +41,16 @@ class KotobaTextField extends StatelessWidget {
       validator: validator,
       onChanged: onChanged,
       maxLines: maxLines,
-      style: const TextStyle(
+      style: TextStyle(
         fontFamily: 'DM Sans',
         fontSize: 14,
-        color: AppColors.onSurface,
+        color: c.onSurface,
       ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
         prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: AppColors.outline, size: 20)
+            ? Icon(prefixIcon, color: c.outline, size: 20)
             : null,
         suffixIcon: suffixIcon,
       ),

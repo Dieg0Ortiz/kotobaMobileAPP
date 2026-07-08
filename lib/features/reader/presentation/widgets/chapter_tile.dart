@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../domain/entities/chapter.dart';
 
@@ -17,6 +17,7 @@ class ChapterTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return ListTile(
       onTap: chapter.isLocked ? null : onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
@@ -24,21 +25,21 @@ class ChapterTile extends StatelessWidget {
         'Capítulo ${chapter.number}: ${chapter.title}',
         style: KotobaTypography.labelMd.copyWith(
           color: chapter.isLocked
-              ? AppColors.onSurfaceVariant.withValues(alpha: 0.5)
-              : AppColors.onSurface,
+              ? c.onSurfaceVariant.withValues(alpha: 0.5)
+              : c.onSurface,
         ),
       ),
       subtitle: Text(
         '${chapter.readTimeMinutes} min lect. • ${chapter.publishedAt.day}/${chapter.publishedAt.month}/${chapter.publishedAt.year}',
         style: KotobaTypography.labelXs.copyWith(
-          color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+          color: c.onSurfaceVariant.withValues(alpha: 0.7),
         ),
       ),
       trailing: chapter.isLocked
-          ? const Icon(Icons.lock_outline,
-              size: 20, color: AppColors.onSurfaceVariant)
-          : const Icon(Icons.chevron_right,
-              size: 24, color: AppColors.onSurfaceVariant),
+          ? Icon(Icons.lock_outline,
+              size: 20, color: c.onSurfaceVariant)
+          : Icon(Icons.chevron_right,
+              size: 24, color: c.onSurfaceVariant),
     );
   }
 }

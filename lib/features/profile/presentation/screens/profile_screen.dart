@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -26,6 +27,7 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentProfileProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       body: profileAsync.when(
@@ -34,7 +36,7 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(e.toString(), style: const TextStyle(color: AppColors.error)),
+              Text(e.toString(), style: TextStyle(color: c.error)),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () {
@@ -66,10 +68,10 @@ class ProfileScreen extends ConsumerWidget {
               child: SimilarAuthorsCard(),
             ),
 
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                child: Divider(color: AppColors.outlineVariant),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                child: Divider(color: c.outlineVariant),
               ),
             ),
 
@@ -81,10 +83,10 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
-            const SliverToBoxAdapter(
+            SliverToBoxAdapter(
               child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Divider(color: AppColors.outlineVariant),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Divider(color: c.outlineVariant),
               ),
             ),
 
@@ -111,6 +113,7 @@ class _UserTags extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final worksAsync = ref.watch(userWorksProvider(userId));
+    final c = KotobaColors.of(context);
 
     return worksAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -135,6 +138,7 @@ class _UserTags extends ConsumerWidget {
               style: KotobaTypography.labelMd.copyWith(
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
+                color: c.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -145,10 +149,10 @@ class _UserTags extends ConsumerWidget {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    border: Border.all(color: AppColors.outlineVariant),
+                    border: Border.all(color: c.outlineVariant),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(tag, style: KotobaTypography.labelXs),
+                  child: Text(tag, style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                 );
               }).toList(),
             ),
@@ -167,6 +171,7 @@ class _UserActivity extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final worksAsync = ref.watch(userWorksProvider(userId));
+    final c = KotobaColors.of(context);
 
     return worksAsync.when(
       loading: () => const SizedBox.shrink(),
@@ -185,6 +190,7 @@ class _UserActivity extends ConsumerWidget {
               style: KotobaTypography.labelMd.copyWith(
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.5,
+                color: c.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -199,15 +205,15 @@ class _UserActivity extends ConsumerWidget {
                       margin: const EdgeInsets.only(top: 4, right: 12),
                       width: 8,
                       height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppColors.action,
+                      decoration: BoxDecoration(
+                        color: c.action,
                         shape: BoxShape.circle,
                       ),
                     ),
                     Expanded(
                       child: RichText(
                         text: TextSpan(
-                          style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurface),
+                          style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
                           children: [
                             const TextSpan(
                               text: 'Actualizó ',
@@ -223,7 +229,7 @@ class _UserActivity extends ConsumerWidget {
                     ),
                     Text(
                       timeAgo,
-                      style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                      style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                     ),
                   ],
                 ),
@@ -259,6 +265,7 @@ class _UserWorksCarousel extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final worksAsync = ref.watch(userWorksProvider(userId));
+    final c = KotobaColors.of(context);
     final displayedCount = worksAsync.maybeWhen(
       data: (works) => works.length,
       orElse: () => worksCount,
@@ -273,12 +280,12 @@ class _UserWorksCarousel extends ConsumerWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Historias de @${username}',
-                  style: KotobaTypography.headlineMd,
+                  'Historias de @$username',
+                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const Icon(Icons.chevron_right, color: AppColors.onSurfaceVariant),
+              Icon(Icons.chevron_right, color: c.onSurfaceVariant),
             ],
           ),
         ),
@@ -286,7 +293,7 @@ class _UserWorksCarousel extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 24, top: 4, bottom: 16),
           child: Text(
             '$displayedCount Historias publicadas',
-            style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+            style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
           ),
         ),
         worksAsync.when(
@@ -311,15 +318,18 @@ class _UserWorksCarousel extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 24),
                 itemCount: works.length,
                 itemBuilder: (context, index) {
-                  return HorizontalWorkCard(work: works[index]);
+                  return HorizontalWorkCard(
+                    work: works[index],
+                    onTap: () => context.go('/works/${works[index].id}'),
+                  );
                 },
               ),
             );
           },
         ),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Divider(color: AppColors.outlineVariant),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Divider(color: c.outlineVariant),
         ),
       ],
     );

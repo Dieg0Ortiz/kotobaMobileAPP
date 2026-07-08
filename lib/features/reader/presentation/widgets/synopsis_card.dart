@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 
 /// Tarjeta colapsable para la sinopsis de la obra.
@@ -18,10 +18,11 @@ class _SynopsisCardState extends State<SynopsisCard> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -36,11 +37,11 @@ class _SynopsisCardState extends State<SynopsisCard> {
               widget.text,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: KotobaTypography.bodyMd,
+              style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
             ),
             secondChild: Text(
               widget.text,
-              style: KotobaTypography.bodyMd,
+              style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
             ),
           ),
           const SizedBox(height: 8),
@@ -49,7 +50,7 @@ class _SynopsisCardState extends State<SynopsisCard> {
             child: Text(
               _isExpanded ? 'MOSTRAR MENOS' : 'LEER MÁS',
               style: KotobaTypography.labelSm.copyWith(
-                color: AppColors.primary,
+                color: c.primary,
               ),
             ),
           ),

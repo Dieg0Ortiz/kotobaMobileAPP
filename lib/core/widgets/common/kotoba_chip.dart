@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../theme/app_colors.dart';
+import '../../theme/kotoba_colors.dart';
 
 /// Chip para géneros y filtros con estilo pill del diseño Ink & Silence.
 class KotobaChip extends StatelessWidget {
@@ -17,18 +17,19 @@ class KotobaChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppColors.primaryFixed : AppColors.surfaceHigh,
+          color: isSelected ? c.primaryFixed : c.surfaceHigh,
           borderRadius: BorderRadius.circular(999),
           border: Border.all(
             color: isSelected
-                ? AppColors.primaryContainer
-                : AppColors.outlineVariant,
+                ? c.primaryContainer
+                : c.outlineVariant,
             width: 1,
           ),
         ),
@@ -38,7 +39,7 @@ class KotobaChip extends StatelessWidget {
             fontFamily: 'DM Sans',
             fontSize: 13,
             fontWeight: FontWeight.w500,
-            color: isSelected ? AppColors.onPrimary : AppColors.onSurface,
+            color: isSelected ? c.onPrimary : c.onSurface,
           ),
         ),
       ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 
 /// Card para mostrar estadísticas en el dashboard.
@@ -18,13 +18,14 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: c.surface,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppColors.outlineVariant.withValues(alpha: 0.3),
+          color: c.outlineVariant.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -32,13 +33,13 @@ class StatCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 16, color: AppColors.primary),
+              Icon(icon, size: 16, color: c.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   label,
                   style: KotobaTypography.labelXs.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                    color: c.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -49,7 +50,7 @@ class StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             value,
-            style: KotobaTypography.headlineMd,
+            style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
           ),
         ],
       ),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'app_colors.dart';
-
 /// Sistema tipográfico triple de Kotoba "Ink & Silence".
 ///
 /// Tres familias con roles distintos:
@@ -11,7 +9,8 @@ import 'app_colors.dart';
 /// - **Source Serif 4** (Dinámica): cuerpo de capítulos, sinopsis, lectura prolongada.
 /// - **DM Sans**: botones, navegación, etiquetas, metadatos, chips, badges.
 ///
-/// Todas las fuentes se cargan vía [google_fonts] en el MVP.
+/// Los colores NO se definen aquí — se heredan del [DefaultTextStyle] del tema
+/// o se pasan explícitamente con `.copyWith(color: ...)`.
 class KotobaTypography {
   KotobaTypography._();
 
@@ -27,7 +26,6 @@ class KotobaTypography {
     fontWeight: FontWeight.w700,
     height: 1.2,
     letterSpacing: -0.01,
-    color: AppColors.onSurface,
   );
 
   /// Titulares de sección, nombre de obra en detalle.
@@ -36,7 +34,6 @@ class KotobaTypography {
     fontSize: 28,
     fontWeight: FontWeight.w600,
     height: 1.3,
-    color: AppColors.onSurface,
   );
 
   /// Sub-titulares, "Sinopsis", "Índice".
@@ -45,17 +42,16 @@ class KotobaTypography {
     fontSize: 22,
     fontWeight: FontWeight.w500,
     height: 1.35,
-    color: AppColors.onSurface,
   );
 
   /// Pull quote: Noto Serif JP italic en gold.
+  /// Nota: el color primario se debe pasar con `.copyWith(color: c.primary)`.
   static const pullQuote = TextStyle(
     fontFamily: 'Noto Serif JP',
     fontSize: 18,
     fontWeight: FontWeight.w400,
     fontStyle: FontStyle.italic,
     height: 1.6,
-    color: AppColors.primary,
   );
 
   /// Número grande de estadística (Dashboard: "2,847", "48,320").
@@ -64,7 +60,6 @@ class KotobaTypography {
     fontSize: 32,
     fontWeight: FontWeight.w700,
     height: 1.1,
-    color: AppColors.onSurface,
   );
 
   // ── READING: Dinámica ──────────────────────────────────────────────
@@ -75,7 +70,6 @@ class KotobaTypography {
     fontSize: 18,
     fontWeight: FontWeight.w400,
     height: 1.78,
-    color: AppColors.onSurface,
   );
 
   /// Sinopsis, descripciones largas.
@@ -84,7 +78,6 @@ class KotobaTypography {
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.625,
-    color: AppColors.onSurface,
   );
 
   // ── UI: DM Sans ───────────────────────────────────────────────────
@@ -96,7 +89,6 @@ class KotobaTypography {
     fontWeight: FontWeight.w500,
     height: 1.43,
     letterSpacing: 0.05,
-    color: AppColors.onSurface,
   );
 
   /// Autor en cards, metadatos secundarios.
@@ -106,7 +98,6 @@ class KotobaTypography {
     fontWeight: FontWeight.w700,
     height: 1.33,
     letterSpacing: 0.1,
-    color: AppColors.onSurfaceVariant,
   );
 
   /// Timestamps, contadores mínimos.
@@ -115,7 +106,6 @@ class KotobaTypography {
     fontSize: 11,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.08,
-    color: AppColors.onSurfaceVariant,
   );
 
   /// Etiqueta de género en caps (e.g., "SCI-FI", "FANTASÍA").
@@ -124,6 +114,5 @@ class KotobaTypography {
     fontSize: 10,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.15,
-    color: AppColors.onSurfaceVariant,
   );
 }

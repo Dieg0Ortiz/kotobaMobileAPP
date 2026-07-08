@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/kotoba_colors.dart';
 import 'package:go_router/go_router.dart';
 
 /// Shell con BottomNavigationBar para las pestañas principales.
@@ -34,6 +34,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentIndex = _currentIndex(context);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       body: child,
@@ -41,7 +42,7 @@ class MainShell extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: AppColors.outlineVariant.withValues(alpha: 0.3),
+              color: c.outlineVariant.withValues(alpha: 0.3),
               width: 1,
             ),
           ),

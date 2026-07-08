@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
@@ -20,13 +20,14 @@ class AuthorProfileScreen extends ConsumerWidget {
     final profileAsync = ref.watch(publicAuthorProfileProvider(userId));
     final currentUserAsync = ref.watch(currentProfileProvider);
     final followingAsync = ref.watch(followingAuthorsProvider);
+    final c = KotobaColors.of(context);
     final currentUserId = currentUserAsync.maybeWhen(
       data: (u) => u.id,
       orElse: () => '',
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -39,7 +40,7 @@ class AuthorProfileScreen extends ConsumerWidget {
       ),
       body: profileAsync.when(
         loading: () => const Center(child: KotobaLoading()),
-        error: (e, _) => Center(child: Text(e.toString(), style: const TextStyle(color: AppColors.onSurface))),
+        error: (e, _) => Center(child: Text(e.toString(), style: TextStyle(color: c.onSurface))),
         data: (data) {
           try {
             final user = User.fromJson(data);
@@ -101,7 +102,7 @@ class AuthorProfileScreen extends ConsumerWidget {
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
                     child: Text(
                       'Historias de @${user.username}',
-                      style: KotobaTypography.headlineMd,
+                      style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
                     ),
                   ),
                 ),
@@ -118,7 +119,7 @@ class AuthorProfileScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                           child: Container(
                             decoration: BoxDecoration(
-                              color: AppColors.surface,
+                              color: c.surface,
                               borderRadius: BorderRadius.circular(12),
                             ),
                             padding: const EdgeInsets.all(12),
@@ -132,8 +133,8 @@ class AuthorProfileScreen extends ConsumerWidget {
                                     child: work.coverUrl != null
                                         ? Image.network(work.coverUrl!, fit: BoxFit.cover)
                                         : Container(
-                                            color: AppColors.primary.withValues(alpha: 0.2),
-                                            child: const Icon(Icons.book, color: AppColors.primary),
+                                            color: c.primary.withValues(alpha: 0.2),
+                                            child: Icon(Icons.book, color: c.primary),
                                           ),
                                   ),
                                 ),
@@ -143,9 +144,9 @@ class AuthorProfileScreen extends ConsumerWidget {
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Text(work.title, style: KotobaTypography.labelMd, maxLines: 2, overflow: TextOverflow.ellipsis),
+                                      Text(work.title, style: KotobaTypography.labelMd.copyWith(color: c.onSurface), maxLines: 2, overflow: TextOverflow.ellipsis),
                                       const SizedBox(height: 4),
-                                      Text('${work.chapterCount} capítulos', style: KotobaTypography.labelXs),
+                                      Text('${work.chapterCount} capítulos', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                                     ],
                                   ),
                                 ),
@@ -173,7 +174,7 @@ class AuthorProfileScreen extends ConsumerWidget {
           return Center(
             child: Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('Error: $e\n$st', style: const TextStyle(color: AppColors.onSurface)),
+              child: Text('Error: $e\n$st', style: TextStyle(color: c.onSurface)),
             ),
           );
         }
@@ -234,6 +235,7 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Stack(
       children: [
         // Banner Image
@@ -246,10 +248,10 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
           )
         else
           Positioned.fill(
-            child: Container(color: AppColors.surfaceHigh),
+            child: Container(color: c.surfaceHigh),
           ),
 
-        // Dark gradient overlay for readability (darker at bottom)
+        // Gradient overlay for readability (darker at bottom)
         Positioned.fill(
           child: Container(
             decoration: BoxDecoration(
@@ -257,9 +259,9 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  AppColors.background.withValues(alpha: 0.5),
-                  AppColors.background.withValues(alpha: 0.95),
-                  AppColors.background,
+                  c.background.withValues(alpha: 0.5),
+                  c.background.withValues(alpha: 0.95),
+                  c.background,
                 ],
                 stops: const [0.0, 0.7, 1.0],
               ),
@@ -277,27 +279,27 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
               children: [
                 CircleAvatar(
                   radius: 52,
-                  backgroundColor: AppColors.background,
+                  backgroundColor: c.background,
                   child: CircleAvatar(
                     radius: 48,
                     backgroundImage: widget.user.avatarUrl != null
                         ? CachedNetworkImageProvider(widget.user.avatarUrl!)
                         : null,
                     child: widget.user.avatarUrl == null
-                        ? const Icon(Icons.person, size: 48, color: AppColors.onSurfaceVariant)
+                        ? Icon(Icons.person, size: 48, color: c.onSurfaceVariant)
                         : null,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   widget.user.fullName?.isNotEmpty == true ? widget.user.fullName! : widget.user.username,
-                  style: KotobaTypography.headlineLg.copyWith(color: AppColors.onSurface),
+                  style: KotobaTypography.headlineLg.copyWith(color: c.onSurface),
                 ),
                 const SizedBox(height: 4),
                 const SizedBox(height: 4),
                 Text(
                   '@${widget.user.username}',
-                  style: KotobaTypography.labelMd.copyWith(color: AppColors.onSurfaceVariant),
+                  style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant),
                 ),
                 if (widget.user.bio != null && widget.user.bio!.isNotEmpty)
                   Padding(
@@ -305,7 +307,7 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                     child: Text(
                       widget.user.bio!,
                       textAlign: TextAlign.center,
-                      style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                      style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
                     ),
                   ),
                 const SizedBox(height: 16),
@@ -330,16 +332,16 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                               ? OutlinedButton(
                                   onPressed: _handleFollow,
                                   style: OutlinedButton.styleFrom(
-                                    foregroundColor: AppColors.onSurface,
-                                    side: const BorderSide(color: AppColors.outlineVariant),
+                                    foregroundColor: c.onSurface,
+                                    side: BorderSide(color: c.outlineVariant),
                                   ),
                                   child: const Text('Siguiendo'),
                                 )
                               : FilledButton(
                                   onPressed: _handleFollow,
                                   style: FilledButton.styleFrom(
-                                    backgroundColor: AppColors.primary,
-                                    foregroundColor: AppColors.onPrimary,
+                                    backgroundColor: c.primary,
+                                    foregroundColor: c.onPrimary,
                                   ),
                                   child: const Text('Seguir'),
                                 ),
@@ -355,8 +357,8 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                             );
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: AppColors.onSurface,
-                            side: const BorderSide(color: AppColors.outlineVariant),
+                            foregroundColor: c.onSurface,
+                            side: BorderSide(color: c.outlineVariant),
                           ),
                           child: const Text('Perfil Completo'),
                         ),
@@ -364,7 +366,7 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                     ],
                   ),
                 const SizedBox(height: 24),
-                const Divider(color: AppColors.outlineVariant),
+                Divider(color: c.outlineVariant),
               ],
             ),
           ),
@@ -382,11 +384,12 @@ class _StatColumn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return Column(
       children: [
-        Text(value, style: KotobaTypography.headlineMd.copyWith(color: AppColors.onSurface)),
+        Text(value, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
         const SizedBox(height: 4),
-        Text(label, style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant, letterSpacing: 1)),
+        Text(label, style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant, letterSpacing: 1)),
       ],
     );
   }

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/constants/app_strings.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../providers/catalog_providers.dart';
@@ -19,6 +19,7 @@ class SearchScreen extends ConsumerWidget {
     final query = ref.watch(searchQueryProvider);
     final selectedGenre = ref.watch(selectedGenreProvider);
     final resultsAsync = ref.watch(searchResultsProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       body: SafeArea(
@@ -31,19 +32,19 @@ class SearchScreen extends ConsumerWidget {
               child: TextField(
                 onChanged: (v) =>
                     ref.read(searchQueryProvider.notifier).state = v,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'DM Sans',
                   fontSize: 14,
-                  color: AppColors.onSurface,
+                  color: c.onSurface,
                 ),
                 decoration: InputDecoration(
                   hintText: AppStrings.searchHint,
-                  prefixIcon: const Icon(Icons.search,
-                      color: AppColors.onSurfaceVariant, size: 20),
+                  prefixIcon: Icon(Icons.search,
+                      color: c.onSurfaceVariant, size: 20),
                   suffixIcon: query.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(Icons.clear,
-                              color: AppColors.onSurfaceVariant, size: 18),
+                          icon: Icon(Icons.clear,
+                              color: c.onSurfaceVariant, size: 18),
                           onPressed: () => ref
                               .read(searchQueryProvider.notifier)
                               .state = '',
@@ -69,7 +70,7 @@ class SearchScreen extends ConsumerWidget {
                 error: (e, _) => Center(
                   child: Text(e.toString(),
                       style: KotobaTypography.labelMd
-                          .copyWith(color: AppColors.error)),
+                          .copyWith(color: c.error)),
                 ),
                 data: (works) {
                   if (works.isEmpty) {
@@ -77,12 +78,12 @@ class SearchScreen extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.search_off,
-                              size: 48, color: AppColors.onSurfaceVariant),
+                          Icon(Icons.search_off,
+                              size: 48, color: c.onSurfaceVariant),
                           const SizedBox(height: 16),
                           Text(AppStrings.noResults,
                               style: KotobaTypography.labelMd
-                                  .copyWith(color: AppColors.onSurfaceVariant)),
+                                  .copyWith(color: c.onSurfaceVariant)),
                         ],
                       ),
                     );

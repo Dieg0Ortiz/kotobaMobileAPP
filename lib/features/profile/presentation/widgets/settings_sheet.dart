@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/theme/theme_provider.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
@@ -13,11 +13,12 @@ class SettingsSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: c.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: SafeArea(
         child: SingleChildScrollView(
@@ -25,7 +26,7 @@ class SettingsSheet extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-          Text('Ajustes', style: KotobaTypography.headlineMd),
+          Text('Ajustes', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined),
@@ -45,27 +46,27 @@ class SettingsSheet extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.notifications_outlined),
             title:
-                Text('Notificaciones Push', style: KotobaTypography.labelMd),
+                Text('Notificaciones Push', style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
             trailing: Switch(
               value: false,
               onChanged: (v) {},
-              activeThumbColor: AppColors.primary,
+              activeThumbColor: c.primary,
             ),
           ),
           ListTile(
             leading: const Icon(Icons.edit_outlined),
-            title: Text('Editar Perfil', style: KotobaTypography.labelMd),
+            title: Text('Editar Perfil', style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
             onTap: () {
               Navigator.pop(context);
               context.push('/profile/edit');
             },
           ),
-          const Divider(color: AppColors.outlineVariant),
+          Divider(color: c.outlineVariant),
           ListTile(
-            leading: const Icon(Icons.logout, color: AppColors.error),
+            leading: Icon(Icons.logout, color: c.error),
             title: Text('Cerrar sesión',
                 style: KotobaTypography.labelMd
-                    .copyWith(color: AppColors.error)),
+                    .copyWith(color: c.error)),
             onTap: () {
               ref.read(logoutUseCaseProvider).execute();
               ref.read(authStateProvider.notifier).state = false;
