@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
@@ -245,6 +245,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     if (_loading) {
       return Scaffold(
         appBar: AppBar(
@@ -257,7 +258,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(c),
       body: Stack(
         children: [
           ListView(
@@ -266,20 +267,20 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               bottom: MediaQuery.of(context).padding.bottom + 100,
             ),
             children: [
-              _buildCoverSection(),
+              _buildCoverSection(c),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Transform.translate(
                   offset: const Offset(0, -48),
                   child: Column(
                     children: [
-                      _buildTitleSynopsisCard(),
+                      _buildTitleSynopsisCard(c),
                       const SizedBox(height: 24),
-                      _buildSettingsCard(),
+                      _buildSettingsCard(c),
                       const SizedBox(height: 24),
-                      _buildTagsCard(),
+                      _buildTagsCard(c),
                       const SizedBox(height: 24),
-                      _buildTableOfContentsCard(),
+                      _buildTableOfContentsCard(c),
                       const SizedBox(height: 48),
                     ],
                   ),
@@ -292,7 +293,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            child: _buildBottomBar(),
+            child: _buildBottomBar(c),
           ),
         ],
       ),
@@ -301,7 +302,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── AppBar ─────────────────────────────────────────────────────────
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(KotobaColors c) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(kToolbarHeight),
       child: ClipRRect(
@@ -309,19 +310,19 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: AppBar(
             automaticallyImplyLeading: false,
-            backgroundColor: AppColors.surface.withValues(alpha: 0.8),
+            backgroundColor: c.surface.withValues(alpha: 0.8),
             surfaceTintColor: Colors.transparent,
             elevation: 0,
             scrolledUnderElevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.close, color: AppColors.onSurfaceVariant),
+              icon: Icon(Icons.close, color: c.onSurfaceVariant),
               onPressed: () { if (context.canPop()) context.pop(); },
             ),
             centerTitle: true,
             title: Text(
               'Crear',
               style: KotobaTypography.headlineMd.copyWith(
-                color: AppColors.primary,
+                color: c.primary,
                 letterSpacing: 3,
               ),
             ),
@@ -329,18 +330,18 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               TextButton(
                 onPressed: _saving ? null : () => _saveDraft(replaceRoute: true),
                 child: _saving
-                    ? const SizedBox(
+                    ? SizedBox(
                         width: 16,
                         height: 16,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppColors.primary,
+                          color: c.primary,
                         ),
                       )
                     : Text(
                         'GUARDAR',
                         style: KotobaTypography.labelSm.copyWith(
-                          color: AppColors.primary,
+                          color: c.primary,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.1,
                         ),
@@ -356,7 +357,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Cover Section ──────────────────────────────────────────────────
 
-  Widget _buildCoverSection() {
+  Widget _buildCoverSection(KotobaColors c) {
     final screenHeight = MediaQuery.of(context).size.height;
     final hasCover = _localCoverFile != null || _coverUrl != null;
 
@@ -368,7 +369,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           fit: StackFit.expand,
           children: [
             // Background
-            Container(color: AppColors.surfaceLow),
+            Container(color: c.surfaceLow),
 
             // Cover image
             if (hasCover)
@@ -397,8 +398,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    AppColors.background,
-                    AppColors.background.withValues(alpha: 0.5),
+                    c.background,
+                    c.background.withValues(alpha: 0.5),
                     Colors.transparent,
                   ],
                 ),
@@ -413,10 +414,10 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: AppColors.surface.withValues(alpha: 0.8),
+                      color: c.surface.withValues(alpha: 0.8),
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                        color: c.outlineVariant.withValues(alpha: 0.3),
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -426,17 +427,17 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.add_photo_alternate_outlined,
                       size: 28,
-                      color: AppColors.onSurface,
+                      color: c.onSurface,
                     ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'AÑADIR PORTADA',
                     style: KotobaTypography.labelSm.copyWith(
-                      color: AppColors.onSurfaceVariant,
+                      color: c.onSurfaceVariant,
                       letterSpacing: 2,
                     ),
                   ),
@@ -451,7 +452,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Glass Card Wrapper ─────────────────────────────────────────────
 
-  Widget _glassCard({required Widget child}) {
+  Widget _glassCard(KotobaColors c, {required Widget child}) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: BackdropFilter(
@@ -462,7 +463,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             color: const Color(0xFF131318).withValues(alpha: 0.6),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: AppColors.onSurface.withValues(alpha: 0.05),
+              color: c.onSurface.withValues(alpha: 0.05),
             ),
           ),
           child: child,
@@ -473,8 +474,9 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Title & Synopsis Card ──────────────────────────────────────────
 
-  Widget _buildTitleSynopsisCard() {
+  Widget _buildTitleSynopsisCard(KotobaColors c) {
     return _glassCard(
+      c,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -482,12 +484,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           Text(
             'Título de la historia',
             style: KotobaTypography.labelSm.copyWith(
-              color: AppColors.primary,
+              color: c.primary,
               letterSpacing: 0.05,
             ),
           ),
           const SizedBox(height: 8),
           _buildStyledInput(
+            c,
             controller: _titleCtrl,
             placeholder: 'Escribe un título cautivador...',
             style: KotobaTypography.headlineMd.copyWith(fontSize: 20),
@@ -498,12 +501,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           Text(
             'Sinopsis / Descripción',
             style: KotobaTypography.labelSm.copyWith(
-              color: AppColors.primary,
+              color: c.primary,
               letterSpacing: 0.05,
             ),
           ),
           const SizedBox(height: 8),
           _buildStyledInput(
+            c,
             controller: _synopsisCtrl,
             placeholder: '¿De qué trata tu historia? Atrae a los lectores con un buen resumen...',
             maxLines: 5,
@@ -514,7 +518,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     );
   }
 
-  Widget _buildStyledInput({
+  Widget _buildStyledInput(
+    KotobaColors c, {
     required TextEditingController controller,
     required String placeholder,
     int maxLines = 1,
@@ -525,8 +530,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.outlineVariant),
-        color: AppColors.surfaceLowest,
+        border: Border.all(color: c.outlineVariant),
+        color: c.surfaceLowest,
       ),
       child: Focus(
         child: Builder(
@@ -537,13 +542,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: hasFocus ? AppColors.primaryContainer : Colors.transparent,
+                  color: hasFocus ? c.primaryContainer : Colors.transparent,
                   width: hasFocus ? 2 : 0,
                 ),
                 boxShadow: hasFocus
                     ? [
                         BoxShadow(
-                          color: AppColors.primaryContainer.withValues(alpha: 0.2),
+                          color: c.primaryContainer.withValues(alpha: 0.2),
                           blurRadius: 8,
                         ),
                       ]
@@ -563,12 +568,12 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                     child: TextField(
                       controller: controller,
                       maxLines: maxLines,
-                      style: style ?? KotobaTypography.bodyMd,
+                      style: style ?? KotobaTypography.bodyMd.copyWith(color: c.onSurface),
                       onSubmitted: onSubmitted,
                       decoration: InputDecoration(
                         hintText: placeholder,
                         hintStyle: (style ?? KotobaTypography.bodyMd).copyWith(
-                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+                          color: c.onSurfaceVariant.withValues(alpha: 0.5),
                         ),
                         border: InputBorder.none,
                         enabledBorder: InputBorder.none,
@@ -592,8 +597,9 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Settings Card ──────────────────────────────────────────────────
 
-  Widget _buildSettingsCard() {
+  Widget _buildSettingsCard(KotobaColors c) {
     return _glassCard(
+      c,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -606,13 +612,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                 Text(
                   'CONFIGURACIÓN',
                   style: KotobaTypography.labelSm.copyWith(
-                    color: AppColors.primary,
+                    color: c.primary,
                     letterSpacing: 2,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Divider(
-                  color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                  color: c.outlineVariant.withValues(alpha: 0.3),
                   height: 1,
                 ),
               ],
@@ -621,6 +627,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
           // Mature content toggle
           _buildToggleRow(
+            c,
             title: 'Contenido Adulto',
             subtitle: 'Contiene escenas explícitas o violencia',
             value: isMature,
@@ -629,16 +636,17 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           ),
 
           Divider(
-            color: AppColors.outlineVariant.withValues(alpha: 0.1),
+            color: c.outlineVariant.withValues(alpha: 0.1),
             height: 1,
           ),
 
           // Completed story toggle
           _buildToggleRow(
+            c,
             title: 'Historia Finalizada',
             subtitle: 'Marca la obra como completa',
             value: isCompleted,
-            activeColor: AppColors.primaryContainer,
+            activeColor: c.primaryContainer,
             onChanged: (v) => setState(() => isCompleted = v),
           ),
         ],
@@ -646,7 +654,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     );
   }
 
-  Widget _buildToggleRow({
+  Widget _buildToggleRow(
+    KotobaColors c, {
     required String title,
     required String subtitle,
     required bool value,
@@ -661,12 +670,12 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: KotobaTypography.bodyMd),
+                Text(title, style: KotobaTypography.bodyMd.copyWith(color: c.onSurface)),
                 const SizedBox(height: 2),
                 Text(
                   subtitle,
                   style: KotobaTypography.labelSm.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                    color: c.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -677,8 +686,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             onChanged: onChanged,
             activeThumbColor: activeColor,
             activeTrackColor: activeColor.withValues(alpha: 0.4),
-            inactiveThumbColor: AppColors.onSurface,
-            inactiveTrackColor: AppColors.surfaceHighest,
+            inactiveThumbColor: c.onSurface,
+            inactiveTrackColor: c.surfaceHighest,
             trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
           ),
         ],
@@ -688,10 +697,11 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Tags Card ──────────────────────────────────────────────────────
 
-  Widget _buildTagsCard() {
+  Widget _buildTagsCard(KotobaColors c) {
     final tagInputCtrl = TextEditingController();
 
     return _glassCard(
+      c,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -702,13 +712,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               Text(
                 'ETIQUETAS',
                 style: KotobaTypography.labelSm.copyWith(
-                  color: AppColors.primary,
+                  color: c.primary,
                   letterSpacing: 2,
                 ),
               ),
               const SizedBox(height: 8),
               Divider(
-                color: AppColors.outlineVariant.withValues(alpha: 0.3),
+                color: c.outlineVariant.withValues(alpha: 0.3),
                 height: 1,
               ),
             ],
@@ -717,13 +727,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
           // Tag input
           _buildStyledInput(
+            c,
             controller: tagInputCtrl,
             placeholder: 'Añadir etiqueta y presionar enter...',
-            style: KotobaTypography.bodyMd,
-            prefixIcon: const Icon(
+            style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
+            prefixIcon: Icon(
               Icons.sell_outlined,
               size: 20,
-              color: AppColors.onSurfaceVariant,
+              color: c.onSurfaceVariant,
             ),
             onSubmitted: (value) {
               _addTag(value);
@@ -741,10 +752,10 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceHighest,
+                    color: c.surfaceHighest,
                     borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: AppColors.outlineVariant.withValues(alpha: 0.5),
+                      color: c.outlineVariant.withValues(alpha: 0.5),
                     ),
                   ),
                   child: Row(
@@ -753,16 +764,16 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                       Text(
                         tag,
                         style: KotobaTypography.labelSm.copyWith(
-                          color: AppColors.onSurface,
+                          color: c.onSurface,
                         ),
                       ),
                       const SizedBox(width: 6),
                       GestureDetector(
                         onTap: () => _removeTag(tag),
-                        child: const Icon(
+                        child: Icon(
                           Icons.close,
                           size: 14,
-                          color: AppColors.onSurfaceVariant,
+                          color: c.onSurfaceVariant,
                         ),
                       ),
                     ],
@@ -778,8 +789,9 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Table of Contents Card ─────────────────────────────────────────
 
-  Widget _buildTableOfContentsCard() {
+  Widget _buildTableOfContentsCard(KotobaColors c) {
     return _glassCard(
+      c,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -790,7 +802,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               Text(
                 'TABLA DE\nCONTENIDOS',
                 style: KotobaTypography.labelSm.copyWith(
-                  color: AppColors.primary,
+                  color: c.primary,
                   letterSpacing: 2,
                   height: 1.4,
                 ),
@@ -798,14 +810,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               Text(
                 '${_chapters.length} Capítulo${_chapters.length == 1 ? '' : 's'}',
                 style: KotobaTypography.labelSm.copyWith(
-                  color: AppColors.onSurfaceVariant,
+                  color: c.onSurfaceVariant,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Divider(
-            color: AppColors.outlineVariant.withValues(alpha: 0.3),
+            color: c.outlineVariant.withValues(alpha: 0.3),
             height: 1,
           ),
           const SizedBox(height: 8),
@@ -818,7 +830,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                 child: Text(
                   'Aún no hay capítulos.',
                   style: KotobaTypography.bodyMd.copyWith(
-                    color: AppColors.onSurfaceVariant,
+                    color: c.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -826,7 +838,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
           else
             ...List.generate(_chapters.length, (index) {
               final ch = _chapters[index];
-              return _buildChapterItem(ch, index + 1);
+              return _buildChapterItem(c, ch, index + 1);
             }),
 
           const SizedBox(height: 16),
@@ -840,23 +852,23 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
-                  color: AppColors.outlineVariant,
+                  color: c.outlineVariant,
                   style: BorderStyle.solid,
                 ),
-                color: AppColors.surfaceLowest.withValues(alpha: 0.5),
+                color: c.surfaceLowest.withValues(alpha: 0.5),
               ),
               child: Column(
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.add_circle_outline,
                     size: 28,
-                    color: AppColors.onSurfaceVariant,
+                    color: c.onSurfaceVariant,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Agregar Capítulo',
                     style: KotobaTypography.labelMd.copyWith(
-                      color: AppColors.onSurfaceVariant,
+                      color: c.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -868,7 +880,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     );
   }
 
-  Widget _buildChapterItem(Chapter chapter, int number) {
+  Widget _buildChapterItem(KotobaColors c, Chapter chapter, int number) {
     final isPublished = chapter.status == 'published';
     return InkWell(
       onTap: () => _onEditChapter(chapter),
@@ -877,7 +889,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
         margin: const EdgeInsets.symmetric(vertical: 4),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: c.surface,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
@@ -888,13 +900,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               height: 56,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.surfaceLow,
+                color: c.surfaceLow,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 number.toString().padLeft(2, '0'),
                 style: KotobaTypography.headlineMd.copyWith(
-                  color: AppColors.onSurfaceVariant.withValues(alpha: 0.8),
+                  color: c.onSurfaceVariant.withValues(alpha: 0.8),
                   fontSize: 28,
                 ),
               ),
@@ -908,7 +920,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                 children: [
                   Text(
                     chapter.title,
-                    style: KotobaTypography.bodyMd,
+                    style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -919,7 +931,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                         : 'Borrador • ${chapter.wordCount} palabras',
                     style: KotobaTypography.labelSm.copyWith(
                       color: isPublished
-                          ? AppColors.onSurfaceVariant
+                          ? c.onSurfaceVariant
                           : const Color(0xFFE07A5F),
                     ),
                   ),
@@ -931,7 +943,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             Icon(
               Icons.edit_outlined,
               size: 18,
-              color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+              color: c.onSurfaceVariant.withValues(alpha: 0.5),
             ),
           ],
         ),
@@ -941,7 +953,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
 
   // ── Bottom Bar ─────────────────────────────────────────────────────
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(KotobaColors c) {
     return ClipRRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
@@ -953,10 +965,10 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             bottom: MediaQuery.of(context).padding.bottom + 16,
           ),
           decoration: BoxDecoration(
-            color: AppColors.surface.withValues(alpha: 0.9),
+            color: c.surface.withValues(alpha: 0.9),
             border: Border(
               top: BorderSide(
-                color: AppColors.outlineVariant.withValues(alpha: 0.1),
+                color: c.outlineVariant.withValues(alpha: 0.1),
               ),
             ),
           ),
@@ -970,12 +982,12 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                   label: Text(
                     'Borrador',
                     style: KotobaTypography.labelMd.copyWith(
-                      color: AppColors.onSurface,
+                      color: c.onSurface,
                     ),
                   ),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.onSurface,
-                    side: const BorderSide(color: AppColors.outline),
+                    foregroundColor: c.onSurface,
+                    side: BorderSide(color: c.outline),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -993,17 +1005,17 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                     'Publicar',
                     style: KotobaTypography.labelMd.copyWith(
                       color: !_canPublish
-                          ? AppColors.onSurfaceVariant
-                          : AppColors.background,
+                          ? c.onSurfaceVariant
+                          : c.background,
                     ),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: !_canPublish
-                        ? AppColors.surfaceHigh
-                        : AppColors.primaryContainer,
+                        ? c.surfaceHigh
+                        : c.primaryContainer,
                     foregroundColor: !_canPublish
-                        ? AppColors.onSurfaceVariant
-                        : AppColors.background,
+                        ? c.onSurfaceVariant
+                        : c.background,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),

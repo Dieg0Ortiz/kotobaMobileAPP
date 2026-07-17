@@ -7,7 +7,7 @@ import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
@@ -174,11 +174,11 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     context.push('/works/${widget.workId}/chapters/$_currentChapterId');
   }
 
-  void _onHistory() {
+  void _onHistory(KotobaColors c) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: c.surface,
         title: const Text('Historial de revisiones'),
         content: const Text('Esta función se encuentra en desarrollo.'),
         actions: [
@@ -188,21 +188,21 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Future<void> _onDelete() async {
+  Future<void> _onDelete(KotobaColors c) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: c.surface,
         title: const Text('Eliminar capítulo'),
         content: const Text('¿Estás seguro de que deseas eliminar este capítulo? Esta acción no se puede deshacer.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancelar', style: TextStyle(color: AppColors.onSurfaceVariant)),
+            child: Text('Cancelar', style: TextStyle(color: c.onSurfaceVariant)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Eliminar', style: TextStyle(color: AppColors.error)),
+            child: Text('Eliminar', style: TextStyle(color: c.error)),
           ),
         ],
       ),
@@ -301,6 +301,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, _) async {
@@ -309,16 +310,16 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
         if (context.mounted && context.canPop()) context.pop();
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: c.background,
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(),
-              _buildProgressBar(),
+              _buildTopBar(c),
+              _buildProgressBar(c),
               Expanded(
-                child: _buildEditorArea(),
+                child: _buildEditorArea(c),
               ),
-              _buildToolbar(),
+              _buildToolbar(c),
             ],
           ),
         ),
@@ -326,7 +327,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildTopBar() {
+  Widget _buildTopBar(KotobaColors c) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
@@ -342,7 +343,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             child: Text(
               'Crear',
               style: KotobaTypography.headlineMd.copyWith(
-                color: AppColors.onSurface,
+                color: c.onSurface,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -354,7 +355,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
               child: Text(
                 _saving ? 'PUBLICANDO...' : 'PUBLICAR',
                 style: KotobaTypography.labelMd.copyWith(
-                  color: _saving ? AppColors.onSurfaceVariant : AppColors.primary,
+                  color: _saving ? c.onSurfaceVariant : c.primary,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 1.2,
                 ),
@@ -362,19 +363,19 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             ),
           ),
           PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: AppColors.onSurfaceVariant),
-            color: AppColors.surfaceHigh,
+            icon: Icon(Icons.more_vert, color: c.onSurfaceVariant),
+            color: c.surfaceHigh,
             onSelected: (val) {
               if (val == 'save') _save(status: 'draft', stay: true);
               if (val == 'preview') _onPreview();
-              if (val == 'history') _onHistory();
-              if (val == 'delete') _onDelete();
+              if (val == 'history') _onHistory(c);
+              if (val == 'delete') _onDelete(c);
             },
             itemBuilder: (context) => [
-              const PopupMenuItem(value: 'save', child: Text('Guardar', style: TextStyle(color: AppColors.onSurface))),
-              const PopupMenuItem(value: 'preview', child: Text('Vista previa', style: TextStyle(color: AppColors.onSurface))),
-              const PopupMenuItem(value: 'history', child: Text('Historial de revisiones', style: TextStyle(color: AppColors.onSurface))),
-              const PopupMenuItem(value: 'delete', child: Text('Eliminar', style: TextStyle(color: AppColors.onSurface))),
+              PopupMenuItem(value: 'save', child: Text('Guardar', style: TextStyle(color: c.onSurface))),
+              PopupMenuItem(value: 'preview', child: Text('Vista previa', style: TextStyle(color: c.onSurface))),
+              PopupMenuItem(value: 'history', child: Text('Historial de revisiones', style: TextStyle(color: c.onSurface))),
+              PopupMenuItem(value: 'delete', child: Text('Eliminar', style: TextStyle(color: c.onSurface))),
             ],
           ),
         ],
@@ -382,27 +383,27 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildProgressBar() {
-    return const SizedBox(
+  Widget _buildProgressBar(KotobaColors c) {
+    return SizedBox(
       height: 2,
       child: Stack(
         children: [
           Positioned.fill(
-            child: ColoredBox(color: AppColors.surfaceHigh),
+            child: ColoredBox(color: c.surfaceHigh),
           ),
           Positioned(
             left: 0,
             top: 0,
             bottom: 0,
             width: 100,
-            child: ColoredBox(color: AppColors.secondary),
+            child: ColoredBox(color: c.secondary),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildEditorArea() {
+  Widget _buildEditorArea(KotobaColors c) {
     return SingleChildScrollView(
       controller: _scrollCtrl,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
@@ -413,11 +414,11 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMediaPlaceholder(),
+                _buildMediaPlaceholder(c),
                 const SizedBox(height: 24),
-                _buildTitleField(),
+                _buildTitleField(c),
                 const SizedBox(height: 16),
-                _buildContentEditor(),
+                _buildContentEditor(c),
               ],
             ),
           ),
@@ -426,7 +427,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildMediaPlaceholder() {
+  Widget _buildMediaPlaceholder(KotobaColors c) {
     return InkWell(
       onTap: () {},
       borderRadius: BorderRadius.circular(4),
@@ -436,7 +437,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
         decoration: BoxDecoration(
           color: Colors.transparent,
           border: Border.all(
-            color: AppColors.outlineVariant.withValues(alpha: 0.3),
+            color: c.outlineVariant.withValues(alpha: 0.3),
             style: BorderStyle.solid, // Simulated dashed via minimal outline
           ),
           borderRadius: BorderRadius.circular(4),
@@ -446,13 +447,13 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             Icon(
               Icons.add_photo_alternate_outlined,
               size: 32,
-              color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+              color: c.onSurfaceVariant.withValues(alpha: 0.7),
             ),
             const SizedBox(height: 8),
             Text(
               'Toca para añadir medios gráficos',
               style: KotobaTypography.labelSm.copyWith(
-                color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+                color: c.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ),
           ],
@@ -461,12 +462,12 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildTitleField() {
+  Widget _buildTitleField(KotobaColors c) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppColors.outlineVariant,
+            color: c.outlineVariant,
             width: 1.0,
           ),
         ),
@@ -474,11 +475,11 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
       padding: const EdgeInsets.only(bottom: 8),
       child: TextField(
         controller: _titleCtrl,
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Noto Serif JP',
           fontSize: 26,
           fontWeight: FontWeight.w400,
-          color: AppColors.onSurface,
+          color: c.onSurface,
         ),
         decoration: InputDecoration(
           hintText: 'Ponle un título a esta parte',
@@ -486,7 +487,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             fontFamily: 'Noto Serif JP',
             fontSize: 26,
             fontWeight: FontWeight.w400,
-            color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+            color: c.onSurfaceVariant.withValues(alpha: 0.7),
           ),
           border: InputBorder.none,
           isCollapsed: true,
@@ -496,7 +497,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildContentEditor() {
+  Widget _buildContentEditor(KotobaColors c) {
     return Container(
       color: Colors.transparent,
       child: Stack(
@@ -524,7 +525,7 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             child: Text(
               '$_wordCount palabras',
               style: KotobaTypography.labelXs.copyWith(
-                color: AppColors.onSurfaceVariant.withValues(alpha: 0.7),
+                color: c.onSurfaceVariant.withValues(alpha: 0.7),
               ),
             ),
           ),
@@ -533,10 +534,10 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     );
   }
 
-  Widget _buildToolbar() {
+  Widget _buildToolbar(KotobaColors c) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.95),
+        color: c.surface.withValues(alpha: 0.95),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -555,31 +556,37 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
               icon: Icons.format_bold,
               active: _hasAttr(Attribute.bold),
               onTap: () => _onFormat(Attribute.bold),
+              c: c,
             ),
             _ToolbarBtn(
               icon: Icons.format_italic,
               active: _hasAttr(Attribute.italic),
               onTap: () => _onFormat(Attribute.italic),
+              c: c,
             ),
             _ToolbarBtn(
               icon: Icons.format_underline,
               active: _hasAttr(Attribute.underline),
               onTap: () => _onFormat(Attribute.underline),
+              c: c,
             ),
             _ToolbarBtn(
               icon: _alignmentIcon,
               active: _currentAlignment() != null,
               onTap: _cycleAlignment,
+              c: c,
             ),
             _ToolbarBtn(
               icon: Icons.format_list_bulleted,
               active: _hasAttr(Attribute.ul),
               onTap: () => _onFormat(Attribute.ul),
+              c: c,
             ),
             _ToolbarBtn(
               icon: Icons.format_quote,
               active: _hasAttr(Attribute.blockQuote),
               onTap: () => _onFormat(Attribute.blockQuote),
+              c: c,
             ),
           ],
         ),
@@ -592,11 +599,13 @@ class _ToolbarBtn extends StatelessWidget {
   final IconData icon;
   final bool active;
   final VoidCallback onTap;
+  final KotobaColors c;
 
   const _ToolbarBtn({
     required this.icon,
     required this.active,
     required this.onTap,
+    required this.c,
   });
 
   @override
@@ -608,7 +617,7 @@ class _ToolbarBtn extends StatelessWidget {
         child: Icon(
           icon,
           size: 24,
-          color: active ? AppColors.primary : AppColors.onSurfaceVariant,
+          color: active ? c.primary : c.onSurfaceVariant,
         ),
       ),
     );

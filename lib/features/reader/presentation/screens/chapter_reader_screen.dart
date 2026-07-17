@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/drop_cap_text.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
@@ -40,7 +40,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
     );
   }
 
-  List<Widget> _buildChapterWidgets(String content, double fontSize, String fontFamily) {
+  List<Widget> _buildChapterWidgets(String content, double fontSize, String fontFamily, KotobaColors c) {
     Delta delta;
     try {
       final decoded = jsonDecode(content);
@@ -77,7 +77,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
               fontSize: isBlockquote ? fontSize + 2 : fontSize,
               fontWeight: weight,
               fontStyle: style,
-              color: isBlockquote ? const Color(0xFFD4AF37) : AppColors.onSurface,
+              color: isBlockquote ? const Color(0xFFD4AF37) : c.onSurface,
               height: 1.8,
             ),
           ));
@@ -92,13 +92,13 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
           String fullText = spans.map((e) => e.text).join();
           children.add(DropCapText(
             fullText,
-            style: GoogleFonts.getFont(fontFamily, fontSize: fontSize, height: 1.8, color: AppColors.onSurface),
+            style: GoogleFonts.getFont(fontFamily, fontSize: fontSize, height: 1.8, color: c.onSurface),
             dropCapStyle: GoogleFonts.getFont(
               fontFamily, 
               fontSize: fontSize * 5.5, // Much larger letter
               fontWeight: FontWeight.bold,
               // Removed height: 1.0 to prevent cropping at the top
-              color: AppColors.onSurface,
+              color: c.onSurface,
             ),
             dropCapPadding: const EdgeInsets.only(right: 12.0, bottom: 4.0),
             indentation: const Offset(0, 20.0), // Pushes the text down to align near the middle of the letter
@@ -127,7 +127,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
         // Basic fallback for lists/blocks if they exist
         children.add(Text(
           node.toPlainText(),
-          style: GoogleFonts.getFont(fontFamily, fontSize: fontSize, height: 1.8, color: AppColors.onSurface),
+          style: GoogleFonts.getFont(fontFamily, fontSize: fontSize, height: 1.8, color: c.onSurface),
         ));
         children.add(const SizedBox(height: 16));
       }
@@ -139,11 +139,12 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   Widget build(BuildContext context) {
     final chapterAsync = ref.watch(chapterContentProvider(widget.chapterId));
     final prefs = ref.watch(readerPreferencesProvider);
+    final c = KotobaColors.of(context);
     
     KotobaTypography.readerFontFamily = prefs.fontFamily;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       body: chapterAsync.when(
         loading: () => const Center(child: KotobaLoading()),
         error: (e, _) => Center(child: Text(e.toString())),
@@ -162,15 +163,15 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                   children: [
                     Text(
                       chapter.title,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: 'Noto Serif JP',
                         fontSize: 28,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primary,
+                        color: c.primary,
                       ),
                     ),
                     const SizedBox(height: 48),
-                    ..._buildChapterWidgets(chapter.content, prefs.fontSize, prefs.fontFamily),
+                    ..._buildChapterWidgets(chapter.content, prefs.fontSize, prefs.fontFamily, c),
                   ],
                 ),
                 AnimatedPositioned(
@@ -182,11 +183,10 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                     height: 80,
                     padding: const EdgeInsets.only(top: 32),
                     decoration: BoxDecoration(
-                      color: AppColors.background.withValues(alpha: 0.9),
+                      color: c.background.withValues(alpha: 0.9),
                       border: Border(
                         bottom: BorderSide(
-                          color:
-                              AppColors.outlineVariant.withValues(alpha: 0.3),
+                          color: c.outlineVariant.withValues(alpha: 0.3),
                         ),
                       ),
                     ),

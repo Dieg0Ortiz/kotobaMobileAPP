@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../catalog/domain/entities/work.dart';
@@ -17,11 +17,12 @@ class LibraryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarksAsync = ref.watch(myBookmarksProvider);
     final followingAsync = ref.watch(followingAuthorsProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: c.background,
       appBar: AppBar(
-        title: const Text('Biblioteca', style: KotobaTypography.headlineMd),
+        title: Text('Biblioteca', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
       ),
       body: bookmarksAsync.when(
         loading: () => const Center(child: KotobaLoading()),
@@ -77,10 +78,10 @@ class LibraryScreen extends ConsumerWidget {
                       children: [
                         Padding(
                           padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
-                          child: Text('Autores Seguidos', style: KotobaTypography.headlineMd),
+                          child: Text('Autores Seguidos', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                         ),
                         ...carousels,
-                        const Divider(color: AppColors.outlineVariant, height: 32, indent: 24, endIndent: 24),
+                        Divider(color: c.outlineVariant, height: 32, indent: 24, endIndent: 24),
                       ],
                     ),
                   );
@@ -89,21 +90,21 @@ class LibraryScreen extends ConsumerWidget {
 
               // ── Sección: Obras Guardadas ────────────────
               if (works.isEmpty)
-                const SliverFillRemaining(
+                SliverFillRemaining(
                   child: Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.bookmark_border, size: 64, color: AppColors.onSurfaceVariant),
-                        SizedBox(height: 16),
+                        Icon(Icons.bookmark_border, size: 64, color: c.onSurfaceVariant),
+                        const SizedBox(height: 16),
                         Text(
                           'No tienes obras guardadas',
-                          style: TextStyle(color: AppColors.onSurfaceVariant),
+                          style: TextStyle(color: c.onSurfaceVariant),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           'Guarda obras para leerlas después',
-                          style: TextStyle(color: AppColors.outlineVariant, fontSize: 14),
+                          style: TextStyle(color: c.outlineVariant, fontSize: 14),
                         ),
                       ],
                     ),
@@ -113,7 +114,7 @@ class LibraryScreen extends ConsumerWidget {
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
-                    child: Text('Guardados', style: KotobaTypography.headlineMd),
+                    child: Text('Guardados', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                   ),
                 ),
               if (works.isNotEmpty)
@@ -151,6 +152,7 @@ class _AuthorCarousel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = KotobaColors.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -162,9 +164,9 @@ class _AuthorCarousel extends ConsumerWidget {
                 onTap: () => context.push('/users/$authorId'),
                 child: Row(
                   children: [
-                    Text('@$username', style: KotobaTypography.labelMd),
+                    Text('@$username', style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
                     const SizedBox(width: 4),
-                    const Icon(Icons.chevron_right, size: 16, color: AppColors.onSurfaceVariant),
+                    Icon(Icons.chevron_right, size: 16, color: c.onSurfaceVariant),
                   ],
                 ),
               ),
@@ -184,16 +186,16 @@ class _AuthorCarousel extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceHigh,
+                    color: c.surfaceHigh,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: AppColors.outlineVariant),
+                    border: Border.all(color: c.outlineVariant),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.check, size: 14, color: AppColors.onSurfaceVariant),
-                      SizedBox(width: 4),
-                      Text('Siguiendo', style: TextStyle(fontSize: 12, color: AppColors.onSurfaceVariant)),
+                      Icon(Icons.check, size: 14, color: c.onSurfaceVariant),
+                      const SizedBox(width: 4),
+                      Text('Siguiendo', style: TextStyle(fontSize: 12, color: c.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -232,14 +234,15 @@ class HorizontalWorkCarouselCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         width: 140,
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.onSurface.withValues(alpha: 0.05)),
+          border: Border.all(color: c.onSurface.withValues(alpha: 0.05)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -248,20 +251,20 @@ class HorizontalWorkCarouselCard extends StatelessWidget {
             Expanded(
               child: work.coverUrl != null
                   ? CachedNetworkImage(imageUrl: work.coverUrl!, fit: BoxFit.cover, width: double.infinity)
-                  : Container(color: AppColors.surfaceHigh, child: const Center(child: Icon(Icons.book, color: AppColors.onSurfaceVariant))),
+                  : Container(color: c.surfaceHigh, child: Center(child: Icon(Icons.book, color: c.onSurfaceVariant))),
             ),
             Padding(
               padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(work.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KotobaTypography.labelMd),
+                  Text(work.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Icon(Icons.star, size: 10, color: AppColors.onSurfaceVariant),
+                      Icon(Icons.star, size: 10, color: c.onSurfaceVariant),
                       const SizedBox(width: 2),
-                      Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs),
+                      Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                     ],
                   ),
                 ],
@@ -282,14 +285,15 @@ class _LibraryWorkCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     return GestureDetector(
       onTap: onTap,
       child: Container(
         height: 120,
         decoration: BoxDecoration(
-          color: AppColors.surfaceLow,
+          color: c.surfaceLow,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.onSurface.withValues(alpha: 0.05)),
+          border: Border.all(color: c.onSurface.withValues(alpha: 0.05)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Row(
@@ -298,7 +302,7 @@ class _LibraryWorkCard extends StatelessWidget {
               aspectRatio: 2 / 3,
               child: work.coverUrl != null
                   ? CachedNetworkImage(imageUrl: work.coverUrl!, fit: BoxFit.cover)
-                  : Container(color: AppColors.surfaceHigh),
+                  : Container(color: c.surfaceHigh),
             ),
             Expanded(
               child: Padding(
@@ -306,29 +310,29 @@ class _LibraryWorkCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(work.title, style: KotobaTypography.headlineMd, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(work.title, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface), maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 4),
                     Expanded(
                       child: Text(
                         work.synopsis, 
                         maxLines: 2, 
                         overflow: TextOverflow.ellipsis,
-                        style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
                       ),
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.visibility, size: 14, color: AppColors.onSurfaceVariant),
+                        Icon(Icons.visibility, size: 14, color: c.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text(work.formattedViewCount, style: KotobaTypography.labelXs),
+                        Text(work.formattedViewCount, style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         const SizedBox(width: 12),
-                        const Icon(Icons.star, size: 14, color: AppColors.onSurfaceVariant),
+                        Icon(Icons.star, size: 14, color: c.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs),
+                        Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         const SizedBox(width: 12),
-                        const Icon(Icons.menu_book, size: 14, color: AppColors.onSurfaceVariant),
+                        Icon(Icons.menu_book, size: 14, color: c.onSurfaceVariant),
                         const SizedBox(width: 4),
-                        Text('${work.chapterCount}', style: KotobaTypography.labelXs),
+                        Text('${work.chapterCount}', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                       ],
                     ),
                   ],

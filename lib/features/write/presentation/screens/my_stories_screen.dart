@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../catalog/domain/entities/work.dart';
@@ -44,6 +44,7 @@ class _MyStoriesBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final worksAsync = ref.watch(myWorksProvider(authorId));
+    final c = KotobaColors.of(context);
 
     return DefaultTabController(
       length: 2,
@@ -54,21 +55,21 @@ class _MyStoriesBody extends ConsumerWidget {
             icon: const Icon(Icons.arrow_back),
             onPressed: () { if (context.canPop()) context.pop(); },
           ),
-          title: const Text('Mis Historias', style: KotobaTypography.headlineMd),
+          title: Text('Mis Historias', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
           actions: [
             TextButton(
               onPressed: () => context.push('/write/edit/new'),
               child: Text(
                 'HISTORIA NUEVA',
-                style: KotobaTypography.labelSm.copyWith(color: AppColors.action),
+                style: KotobaTypography.labelSm.copyWith(color: c.action),
               ),
             ),
           ],
-          bottom: const TabBar(
-            indicatorColor: AppColors.action,
-            labelColor: AppColors.action,
-            unselectedLabelColor: AppColors.onSurfaceVariant,
-            tabs: [
+          bottom: TabBar(
+            indicatorColor: c.action,
+            labelColor: c.action,
+            unselectedLabelColor: c.onSurfaceVariant,
+            tabs: const [
               Tab(text: 'Publicado'),
               Tab(text: 'Borradores'),
             ],
@@ -102,6 +103,7 @@ class _WorksList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
     if (works.isEmpty) {
       return Center(
         child: Padding(
@@ -109,7 +111,7 @@ class _WorksList extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(emptyMsg, style: KotobaTypography.bodyMd, textAlign: TextAlign.center),
+              Text(emptyMsg, style: KotobaTypography.bodyMd.copyWith(color: c.onSurface), textAlign: TextAlign.center),
               const SizedBox(height: 16),
               KotobaButton(
                 label: 'Crear historia',
@@ -125,7 +127,7 @@ class _WorksList extends StatelessWidget {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(vertical: 16),
       itemCount: works.length,
-      separatorBuilder: (_, __) => const Divider(color: AppColors.outlineVariant, height: 32),
+      separatorBuilder: (_, __) => Divider(color: c.outlineVariant, height: 32),
       itemBuilder: (context, index) {
         final work = works[index];
         return InkWell(
@@ -142,7 +144,7 @@ class _WorksList extends StatelessWidget {
                     height: 112,
                     child: work.coverUrl != null
                         ? CachedNetworkImage(imageUrl: work.coverUrl!, fit: BoxFit.cover)
-                        : Container(color: AppColors.surfaceHigh),
+                        : Container(color: c.surfaceHigh),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -150,7 +152,7 @@ class _WorksList extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(work.title, style: KotobaTypography.headlineMd.copyWith(height: 1.2),
+                      Text(work.title, style: KotobaTypography.headlineMd.copyWith(height: 1.2, color: c.onSurface),
                           maxLines: 2, overflow: TextOverflow.ellipsis),
                       const SizedBox(height: 8),
                       Wrap(
@@ -161,11 +163,11 @@ class _WorksList extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                             decoration: BoxDecoration(
-                              color: AppColors.surfaceHigh,
+                              color: c.surfaceHigh,
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: Text('${work.chapterCount} parte publicada',
-                                style: KotobaTypography.labelXs),
+                                style: KotobaTypography.labelXs.copyWith(color: c.onSurface)),
                           ),
                           KotobaButton(
                             label: 'Escribir capítulo',

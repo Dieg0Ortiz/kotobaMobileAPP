@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
@@ -17,10 +17,11 @@ class WriteDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentProfileProvider);
     final dashboardDataAsync = ref.watch(writeDashboardProvider);
+    final c = KotobaColors.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Escribir', style: KotobaTypography.headlineMd),
+        title: Text('Escribir', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
         actions: [
           profileAsync.maybeWhen(
             data: (user) => Padding(
@@ -42,20 +43,20 @@ class WriteDashboardScreen extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceLow,
+                    color: c.surfaceLow,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                    border: Border.all(color: c.outlineVariant.withValues(alpha: 0.5)),
                   ),
                   child: Column(
                     children: [
-                      const Icon(Icons.edit_note, size: 48, color: AppColors.onSurfaceVariant),
+                      Icon(Icons.edit_note, size: 48, color: c.onSurfaceVariant),
                       const SizedBox(height: 16),
-                      Text('Comienza tu viaje', style: KotobaTypography.headlineMd),
+                      Text('Comienza tu viaje', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                       const SizedBox(height: 8),
                       Text(
                         'Aún no has escrito ninguna historia. ¡Crea una ahora!',
                         textAlign: TextAlign.center,
-                        style: KotobaTypography.bodyMd.copyWith(color: AppColors.onSurfaceVariant),
+                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
                       ),
                     ],
                   ),
@@ -67,9 +68,9 @@ class WriteDashboardScreen extends ConsumerWidget {
                 onTap: () => context.push('/write/edit/${lastWork.id}'),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surfaceLow,
+                    color: c.surfaceLow,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                    border: Border.all(color: c.outlineVariant.withValues(alpha: 0.5)),
                   ),
                   padding: const EdgeInsets.all(16),
                   child: Row(
@@ -86,7 +87,7 @@ class WriteDashboardScreen extends ConsumerWidget {
                                   imageUrl: lastWork.coverUrl!,
                                   fit: BoxFit.cover,
                                 )
-                              : Container(color: AppColors.surfaceHigh),
+                              : Container(color: c.surfaceHigh),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -97,12 +98,12 @@ class WriteDashboardScreen extends ConsumerWidget {
                           children: [
                             Text(
                               'Seguir escribiendo',
-                              style: KotobaTypography.labelSm.copyWith(color: AppColors.onSurfaceVariant),
+                              style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               lastWork.title,
-                              style: KotobaTypography.headlineMd.copyWith(height: 1.2),
+                              style: KotobaTypography.headlineMd.copyWith(height: 1.2, color: c.onSurface),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -112,18 +113,18 @@ class WriteDashboardScreen extends ConsumerWidget {
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
-                                    color: AppColors.surfaceHigh,
+                                    color: c.surfaceHigh,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: Text(
                                     '${data.publishedParts} parte${data.publishedParts == 1 ? '' : 's'} publicada${data.publishedParts == 1 ? '' : 's'}',
-                                    style: KotobaTypography.labelXs,
+                                    style: KotobaTypography.labelXs.copyWith(color: c.onSurface),
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
                                   '${data.drafts} borrador${data.drafts == 1 ? '' : 'es'}',
-                                  style: KotobaTypography.labelXs.copyWith(color: AppColors.onSurfaceVariant),
+                                  style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                                 ),
                               ],
                             ),
@@ -138,21 +139,21 @@ class WriteDashboardScreen extends ConsumerWidget {
             loading: () => Container(
               height: 137,
               decoration: BoxDecoration(
-                color: AppColors.surfaceLow,
+                color: c.surfaceLow,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.outlineVariant.withValues(alpha: 0.5)),
+                border: Border.all(color: c.outlineVariant.withValues(alpha: 0.5)),
               ),
               child: const Center(child: KotobaLoading()),
             ),
             error: (e, st) => Container(
               height: 137,
               decoration: BoxDecoration(
-                color: AppColors.surfaceLow,
+                color: c.surfaceLow,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.error.withValues(alpha: 0.5)),
+                border: Border.all(color: c.error.withValues(alpha: 0.5)),
               ),
               child: Center(
-                child: Text('Error al cargar historias', style: KotobaTypography.labelSm.copyWith(color: AppColors.error)),
+                child: Text('Error al cargar historias', style: KotobaTypography.labelSm.copyWith(color: c.error)),
               ),
             ),
           ),
@@ -163,16 +164,19 @@ class WriteDashboardScreen extends ConsumerWidget {
             icon: Icons.menu_book,
             title: 'Historias',
             onTap: () => context.push('/write/stories'),
+            context: context,
           ),
           _buildMenuOption(
             icon: Icons.collections_bookmark,
             title: 'Series',
             onTap: () {},
+            context: context,
           ),
           _buildMenuOption(
             icon: Icons.add_box_outlined,
             title: 'Crea una historia nueva',
             onTap: () => context.push('/write/edit/new'),
+            context: context,
           ),
 
         ],
@@ -184,7 +188,9 @@ class WriteDashboardScreen extends ConsumerWidget {
     required IconData icon,
     required String title,
     required VoidCallback onTap,
+    required BuildContext context,
   }) {
+    final c = KotobaColors.of(context);
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -192,11 +198,11 @@ class WriteDashboardScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
         child: Row(
           children: [
-            Icon(icon, color: AppColors.onSurfaceVariant, size: 24),
+            Icon(icon, color: c.onSurfaceVariant, size: 24),
             const SizedBox(width: 20),
             Text(
               title,
-              style: KotobaTypography.bodyLg,
+              style: KotobaTypography.bodyLg.copyWith(color: c.onSurface),
             ),
           ],
         ),
