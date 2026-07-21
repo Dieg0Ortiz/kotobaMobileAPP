@@ -10,7 +10,7 @@ class Work extends Equatable {
   final String authorName;
   final String? coverUrl;
   final String synopsis;
-  final String genre;
+  final List<String> genres;
   final List<String> tags;
   final String status; // 'ongoing', 'completed', 'hiatus'
   final int chapterCount;
@@ -30,7 +30,7 @@ class Work extends Equatable {
     required this.authorName,
     this.coverUrl,
     required this.synopsis,
-    required this.genre,
+    this.genres = const [],
     this.tags = const [],
     this.status = 'ongoing',
     this.chapterCount = 0,
@@ -57,7 +57,7 @@ class Work extends Equatable {
       authorName: authorName,
       coverUrl: coverUrl,
       synopsis: synopsis,
-      genre: genre,
+      genres: genres,
       tags: tags,
       status: status,
       chapterCount: chapterCount ?? this.chapterCount,

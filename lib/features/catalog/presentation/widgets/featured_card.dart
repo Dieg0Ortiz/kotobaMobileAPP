@@ -96,7 +96,7 @@ class FeaturedCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${work.authorName} · ${work.genre} · ${work.chapterCount} caps',
+                    '${work.authorName} · ${work.genres.isNotEmpty ? work.genres.first : ''} · ${work.chapterCount} caps',
                     style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant),
                   ),
                   const SizedBox(height: 12),

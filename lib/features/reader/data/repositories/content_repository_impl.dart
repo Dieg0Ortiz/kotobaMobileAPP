@@ -25,7 +25,7 @@ class ContentRepositoryImpl implements IContentRepository {
       authorName: json['author_name'] as String? ?? '',
       coverUrl: json['cover_url'] as String?,
       synopsis: json['synopsis'] as String? ?? '',
-      genre: json['genre'] as String? ?? '',
+      genres: (json['genres'] as List<dynamic>?)?.cast<String>() ?? [],
       tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       status: json['status'] as String? ?? 'ongoing',
       chapterCount: json['chapter_count'] as int? ?? 0,

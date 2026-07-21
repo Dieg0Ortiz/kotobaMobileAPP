@@ -48,7 +48,7 @@ class LibraryScreen extends ConsumerWidget {
                               authorName: w['author_name'] as String? ?? userJson['username'] as String? ?? '',
                               coverUrl: w['cover_url'] as String?,
                               synopsis: w['synopsis'] as String? ?? '',
-                              genre: w['genre'] as String? ?? '',
+                              genres: (w['genres'] as List<dynamic>?)?.cast<String>() ?? [],
                               tags: (w['tags'] as List<dynamic>?)?.cast<String>() ?? [],
                               status: w['status'] as String? ?? 'ongoing',
                               chapterCount: w['chapter_count'] as int? ?? 0,

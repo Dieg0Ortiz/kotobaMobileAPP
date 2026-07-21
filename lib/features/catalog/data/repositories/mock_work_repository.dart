@@ -35,7 +35,7 @@ class MockWorkRepository implements IWorkRepository {
           .toList();
     }
     if (genre != null && genre != 'Todos') {
-      results = results.where((w) => w.genre == genre).toList();
+      results = results.where((w) => w.genres.contains(genre)).toList();
     }
     return Right(results);
   }

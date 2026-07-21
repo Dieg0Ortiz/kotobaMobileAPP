@@ -65,7 +65,7 @@ class WorkCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
-                          work.genre.toUpperCase(),
+                          (work.genres.isNotEmpty ? work.genres.first : '').toUpperCase(),
                           style: KotobaTypography.genreLabel.copyWith(color: c.onSurface),
                         ),
                       ),

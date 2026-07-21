@@ -95,7 +95,7 @@ class DetailedWorkCard extends StatelessWidget {
                   Text(work.title, style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                   const SizedBox(height: 6),
                   Text(
-                    '${work.genre} • ${(work.wordCount / 1000).toStringAsFixed(0)}k palabras',
+                    '${work.genres.isNotEmpty ? work.genres.join(', ') : ''} • ${(work.wordCount / 1000).toStringAsFixed(0)}k palabras',
                     style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
                   ),
                   const SizedBox(height: 16),

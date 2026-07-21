@@ -48,7 +48,7 @@ class MockProfileRepository implements IProfileRepository {
         'author_name': w.authorName,
         'cover_url': w.coverUrl,
         'synopsis': w.synopsis,
-        'genre': w.genre,
+        'genres': w.genres,
         'tags': w.tags,
         'status': w.status,
         'chapter_count': w.chapterCount,

@@ -129,9 +129,9 @@ class _HeroSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = KotobaColors.of(context);
-    final tags = <String>{work.genre};
-    for (final t in (work.tags as List<dynamic>? ?? [])) {
-      tags.add(t.toString());
+    final tags = <String>{...work.genres};
+    for (final t in work.tags) {
+      tags.add(t);
     }
 
     return SizedBox(

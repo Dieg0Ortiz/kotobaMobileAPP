@@ -43,11 +43,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
   XFile? _localCoverFile;
   List<Chapter> _chapters = [];
   List<String> _tags = [];
+  List<String> _selectedGenres = [];
 
   String? _actualWorkId;
   bool get _isNew => _actualWorkId == null;
   bool get _canPublish =>
-      _titleCtrl.text.trim().isNotEmpty && _synopsisCtrl.text.trim().isNotEmpty;
+      _titleCtrl.text.trim().isNotEmpty &&
+      _synopsisCtrl.text.trim().isNotEmpty &&
+      _selectedGenres.isNotEmpty;
 
   @override
   void initState() {
@@ -94,6 +97,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
         _synopsisCtrl.text = work.synopsis;
         _tags = List<String>.from(work.tags);
         _tagsCtrl.text = work.tags.join(', ');
+        _selectedGenres = List<String>.from(work.genres);
         _coverUrl = work.coverUrl;
         isCompleted = work.status == 'completed';
       },
@@ -169,7 +173,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       'title': title,
       'synopsis': _synopsisCtrl.text.trim(),
       'tags': _tags,
-      'genre': 'Sin género',
+      'genres': _selectedGenres,
       'status': status,
       'language': 'es',
     };
@@ -301,6 +305,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                       _buildTitleSynopsisCard(c),
                       const SizedBox(height: 24),
                       _buildSettingsCard(c),
+                      const SizedBox(height: 24),
+                      _buildGenresCard(c),
                       const SizedBox(height: 24),
                       _buildTagsCard(c),
                       const SizedBox(height: 24),
@@ -721,6 +727,100 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             inactiveTrackColor: c.surfaceHighest,
             trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ── Genres Card ─────────────────────────────────────────────────────
+
+  static const _availableGenres = [
+    'Ciencia Ficción', 'Fantasía', 'Ciberpunk', 'Fantasía Oscura',
+    'Thriller', 'Misterio', 'Romance', 'Horror', 'Drama', 'Poesía',
+  ];
+
+  Widget _buildGenresCard(KotobaColors c) {
+    return _glassCard(
+      c,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'GÉNEROS',
+                style: KotobaTypography.labelSm.copyWith(
+                  color: c.primary,
+                  letterSpacing: 2,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Selecciona de 1 a 3 géneros',
+                style: KotobaTypography.labelXs.copyWith(
+                  color: c.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Divider(
+                color: c.outlineVariant.withValues(alpha: 0.3),
+                height: 1,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _availableGenres.map((genre) {
+              final selected = _selectedGenres.contains(genre);
+              final canSelect = !selected && _selectedGenres.length >= 3;
+              return GestureDetector(
+                onTap: canSelect
+                    ? null
+                    : () {
+                        setState(() {
+                          if (selected) {
+                            _selectedGenres.remove(genre);
+                          } else {
+                            _selectedGenres.add(genre);
+                          }
+                        });
+                      },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: selected ? c.primaryContainer : c.surfaceHighest,
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(
+                      color: selected
+                          ? c.primaryContainer
+                          : c.outlineVariant.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  child: Text(
+                    genre,
+                    style: KotobaTypography.labelSm.copyWith(
+                      color: selected ? c.background : c.onSurface,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          if (_selectedGenres.isEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Debes seleccionar al menos 1 género',
+                style: KotobaTypography.labelXs.copyWith(
+                  color: c.error ?? const Color(0xFFE07A5F),
+                ),
+              ),
+            ),
         ],
       ),
     );
