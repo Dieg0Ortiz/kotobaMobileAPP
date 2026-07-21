@@ -22,7 +22,7 @@ class ApiConstants {
   static String get paymentBaseUrl {
     const defineUrl = String.fromEnvironment('PAYMENT_API_URL', defaultValue: '');
     if (defineUrl.isNotEmpty) return defineUrl;
-    return 'https://kotoba-pay.up.railway.app/api';
+    return 'https://kotobapay-production.up.railway.app/api';
   }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
