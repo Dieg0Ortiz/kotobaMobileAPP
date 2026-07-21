@@ -14,18 +14,7 @@ class ContentRepositoryImpl implements IContentRepository {
   ContentRepositoryImpl(this._api);
 
   Chapter _chapterFromJson(Map<String, dynamic> json) {
-    return Chapter(
-      id: json['id'] as String,
-      workId: json['work_id'] as String? ?? '',
-      number: json['order_number'] as int? ?? json['number'] as int? ?? 0,
-      title: json['title'] as String,
-      content: json['content'] as String? ?? '',
-      status: json['status'] as String? ?? 'draft',
-      wordCount: json['word_count'] as int? ?? 0,
-      readTimeMinutes: json['read_time_minutes'] as int? ?? 0,
-      publishedAt: DateTime.tryParse(json['published_at'] as String? ?? '') ?? DateTime.now(),
-      isLocked: json['is_locked'] as bool? ?? false,
-    );
+    return Chapter.fromJson(json);
   }
 
   Work _workFromJson(Map<String, dynamic> json) {

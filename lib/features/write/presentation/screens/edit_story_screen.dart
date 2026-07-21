@@ -108,7 +108,31 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     final result = await repo.getChapters(_actualWorkId!);
     result.fold(
       (_) {},
-      (chapters) => setState(() => _chapters = chapters),
+      (chapters) async {
+        // For chapters with wordCount == 0, fetch full content to compute it
+        final updated = <Chapter>[];
+        for (final ch in chapters) {
+          if (ch.wordCount == 0) {
+            final fullResult = await repo.getChapter(ch.id);
+            fullResult.fold(
+              (_) => updated.add(ch),
+              (fullChapter) {
+                updated.add(fullChapter);
+                // Backfill word_count on the backend so this is a one-time cost
+                if (fullChapter.wordCount > 0) {
+                  repo.updateChapter(ch.id, {
+                    'word_count': fullChapter.wordCount,
+                    'read_time_minutes': fullChapter.readTimeMinutes,
+                  });
+                }
+              },
+            );
+          } else {
+            updated.add(ch);
+          }
+        }
+        if (mounted) setState(() => _chapters = updated);
+      },
     );
     setState(() => _loading = false);
   }

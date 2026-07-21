@@ -116,11 +116,16 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     final api = ref.read(apiClientProvider);
     final repo = ContentRepositoryImpl(api);
 
+    final words = _wordCount;
+    final readTime = (words / 200).ceil();
+
     final body = {
       'work_id': widget.workId,
       'title': _titleCtrl.text.trim(),
       'content': deltaJson,
       'status': status,
+      'word_count': words,
+      'read_time_minutes': readTime,
     };
 
     final result = _currentChapterId != null
