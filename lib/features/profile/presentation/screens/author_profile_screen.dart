@@ -261,21 +261,21 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                   Wrap(
                     spacing: 12,
                     runSpacing: 12,
-                    children: [1, 3, 5, 10].map((amount) {
+                    children: [1.0, 3.0, 5.0, 10.0].map((amount) {
                       final isSelected = selectedAmount == amount;
                       return SizedBox(
                         width: 64,
                         height: 48,
                         child: isSelected
                             ? FilledButton(
-                                onPressed: () => setSheetState(() => selectedAmount = amount as double?),
+                                onPressed: () => setSheetState(() => selectedAmount = amount),
                                 style: FilledButton.styleFrom(backgroundColor: c.primary),
-                                child: Text('\$$amount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                child: Text('\$${amount.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
                               )
                             : OutlinedButton(
-                                onPressed: () => setSheetState(() => selectedAmount = amount as double?),
+                                onPressed: () => setSheetState(() => selectedAmount = amount),
                                 style: OutlinedButton.styleFrom(side: BorderSide(color: c.outlineVariant)),
-                                child: Text('\$$amount', style: TextStyle(color: c.onSurface)),
+                                child: Text('\$${amount.toInt()}', style: TextStyle(color: c.onSurface)),
                               ),
                       );
                     }).toList(),
