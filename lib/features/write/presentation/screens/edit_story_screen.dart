@@ -8,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
-
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
@@ -20,6 +19,7 @@ import '../../../reader/domain/entities/chapter.dart';
 import '../../../reader/presentation/providers/reader_providers.dart';
 import '../providers/write_providers.dart';
 import 'my_stories_screen.dart';
+import 'story_dashboard_screen.dart';
 
 class EditStoryScreen extends ConsumerStatefulWidget {
   final String storyId;
@@ -351,6 +351,13 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
               ),
             ),
             actions: [
+              if (!_isNew)
+                IconButton(
+                  icon: Icon(Icons.analytics_outlined, color: c.primary),
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => StoryDashboardScreen(storyId: widget.storyId)));
+                  },
+                ),
               TextButton(
                 onPressed: _saving ? null : () => _saveDraft(replaceRoute: true),
                 child: _saving

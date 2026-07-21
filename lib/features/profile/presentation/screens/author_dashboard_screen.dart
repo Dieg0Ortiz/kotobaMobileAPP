@@ -3,137 +3,398 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/kotoba_colors.dart';
-import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/stat_card.dart';
 
-/// Dashboard de analíticas para el autor.
 class AuthorDashboardScreen extends ConsumerWidget {
   const AuthorDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(authorDashboardProvider);
+    final profileAsync = ref.watch(currentProfileProvider);
     final c = KotobaColors.of(context);
 
+    final userName = profileAsync.valueOrNull?.username ?? 'A.K. Varela';
+
     return Scaffold(
+      backgroundColor: c.background,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(AppStrings.authorDashboard, style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () { if (context.canPop()) context.pop(); },
-        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(''),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_none, color: c.onSurfaceVariant),
+            onPressed: () {},
+          ),
+          IconButton(
+            icon: Icon(Icons.history, color: c.onSurfaceVariant),
+            onPressed: () {},
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 24, left: 16),
+            child: Center(
+              child: OutlinedButton(
+                onPressed: () {},
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF735B28), // Gold/Brown
+                  side: const BorderSide(color: Color(0xFF735B28)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+                child: const Text('PUBLISH', style: TextStyle(fontWeight: FontWeight.bold, letterSpacing: 1)),
+              ),
+            ),
+          ),
+        ],
       ),
       body: statsAsync.when(
         loading: () => const Center(child: KotobaLoading()),
         error: (e, _) => Center(child: Text(e.toString())),
-        data: (stats) => SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Resumen Global', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
-              const SizedBox(height: 16),
-              // Grid de estadísticas
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 1.5,
+        data: (stats) => LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 800;
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  StatCard(
-                    label: 'Lecturas Totales',
-                    value: stats.totalReads.toString(),
-                    icon: Icons.visibility,
-                  ),
-                  StatCard(
-                    label: 'Lectores Activos',
-                    value: stats.activeReaders.toString(),
-                    icon: Icons.group,
-                  ),
-                  StatCard(
-                    label: 'Obras Publicadas',
-                    value: stats.publishedWorks.toString(),
-                    icon: Icons.menu_book,
-                  ),
-                  StatCard(
-                    label: 'Seguidores',
-                    value: stats.followers.toString(),
-                    icon: Icons.person_add,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 32),
-              Text('Vistas (Últimos 7 días)',
-                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
-              const SizedBox(height: 24),
-              // Gráfico (fl_chart)
-              SizedBox(
-                height: 200,
-                child: LineChart(
-                  LineChartData(
-                    gridData: const FlGridData(show: false),
-                    titlesData: FlTitlesData(
-                      leftTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      topTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      rightTitles:
-                          AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                      bottomTitles: AxisTitles(
-                        sideTitles: SideTitles(
-                          showTitles: true,
-                          reservedSize: 22,
-                          interval: stats.engagementData.length > 10
-                              ? (stats.engagementData.length / 5).ceil().toDouble()
-                              : 1,
-                          getTitlesWidget: (value, meta) {
-                            final idx = value.toInt();
-                            if (idx < 0 || idx >= stats.engagementData.length) {
-                              return const SizedBox.shrink();
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Text(
-                                '${stats.engagementData[idx].date.day}',
-                                style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
+                  // ── Header ──
+                  const Text(
+                    'AUTHOR DASHBOARD',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                      color: Color(0xFF735B28), // Gold
                     ),
-                    borderData: FlBorderData(show: false),
-                    lineBarsData: [
-                      LineChartBarData(
-                        spots: stats.engagementData.asMap().entries.map((e) =>
-                          FlSpot(e.key.toDouble(), e.value.value),
-                        ).toList(),
-                        isCurved: true,
-                        color: c.primary,
-                        barWidth: 3,
-                        isStrokeCapRound: true,
-                        dotData: const FlDotData(show: false),
-                        belowBarData: BarAreaData(
-                          show: true,
-                          color: c.primary.withValues(alpha: 0.15),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.end,
+                    spacing: 16,
+                    runSpacing: 16,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Panel de autor',
+                            style: TextStyle(
+                              fontFamily: 'Noto Serif JP',
+                              fontSize: 48,
+                              fontWeight: FontWeight.bold,
+                              color: c.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Bienvenido, $userName',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: c.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () => context.go('/write'),
+                        icon: const Icon(Icons.add, size: 18),
+                        label: const Text('NUEVO CAPÍTULO', style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFD9735A), // Terracotta
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 32),
+                  Divider(color: c.outlineVariant.withValues(alpha: 0.2), height: 1),
+                  const SizedBox(height: 32),
+
+                  // ── Grid de estadísticas ──
+                  LayoutBuilder(
+                    builder: (context, gridConstraints) {
+                      final double width = gridConstraints.maxWidth;
+                      final int crossAxisCount = width > 900 ? 4 : (width > 500 ? 2 : 1);
+                      final double childAspectRatio = width > 900 ? 1.4 : 1.6;
+                      
+                      return GridView.count(
+                        crossAxisCount: crossAxisCount,
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        crossAxisSpacing: 24,
+                        mainAxisSpacing: 24,
+                        childAspectRatio: childAspectRatio,
+                        children: [
+                          const StatCard(
+                            label: 'Active Readers',
+                            value: '2,847', // Mock for UI as requested
+                            icon: Icons.visibility,
+                            trend: '+12%',
+                            isPositive: true,
+                          ),
+                          const StatCard(
+                            label: 'Total Reads',
+                            value: '48,320', // Mock
+                            icon: Icons.menu_book,
+                            trend: '+5%',
+                            isPositive: true,
+                          ),
+                          StatCard(
+                            label: 'Published Works',
+                            value: stats.publishedWorks.toString(),
+                            icon: Icons.library_books,
+                            trend: '- 0',
+                            isPositive: false,
+                          ),
+                          const StatCard(
+                            label: 'Followers',
+                            value: '1,204', // Mock
+                            icon: Icons.people,
+                            trend: '+24',
+                            isPositive: true,
+                          ),
+                        ],
+                      );
+                    }
+                  ),
+                  const SizedBox(height: 48),
+
+                  // ── Bottom Area (Chart + Next Publication) ──
+                  if (isWide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 2, child: _buildChartCard(c, stats)),
+                        const SizedBox(width: 32),
+                        Expanded(flex: 1, child: _buildNextPublicationCard(c)),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildChartCard(c, stats),
+                        const SizedBox(height: 32),
+                        _buildNextPublicationCard(c),
+                      ],
+                    ),
+                  const SizedBox(height: 48),
+                ],
               ),
-              const SizedBox(height: 32),
-            ],
-          ),
+            );
+          },
         ),
       ),
+    );
+  }
+
+  Widget _buildChartCard(KotobaColors c, dynamic stats) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: c.surfaceLowest,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: c.outlineVariant.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Reader Engagement',
+                style: TextStyle(
+                  fontFamily: 'Noto Serif JP',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: c.onSurface,
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: c.outlineVariant.withValues(alpha: 0.3)),
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(4)),
+                    ),
+                    child: Text('7D', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: c.onSurfaceVariant)),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF735B28), // Gold/Brown Active
+                      border: Border.all(color: const Color(0xFF735B28)),
+                      borderRadius: const BorderRadius.horizontal(right: Radius.circular(4)),
+                    ),
+                    child: const Text('30D', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white)),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 48),
+          SizedBox(
+            height: 250,
+            child: LineChart(
+              LineChartData(
+                gridData: FlGridData(
+                  show: true,
+                  drawVerticalLine: false,
+                  horizontalInterval: 20,
+                  getDrawingHorizontalLine: (value) {
+                    return FlLine(
+                      color: c.outlineVariant.withValues(alpha: 0.1),
+                      strokeWidth: 1,
+                    );
+                  },
+                ),
+                titlesData: const FlTitlesData(show: false),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: const [
+                      FlSpot(0, 10),
+                      FlSpot(1, 15),
+                      FlSpot(2, 20),
+                      FlSpot(3, 45),
+                      FlSpot(4, 55),
+                      FlSpot(5, 50),
+                      FlSpot(6, 20),
+                      FlSpot(7, 10),
+                      FlSpot(8, 60),
+                      FlSpot(9, 100),
+                      FlSpot(10, 80),
+                    ],
+                    isCurved: true,
+                    curveSmoothness: 0.35,
+                    color: const Color(0xFFD9735A), // Terracotta
+                    barWidth: 4,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFFD9735A).withValues(alpha: 0.2),
+                          const Color(0xFFD9735A).withValues(alpha: 0.0),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNextPublicationCard(KotobaColors c) {
+    return Container(
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: c.surfaceLowest,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: c.outlineVariant.withValues(alpha: 0.2)),
+        gradient: LinearGradient(
+          colors: [
+            c.surfaceLowest,
+            const Color(0xFFD9735A).withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'NEXT PUBLICATION',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+              color: Color(0xFF735B28),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'El Eco del\nVacío',
+            style: TextStyle(
+              fontFamily: 'Noto Serif JP',
+              fontSize: 32,
+              height: 1.1,
+              fontWeight: FontWeight.bold,
+              color: c.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Capítulo 12: La Resonancia',
+            style: TextStyle(
+              fontSize: 14,
+              color: c.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(height: 48),
+          Divider(color: c.outlineVariant.withValues(alpha: 0.2), height: 1),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildTimeBlock(c, '02', 'DÍAS'),
+              Text(':', style: TextStyle(fontSize: 24, color: c.outlineVariant)),
+              _buildTimeBlock(c, '14', 'HRS'),
+              Text(':', style: TextStyle(fontSize: 24, color: c.outlineVariant)),
+              _buildTimeBlock(c, '45', 'MIN'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeBlock(KotobaColors c, String number, String label) {
+    return Column(
+      children: [
+        Text(
+          number,
+          style: TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 28,
+            fontWeight: FontWeight.bold,
+            color: c.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+            color: c.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 }
