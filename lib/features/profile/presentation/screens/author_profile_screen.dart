@@ -245,6 +245,7 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
       builder: (ctx) {
         double? selectedAmount;
         bool loading = false;
+        String? pendingOrderId;
 
         return StatefulBuilder(
           builder: (context, setSheetState) {
@@ -256,32 +257,40 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                 children: [
                   Text('Apoyar a @${user.username}', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
                   const SizedBox(height: 16),
-                  Text('Elige un monto para tu tip:', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
-                  const SizedBox(height: 16),
-                  Wrap(
-                    spacing: 12,
-                    runSpacing: 12,
-                    children: [1.0, 3.0, 5.0, 10.0].map((amount) {
-                      final isSelected = selectedAmount == amount;
-                      return SizedBox(
-                        width: 64,
-                        height: 48,
-                        child: isSelected
-                            ? FilledButton(
-                                onPressed: () => setSheetState(() => selectedAmount = amount),
-                                style: FilledButton.styleFrom(backgroundColor: c.primary),
-                                child: Text('\$${amount.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                              )
-                            : OutlinedButton(
-                                onPressed: () => setSheetState(() => selectedAmount = amount),
-                                style: OutlinedButton.styleFrom(side: BorderSide(color: c.outlineVariant)),
-                                child: Text('\$${amount.toInt()}', style: TextStyle(color: c.onSurface)),
-                              ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-                  if (user.paypalEmail != null) ...[
+                  if (pendingOrderId == null) ...[
+                    Text('Elige un monto para tu tip:', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      children: [1.0, 3.0, 5.0, 10.0].map((amount) {
+                        final isSelected = selectedAmount == amount;
+                        return SizedBox(
+                          width: 64,
+                          height: 48,
+                          child: isSelected
+                              ? FilledButton(
+                                  onPressed: () => setSheetState(() => selectedAmount = amount),
+                                  style: FilledButton.styleFrom(backgroundColor: c.primary),
+                                  child: Text('\$${amount.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                )
+                              : OutlinedButton(
+                                  onPressed: () => setSheetState(() => selectedAmount = amount),
+                                  style: OutlinedButton.styleFrom(side: BorderSide(color: c.outlineVariant)),
+                                  child: Text('\$${amount.toInt()}', style: TextStyle(color: c.onSurface)),
+                                ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  if (pendingOrderId != null) ...[
+                    Text('Pago iniciado en PayPal.', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
+                    const SizedBox(height: 8),
+                    Text('Si ya aprobaste el pago, presiona "Completar" para finalizar.', style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant)),
+                    const SizedBox(height: 24),
+                  ],
+                  if (user.paypalEmail != null && pendingOrderId == null) ...[
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
@@ -314,50 +323,63 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                     child: FilledButton.icon(
                       icon: loading
                           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.favorite),
-                      onPressed: selectedAmount != null && !loading
+                          : Icon(pendingOrderId != null ? Icons.check : Icons.favorite),
+                      onPressed: !loading
                           ? () async {
-                              setSheetState(() => loading = true);
-                              try {
+                              if (pendingOrderId != null) {
+                                setSheetState(() => loading = true);
                                 final container = ProviderScope.containerOf(ctx);
                                 final api = container.read(paymentApiClientProvider);
-                                final result = await api.post<Map<String, dynamic>>('/payments/tip', data: {
-                                  'amount': selectedAmount,
-                                  'authorId': user.id,
-                                });
-                                result.fold(
+                                final captureResult = await api.post<Map<String, dynamic>>('/payments/tip/capture', data: {'orderId': pendingOrderId});
+                                captureResult.fold(
                                   (f) {
-                                    if (ctx.mounted) {
-                                      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(f.message)));
-                                    }
+                                    if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(f.message)));
                                   },
-                                  (data) async {
-                                    final checkoutUrl = data['checkoutUrl'] as String?;
-                                    if (checkoutUrl != null && ctx.mounted) {
-                                      await launchUrl(Uri.parse(checkoutUrl), mode: LaunchMode.platformDefault);
-                                    }
+                                  (_) {
                                     if (ctx.mounted) {
                                       Navigator.of(ctx).pop();
-                                      ScaffoldMessenger.of(ctx).showSnackBar(
-                                        const SnackBar(content: Text('Gracias por tu apoyo!')),
-                                      );
+                                      ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Gracias por tu apoyo!')));
                                     }
                                   },
                                 );
-                              } catch (e) {
-                                if (ctx.mounted) {
-                                  ScaffoldMessenger.of(ctx).showSnackBar(
-                                    SnackBar(content: Text('Error: $e')),
-                                  );
-                                }
-                              } finally {
                                 setSheetState(() => loading = false);
+                              } else if (selectedAmount != null) {
+                                setSheetState(() => loading = true);
+                                try {
+                                  final container = ProviderScope.containerOf(ctx);
+                                  final api = container.read(paymentApiClientProvider);
+                                  final result = await api.post<Map<String, dynamic>>('/payments/tip', data: {
+                                    'amount': selectedAmount,
+                                    'authorId': user.id,
+                                  });
+                                  result.fold(
+                                    (f) {
+                                      if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(f.message)));
+                                    },
+                                    (data) async {
+                                      final orderId = data['orderID'] as String?;
+                                      final checkoutUrl = data['checkoutUrl'] as String?;
+                                      setSheetState(() => pendingOrderId = orderId);
+                                      if (checkoutUrl != null && ctx.mounted) {
+                                        await launchUrl(Uri.parse(checkoutUrl), mode: LaunchMode.platformDefault);
+                                      }
+                                    },
+                                  );
+                                } catch (e) {
+                                  if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text('Error: $e')));
+                                } finally {
+                                  setSheetState(() => loading = false);
+                                }
                               }
                             }
                           : null,
-                      label: Text(selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto'),
+                      label: Text(
+                        pendingOrderId != null
+                            ? 'Completar pago'
+                            : (selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto')
+                      ),
                       style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFFD9735A),
+                        backgroundColor: pendingOrderId != null ? const Color(0xFF2E7D32) : const Color(0xFFD9735A),
                         foregroundColor: Colors.white,
                       ),
                     ),
