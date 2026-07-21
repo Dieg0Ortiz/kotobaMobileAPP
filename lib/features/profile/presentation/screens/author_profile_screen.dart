@@ -318,31 +318,41 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                       onPressed: selectedAmount != null && !loading
                           ? () async {
                               setSheetState(() => loading = true);
-                              final container = ProviderScope.containerOf(context);
-                              final api = container.read(paymentApiClientProvider);
-                              final result = await api.post<Map<String, dynamic>>('/payments/tip', data: {
-                                'amount': selectedAmount,
-                                'authorId': user.id,
-                              });
-                              result.fold(
-                                (f) {
-                                  setSheetState(() => loading = false);
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message)));
-                                },
-                                (data) async {
-                                  final approvalUrl = data['approvalUrl'] as String?;
-                                  if (approvalUrl != null) {
-                                    await launchUrl(Uri.parse(approvalUrl), mode: LaunchMode.platformDefault);
-                                  }
-                                  setSheetState(() => loading = false);
-                                  if (ctx.mounted) Navigator.of(ctx).pop();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text('Gracias por tu apoyo!')),
-                                    );
-                                  }
-                                },
-                              );
+                              try {
+                                final container = ProviderScope.containerOf(ctx);
+                                final api = container.read(paymentApiClientProvider);
+                                final result = await api.post<Map<String, dynamic>>('/payments/tip', data: {
+                                  'amount': selectedAmount,
+                                  'authorId': user.id,
+                                });
+                                result.fold(
+                                  (f) {
+                                    if (ctx.mounted) {
+                                      ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text(f.message)));
+                                    }
+                                  },
+                                  (data) async {
+                                    final approvalUrl = data['approvalUrl'] as String?;
+                                    if (approvalUrl != null && ctx.mounted) {
+                                      await launchUrl(Uri.parse(approvalUrl), mode: LaunchMode.platformDefault);
+                                    }
+                                    if (ctx.mounted) {
+                                      Navigator.of(ctx).pop();
+                                      ScaffoldMessenger.of(ctx).showSnackBar(
+                                        const SnackBar(content: Text('Gracias por tu apoyo!')),
+                                      );
+                                    }
+                                  },
+                                );
+                              } catch (e) {
+                                if (ctx.mounted) {
+                                  ScaffoldMessenger.of(ctx).showSnackBar(
+                                    SnackBar(content: Text('Error: $e')),
+                                  );
+                                }
+                              } finally {
+                                setSheetState(() => loading = false);
+                              }
                             }
                           : null,
                       label: Text(selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto'),
