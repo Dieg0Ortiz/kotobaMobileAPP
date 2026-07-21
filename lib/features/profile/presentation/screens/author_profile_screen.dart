@@ -332,12 +332,9 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                                     }
                                   },
                                   (data) async {
-                                    final orderId = data['orderID'] as String?;
-                                    if (orderId != null && ctx.mounted) {
-                                      await launchUrl(
-                                        Uri.parse('https://www.paypal.com/checkoutnow?token=$orderId'),
-                                        mode: LaunchMode.platformDefault,
-                                      );
+                                    final checkoutUrl = data['checkoutUrl'] as String?;
+                                    if (checkoutUrl != null && ctx.mounted) {
+                                      await launchUrl(Uri.parse(checkoutUrl), mode: LaunchMode.platformDefault);
                                     }
                                     if (ctx.mounted) {
                                       Navigator.of(ctx).pop();
