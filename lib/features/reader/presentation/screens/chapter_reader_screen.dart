@@ -807,7 +807,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
             if (!_progressLoaded) {
               _progressLoaded = true;
               final progress = _loadProgress(workId);
-              if (progress != null && progress['pageIndex'] is num) {
+              if (progress != null && progress['chapterId'] == widget.chapterId && progress['pageIndex'] is num) {
                 _currentPage = (progress['pageIndex'] as num).toInt();
                 _pageController.dispose();
                 _pageController = PageController(initialPage: _currentPage);
@@ -833,7 +833,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
               if (prefs.readingMode != ReadingMode.cascade) return;
               if (!_scrollController.hasClients) return;
               final progress = _loadProgress(workId);
-              if (progress != null &&
+              if (progress != null && progress['chapterId'] == widget.chapterId &&
                   progress['scrollOffset'] is num) {
                 final offset =
                     (progress['scrollOffset'] as num).toDouble();
