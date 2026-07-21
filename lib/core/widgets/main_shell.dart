@@ -19,7 +19,7 @@ class MainShell extends StatelessWidget {
     if (location.startsWith('/write')) {
       return 2;
     }
-    if (location.startsWith('/profile') || location.startsWith('/author')) {
+    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
       return 4;
     }
     if (location.startsWith('/library')) {

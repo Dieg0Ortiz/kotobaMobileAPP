@@ -120,7 +120,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const LibraryScreen(),
           ),
           GoRoute(
-            path: '/author/dashboard',
+            path: '/dashboard',
             builder: (_, __) => const AuthorDashboardScreen(),
           ),
         ],

@@ -64,7 +64,7 @@ class ProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
                 child: OutlinedButton.icon(
                   icon: const Icon(Icons.bar_chart, size: 18),
-                  onPressed: () => context.go('/author/dashboard'),
+                  onPressed: () => context.go('/dashboard'),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: const Color(0xFFD9735A),
                     side: const BorderSide(color: Color(0xFFD9735A)),
