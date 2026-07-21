@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/secure_storage_service.dart';
 import '../../data/repositories/auth_repository_impl.dart';
@@ -11,24 +12,31 @@ import '../../domain/usecases/register_usecase.dart';
 import '../viewmodels/login_viewmodel.dart';
 import '../viewmodels/register_viewmodel.dart';
 
-// ── Infraestructura ──────────────────────────────────────────────
+// ── Guarda tokens en el dispositivo ─────────────────────────────
 final secureStorageProvider = Provider<SecureStorageService>((ref) {
   return SecureStorageService();
 });
 
+// ── Cliente HTTP para el backend principal ──────────────────────
 final apiClientProvider = Provider<ApiClient>((ref) {
   final storage = ref.read(secureStorageProvider);
   return ApiClient(storage);
 });
 
-// ── Repositorio ──────────────────────────────────────────────────
+// ── Cliente HTTP para el Content Microservice ───────────────────
+final contentApiClientProvider = Provider<ApiClient>((ref) {
+  final storage = ref.read(secureStorageProvider);
+  return ApiClient(storage, baseUrl: ApiConstants.contentBaseUrl);
+});
+
+// ── Repositorio de autenticación (login, register, logout) ──────
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final api = ref.read(apiClientProvider);
   final storage = ref.read(secureStorageProvider);
   return AuthRepositoryImpl(api, storage);
 });
 
-// ── Use Cases ────────────────────────────────────────────────────
+// ── Casos de uso (orquestan la lógica de negocio) ───────────────
 final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
   return LoginUseCase(repository: ref.read(authRepositoryProvider));
 });
@@ -41,7 +49,7 @@ final registerUseCaseProvider = Provider<RegisterUseCase>((ref) {
   return RegisterUseCase(repository: ref.read(authRepositoryProvider));
 });
 
-// ── ViewModels ───────────────────────────────────────────────────
+// ── ViewModels (estado + acciones para las pantallas) ───────────
 final loginViewModelProvider =
     AsyncNotifierProvider<LoginViewModel, void>(LoginViewModel.new);
 
@@ -50,14 +58,10 @@ final registerViewModelProvider =
 
 
 
-/// Estado global de autenticación.
-/// Se inicializa con la sesión actual de Supabase y se mantiene sincronizado
-/// escuchando [onAuthStateChange]. También sincroniza los tokens con
-/// [SecureStorageService] para que el [ApiClient] siempre tenga un token válido.
+// ── ¿Hay sesión? true/false. Se actualiza solo con Supabase ────
 final authStateProvider = StateProvider<bool>((ref) {
   final auth = Supabase.instance.client.auth;
 
-  // Sincronizar sesión inicial al arrancar la app
   final currentSession = auth.currentSession;
   if (currentSession != null) {
     _syncTokens(currentSession);
@@ -68,7 +72,6 @@ final authStateProvider = StateProvider<bool>((ref) {
 
     if (session != null) {
       _syncTokens(session);
-      // Fire-and-forget: asegura que el usuario exista en public.users
       _syncDiscordUser();
     }
 
@@ -78,7 +81,7 @@ final authStateProvider = StateProvider<bool>((ref) {
   return currentSession != null;
 });
 
-/// Guarda los tokens en SecureStorage para que el ApiClient pueda usarlos.
+// ── Guarda accessToken y refreshToken en el dispositivo ─────────
 void _syncTokens(Session session) {
   final storage = SecureStorageService();
   storage.saveTokens(
@@ -87,15 +90,11 @@ void _syncTokens(Session session) {
   );
 }
 
-/// Llama al backend para asegurar que el usuario de Discord existe en la tabla
-/// `public.users`. Es un fire-and-forget porque el trigger `handle_new_user()`
-/// ya debió crearlo automáticamente — este es solo un safety net.
+// ── Safety net: asegura que el usuario de Discord exista en la BD ─
 Future<void> _syncDiscordUser() async {
   try {
     final storage = SecureStorageService();
     final api = ApiClient(storage);
     (await api.post('/auth/discord', data: {})).fold((_) => null, (_) => null);
-  } catch (_) {
-    // Non-fatal
-  }
+  } catch (_) {}
 }

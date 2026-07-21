@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,6 +14,7 @@ import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../domain/entities/chapter.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';
 
@@ -311,6 +314,28 @@ class _ActionBar extends ConsumerWidget {
     final currentVote = voteAsync.maybeWhen(data: (v) => v, orElse: () => 0);
     final isBookmarked = bookmarkAsync.maybeWhen(data: (b) => b, orElse: () => false);
 
+    // ── Check reading progress ──
+    String? continueChapterId;
+    String? continueLabel;
+    try {
+      final prefs = ref.read(sharedPreferencesProvider);
+      final all = prefs.getString('reading_progress') ?? '{}';
+      final map = jsonDecode(all) as Map<String, dynamic>;
+      final progress = map[workId] as Map<String, dynamic>?;
+      if (progress != null && progress['chapterId'] is String) {
+        continueChapterId = progress['chapterId'] as String;
+        final found = chapters.whereType<Chapter>().firstWhere(
+          (ch) => ch.id == continueChapterId,
+          orElse: () => Chapter(id: '', workId: '', number: 0, title: '', content: '', publishedAt: DateTime.now()),
+        );
+        if (found.id.isNotEmpty) {
+          continueLabel = 'Cap. ${found.number}';
+        }
+      }
+    } catch (_) {}
+
+    final targetChapterId = continueChapterId ?? (chapters.isNotEmpty ? chapters.first.id : null);
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
       child: Row(
@@ -319,11 +344,9 @@ class _ActionBar extends ConsumerWidget {
             child: SizedBox(
               height: 52,
               child: FilledButton(
-                onPressed: () {
-                  if (chapters.isNotEmpty) {
-                    context.push('/works/$workId/chapters/${chapters.first.id}');
-                  }
-                },
+                onPressed: targetChapterId != null
+                    ? () => context.push('/works/$workId/chapters/$targetChapterId')
+                    : null,
                 style: FilledButton.styleFrom(
                   backgroundColor: c.primaryContainer,
                   foregroundColor: c.onPrimary,
@@ -335,10 +358,10 @@ class _ActionBar extends ConsumerWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.book, size: 18),
+                    Icon(continueChapterId != null ? Icons.play_circle : Icons.book, size: 18),
                     const SizedBox(width: 8),
                     Text(
-                      'LEER AHORA',
+                      continueChapterId != null ? 'CONTINUAR $continueLabel' : 'LEER AHORA',
                       style: KotobaTypography.labelMd.copyWith(
                         color: c.onPrimary,
                         letterSpacing: 0.1,

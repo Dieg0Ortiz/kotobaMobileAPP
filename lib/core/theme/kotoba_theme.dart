@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// Tema Material 3 de Kotoba — "Ink & Silence".
-///
-/// Kotoba es dark-only por diseño. No existe [lightTheme] en el MVP.
-/// El modo de lectura puede ofrecer un fondo sepia como variante, no blanco.
+// ── Tema oscuro y claro de la app (Material 3) ────────────────
 class KotobaTheme {
   KotobaTheme._();
 
+  // ── Tema oscuro ────────────────────────────────────────────────
   static ThemeData get darkTheme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
@@ -165,6 +163,7 @@ class KotobaTheme {
             color: AppColors.onSurfaceVariant, size: 20),
       );
 
+  // ── Tema claro ───────────────────────────────────────────────
   static ThemeData get lightTheme => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,

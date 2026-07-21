@@ -7,6 +7,15 @@ class ApiConstants {
     if (defineUrl.isNotEmpty) return defineUrl;
     return 'https://kotoba-back-production.up.railway.app/api';
   }
+
+  /// URL base para el Content Microservice.
+  /// Se puede sobrescribir con --dart-define=CONTENT_API_URL=...
+  static String get contentBaseUrl {
+    const defineUrl = String.fromEnvironment('CONTENT_API_URL', defaultValue: '');
+    if (defineUrl.isNotEmpty) return defineUrl;
+    // Si no hay define, apunta al monolith (misma URL que baseUrl)
+    return 'https://kotoba-back-production.up.railway.app/api';
+  }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
 

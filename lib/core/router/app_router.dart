@@ -74,6 +74,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 parentNavigatorKey: _rootNavigatorKey,
                 builder: (_, state) => ChapterReaderScreen(
                   chapterId: state.pathParameters['chapterId']!,
+                  workId: state.pathParameters['workId'],
                 ),
               ),
             ],

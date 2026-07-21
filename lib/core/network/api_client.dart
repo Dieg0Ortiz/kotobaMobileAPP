@@ -9,9 +9,9 @@ class ApiClient {
   late final Dio dio;
   final SecureStorageService _storage;
 
-  ApiClient(this._storage) {
+  ApiClient(this._storage, {String? baseUrl}) {
     dio = Dio(BaseOptions(
-      baseUrl: ApiConstants.baseUrl,
+      baseUrl: baseUrl ?? ApiConstants.baseUrl,
       connectTimeout: ApiConstants.connectTimeout,
       receiveTimeout: ApiConstants.receiveTimeout,
       headers: {'Content-Type': 'application/json'},

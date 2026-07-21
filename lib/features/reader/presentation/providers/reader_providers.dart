@@ -11,7 +11,7 @@ import '../viewmodels/reader_viewmodel.dart';
 import '../viewmodels/work_detail_viewmodel.dart';
 
 final contentRepositoryProvider = Provider<IContentRepository>((ref) {
-  final api = ref.read(apiClientProvider);
+  final api = ref.read(contentApiClientProvider);
   return ContentRepositoryImpl(api);
 });
 

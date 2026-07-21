@@ -6,7 +6,7 @@ import '../../../catalog/domain/entities/work.dart';
 import '../../../catalog/domain/repositories/i_work_repository.dart';
 
 final workRepositoryProvider = Provider<IWorkRepository>((ref) {
-  final api = ref.read(apiClientProvider);
+  final api = ref.read(contentApiClientProvider);
   return WorkRepositoryImpl(api);
 });
 
