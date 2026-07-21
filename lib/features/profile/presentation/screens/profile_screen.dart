@@ -58,6 +58,25 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
+            // 1.5. Dashboard de autor (solo si es autor)
+            if (user.isAuthor)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                  child: OutlinedButton.icon(
+                    icon: const Icon(Icons.bar_chart, size: 18),
+                    onPressed: () => context.push('/author/dashboard'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFD9735A),
+                      side: const BorderSide(color: Color(0xFFD9735A)),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                    label: const Text('Dashboard de Autor', style: TextStyle(fontWeight: FontWeight.w600)),
+                  ),
+                ),
+              ),
+
             // 2. Sección: Historias (Carrusel Horizontal)
             SliverToBoxAdapter(
               child: _UserWorksCarousel(userId: user.id, username: user.username, worksCount: user.worksCount),
