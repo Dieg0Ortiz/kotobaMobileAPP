@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -274,6 +275,7 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                       IconButton(
                         icon: const Icon(Icons.copy, size: 20),
                         onPressed: () {
+                          Clipboard.setData(ClipboardData(text: user.paypalEmail!));
                           ScaffoldMessenger.of(ctx).showSnackBar(
                             const SnackBar(content: Text('Email copiado al portapapeles')),
                           );
@@ -290,10 +292,11 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                   icon: const Icon(Icons.open_in_new),
                   onPressed: user.paypalEmail != null
                       ? () async {
-                          await launchUrl(Uri.parse('https://www.paypal.com'), mode: LaunchMode.platformDefault);
+                          final uri = Uri.parse('https://www.paypal.com/send?email=${Uri.encodeComponent(user.paypalEmail!)}');
+                          await launchUrl(uri, mode: LaunchMode.platformDefault);
                         }
                       : null,
-                  label: const Text('Ir a PayPal'),
+                  label: const Text('Enviar por PayPal'),
                 ),
               ),
               const SizedBox(height: 16),
