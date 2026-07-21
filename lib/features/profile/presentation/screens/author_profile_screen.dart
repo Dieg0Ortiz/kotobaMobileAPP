@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
@@ -288,10 +289,17 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                 child: FilledButton.icon(
                   icon: const Icon(Icons.open_in_new),
                   onPressed: user.paypalEmail != null
-                      ? () {
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(content: Text('Próximamente: enlace directo a PayPal')),
-                          );
+                      ? () async {
+                          final uri = Uri.parse('https://paypal.me/${user.paypalEmail!.split('@').first}');
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (ctx.mounted) {
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                const SnackBar(content: Text('No se pudo abrir PayPal')),
+                              );
+                            }
+                          }
                         }
                       : null,
                   label: const Text('Abrir PayPal'),
