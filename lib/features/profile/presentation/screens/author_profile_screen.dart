@@ -53,7 +53,7 @@ class AuthorProfileScreen extends ConsumerWidget {
                       authorName: w['author_name'] as String? ?? user.username,
                       coverUrl: w['cover_url'] as String?,
                       synopsis: w['synopsis'] as String? ?? '',
-                      genre: w['genre'] as String? ?? '',
+                      genres: (w['genres'] as List<dynamic>?)?.cast<String>() ?? (w['genre'] != null ? [w['genre'] as String] : []),
                       tags: (w['tags'] as List<dynamic>?)?.cast<String>() ?? [],
                       status: w['status'] as String? ?? 'ongoing',
                       chapterCount: w['chapter_count'] as int? ?? 0,
