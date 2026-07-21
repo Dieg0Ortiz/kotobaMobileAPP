@@ -290,16 +290,8 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                   icon: const Icon(Icons.open_in_new),
                   onPressed: user.paypalEmail != null
                       ? () async {
-                          final uri = Uri.parse('https://paypal.me/${user.paypalEmail!.split('@').first}');
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          } else {
-                            if (ctx.mounted) {
-                              ScaffoldMessenger.of(ctx).showSnackBar(
-                                const SnackBar(content: Text('No se pudo abrir PayPal')),
-                              );
-                            }
-                          }
+                          final uri = Uri.parse('https://www.paypal.com/send?email=${Uri.encodeComponent(user.paypalEmail!)}');
+                          await launchUrl(uri, mode: LaunchMode.platformDefault);
                         }
                       : null,
                   label: const Text('Abrir PayPal'),
