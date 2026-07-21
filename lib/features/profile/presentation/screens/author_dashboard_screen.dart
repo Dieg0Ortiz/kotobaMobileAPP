@@ -56,7 +56,15 @@ class AuthorDashboardScreen extends ConsumerWidget {
       ),
       body: statsAsync.when(
         loading: () => const Center(child: KotobaLoading()),
-        error: (e, _) => Center(child: Text(e.toString())),
+        error: (_, __) => SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+          child: Column(
+            children: [
+              const SizedBox(height: 24),
+              _buildIncomeSection(ref, c),
+            ],
+          ),
+        ),
         data: (stats) => LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 800;
