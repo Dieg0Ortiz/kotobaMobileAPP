@@ -97,7 +97,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
         _synopsisCtrl.text = work.synopsis;
         _tags = List<String>.from(work.tags);
         _tagsCtrl.text = work.tags.join(', ');
-        _selectedGenres = List<String>.from(work.genres);
+        _selectedGenres = work.genres.where(_availableGenres.contains).toList();
         _coverUrl = work.coverUrl;
         isCompleted = work.status == 'completed';
       },
@@ -350,7 +350,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             ),
             centerTitle: true,
             title: Text(
-              'Crear',
+              _isNew ? 'Crear' : 'Editar',
               style: KotobaTypography.headlineMd.copyWith(
                 color: c.primary,
                 letterSpacing: 3,
