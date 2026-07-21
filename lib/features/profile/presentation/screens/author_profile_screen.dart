@@ -9,6 +9,7 @@ import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
+import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../providers/profile_providers.dart';
 
@@ -242,66 +243,120 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
       backgroundColor: c.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Apoyar a @${user.username}', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
-              const SizedBox(height: 16),
-              Text(
-                'Puedes enviar un tip vía PayPal al correo registrado por el autor.',
-                style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: c.surfaceLow,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        user.paypalEmail ?? 'No disponible',
-                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
+        double? selectedAmount;
+        bool loading = false;
+
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Apoyar a @${user.username}', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
+                  const SizedBox(height: 16),
+                  Text('Elige un monto para tu tip:', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
+                  const SizedBox(height: 16),
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: [1, 3, 5, 10].map((amount) {
+                      final isSelected = selectedAmount == amount;
+                      return SizedBox(
+                        width: 64,
+                        height: 48,
+                        child: isSelected
+                            ? FilledButton(
+                                onPressed: () => setSheetState(() => selectedAmount = amount as double?),
+                                style: FilledButton.styleFrom(backgroundColor: c.primary),
+                                child: Text('\$$amount', style: const TextStyle(fontWeight: FontWeight.bold)),
+                              )
+                            : OutlinedButton(
+                                onPressed: () => setSheetState(() => selectedAmount = amount as double?),
+                                style: OutlinedButton.styleFrom(side: BorderSide(color: c.outlineVariant)),
+                                child: Text('\$$amount', style: TextStyle(color: c.onSurface)),
+                              ),
+                      );
+                    }).toList(),
+                  ),
+                  const SizedBox(height: 24),
+                  if (user.paypalEmail != null) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: c.surfaceLow,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(user.paypalEmail!, style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant)),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.copy, size: 18),
+                            onPressed: () {
+                              Clipboard.setData(ClipboardData(text: user.paypalEmail!));
+                              ScaffoldMessenger.of(ctx).showSnackBar(
+                                const SnackBar(content: Text('Email copiado al portapapeles')),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
-                    if (user.paypalEmail != null) ...[
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.copy, size: 20),
-                        onPressed: () {
-                          Clipboard.setData(ClipboardData(text: user.paypalEmail!));
-                          ScaffoldMessenger.of(ctx).showSnackBar(
-                            const SnackBar(content: Text('Email copiado al portapapeles')),
-                          );
-                        },
-                      ),
-                    ],
+                    const SizedBox(height: 24),
                   ],
-                ),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: FilledButton.icon(
+                      icon: loading
+                          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Icon(Icons.favorite),
+                      onPressed: selectedAmount != null && !loading
+                          ? () async {
+                              setSheetState(() => loading = true);
+                              final container = ProviderScope.containerOf(context);
+                              final api = container.read(paymentApiClientProvider);
+                              final result = await api.post<Map<String, dynamic>>('/payments/tip', data: {
+                                'amount': selectedAmount,
+                                'authorId': user.id,
+                              });
+                              result.fold(
+                                (f) {
+                                  setSheetState(() => loading = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(f.message)));
+                                },
+                                (data) async {
+                                  final approvalUrl = data['approvalUrl'] as String?;
+                                  if (approvalUrl != null) {
+                                    await launchUrl(Uri.parse(approvalUrl), mode: LaunchMode.platformDefault);
+                                  }
+                                  setSheetState(() => loading = false);
+                                  if (ctx.mounted) Navigator.of(ctx).pop();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(content: Text('Gracias por tu apoyo!')),
+                                    );
+                                  }
+                                },
+                              );
+                            }
+                          : null,
+                      label: Text(selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: const Color(0xFFD9735A),
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
               ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.open_in_new),
-                  onPressed: user.paypalEmail != null
-                      ? () async {
-                          final uri = Uri.parse('https://www.paypal.com/send?email=${Uri.encodeComponent(user.paypalEmail!)}');
-                          await launchUrl(uri, mode: LaunchMode.platformDefault);
-                        }
-                      : null,
-                  label: const Text('Enviar por PayPal'),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            );
+          },
         );
       },
     );
