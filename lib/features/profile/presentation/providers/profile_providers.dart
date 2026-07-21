@@ -51,3 +51,19 @@ final newAuthorsProvider = FutureProvider<List<User>>((ref) async {
   final result = await repo.getNewAuthors();
   return result.fold((f) => throw f, (authors) => authors);
 });
+
+// ── Balance / Income from Payment Service ──────────────────────
+final balanceProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final api = ref.read(paymentApiClientProvider);
+  final result = await api.get('/payments/balance');
+  return result.fold(
+    (f) => throw f,
+    (data) => data is Map<String, dynamic> ? data : {},
+  );
+});
+
+final requestPayoutProvider = FutureProvider<void>((ref) async {
+  final api = ref.read(paymentApiClientProvider);
+  final result = await api.post('/payments/payout', data: {});
+  return result.fold((f) => throw f, (_) {});
+});

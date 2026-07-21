@@ -233,6 +233,78 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
     widget.onFollow();
   }
 
+  void _showSupportSheet(BuildContext context, User user) {
+    final c = KotobaColors.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: c.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Apoyar a @${user.username}', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
+              const SizedBox(height: 16),
+              Text(
+                'Puedes enviar un tip vía PayPal al correo registrado por el autor.',
+                style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: c.surfaceLow,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        user.paypalEmail ?? 'No disponible',
+                        style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
+                      ),
+                    ),
+                    if (user.paypalEmail != null) ...[
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.copy, size: 20),
+                        onPressed: () {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(content: Text('Email copiado al portapapeles')),
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.open_in_new),
+                  onPressed: user.paypalEmail != null
+                      ? () {
+                          ScaffoldMessenger.of(ctx).showSnackBar(
+                            const SnackBar(content: Text('Próximamente: enlace directo a PayPal')),
+                          );
+                        }
+                      : null,
+                  label: const Text('Abrir PayPal'),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final c = KotobaColors.of(context);
@@ -350,17 +422,14 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                       const SizedBox(width: 8),
                       SizedBox(
                         height: 44,
-                        child: OutlinedButton(
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Perfil completo no disponible en el mock.')),
-                            );
-                          },
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.favorite_border, size: 18),
+                          onPressed: () => _showSupportSheet(context, widget.user),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: c.onSurface,
                             side: BorderSide(color: c.outlineVariant),
                           ),
-                          child: const Text('Perfil Completo'),
+                          label: const Text('Apoyar'),
                         ),
                       ),
                     ],

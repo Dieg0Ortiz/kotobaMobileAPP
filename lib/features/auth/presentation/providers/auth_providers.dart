@@ -29,6 +29,12 @@ final contentApiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(storage, baseUrl: ApiConstants.contentBaseUrl);
 });
 
+// ── Cliente HTTP para el Payment Microservice ───────────────────
+final paymentApiClientProvider = Provider<ApiClient>((ref) {
+  final storage = ref.read(secureStorageProvider);
+  return ApiClient(storage, baseUrl: ApiConstants.paymentBaseUrl);
+});
+
 // ── Repositorio de autenticación (login, register, logout) ──────
 final authRepositoryProvider = Provider<IAuthRepository>((ref) {
   final api = ref.read(apiClientProvider);

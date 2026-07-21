@@ -172,6 +172,10 @@ class AuthorDashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 48),
 
+                  // ── Income Section ──
+                  _buildIncomeSection(ref, c),
+                  const SizedBox(height: 48),
+
                   // ── Bottom Area (Chart + Next Publication) ──
                   if (isWide)
                     Row(
@@ -198,6 +202,118 @@ class AuthorDashboardScreen extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildIncomeSection(WidgetRef ref, KotobaColors c) {
+    final balanceAsync = ref.watch(balanceProvider);
+    return balanceAsync.when(
+      loading: () => const SizedBox(height: 100, child: Center(child: KotobaLoading())),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (balance) {
+        final available = (balance['balance'] ?? 0).toStringAsFixed(2);
+        final totalEarned = (balance['total_earned'] ?? 0).toStringAsFixed(2);
+        final pending = (balance['pending_payout'] ?? 0).toStringAsFixed(2);
+        return Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: c.surfaceLowest,
+            borderRadius: BorderRadius.circular(4),
+            border: Border.all(color: c.outlineVariant.withValues(alpha: 0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'TUS INGRESOS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  color: const Color(0xFF735B28),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  _buildIncomeStat(c, 'Disponible', '\$$available', Icons.account_balance_wallet),
+                  const SizedBox(width: 48),
+                  _buildIncomeStat(c, 'Total ganado', '\$$totalEarned', Icons.trending_up),
+                  const SizedBox(width: 48),
+                  _buildIncomeStat(c, 'Pendiente', '\$$pending', Icons.hourglass_bottom),
+                ],
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: 44,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.payments, size: 18),
+                  onPressed: (balance['balance'] ?? 0) > 0 ? () => _requestPayout(ref, c) : null,
+                  label: const Text('SOLICITAR PAGO'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFFD9735A),
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _requestPayout(WidgetRef ref, KotobaColors c) {
+    showDialog(
+      context: ref.context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: const Text('Solicitar pago'),
+        content: const Text('Se moverá tu saldo disponible a pendiente de pago. ¿Continuar?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
+          FilledButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              ref.read(requestPayoutProvider.future).then((_) {
+                ref.invalidate(balanceProvider);
+                ScaffoldMessenger.of(ref.context).showSnackBar(
+                  const SnackBar(content: Text('Pago solicitado correctamente')),
+                );
+              }).catchError((e) {
+                ScaffoldMessenger.of(ref.context).showSnackBar(
+                  SnackBar(content: Text('Error: $e')),
+                );
+              });
+            },
+            child: const Text('Solicitar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIncomeStat(KotobaColors c, String label, String value, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 20, color: const Color(0xFFD9735A)),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: c.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+        ),
+      ],
     );
   }
 

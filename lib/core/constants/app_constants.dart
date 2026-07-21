@@ -16,6 +16,14 @@ class ApiConstants {
     // Si no hay define, apunta al monolith (misma URL que baseUrl)
     return 'https://kotoba-back-production.up.railway.app/api';
   }
+
+  /// URL base para el Payment Microservice.
+  /// Se puede sobrescribir con --dart-define=PAYMENT_API_URL=...
+  static String get paymentBaseUrl {
+    const defineUrl = String.fromEnvironment('PAYMENT_API_URL', defaultValue: '');
+    if (defineUrl.isNotEmpty) return defineUrl;
+    return 'https://kotoba-pay.up.railway.app/api';
+  }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
 

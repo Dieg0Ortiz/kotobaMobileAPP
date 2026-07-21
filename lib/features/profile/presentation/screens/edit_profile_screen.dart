@@ -309,6 +309,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                     subtitle: user.socialLinks?['website']?.isNotEmpty == true ? user.socialLinks!['website'] : 'Configura un sitio web',
                     onTap: () => _showEditSheet(title: 'Sitio web', initialValue: user.socialLinks?['website'] ?? '', fieldKey: 'social_links.website', keyboardType: TextInputType.url),
                   ),
+                  Divider(color: c.surfaceLow, height: 1, indent: 24, endIndent: 24),
+                  _buildListTile(
+                    title: 'PayPal (para cobrar tips)',
+                    subtitle: user.paypalEmail?.isNotEmpty == true ? user.paypalEmail : 'Añadir email de PayPal',
+                    onTap: () => _showEditSheet(title: 'Email de PayPal', initialValue: user.paypalEmail ?? '', fieldKey: 'paypal_email', keyboardType: TextInputType.emailAddress),
+                  ),
                   Divider(color: c.surfaceLow, height: 32),
                   
                   _buildSectionHeader('Redes Sociales'),
