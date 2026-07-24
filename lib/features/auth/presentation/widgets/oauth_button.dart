@@ -36,12 +36,7 @@ class OAuthButton extends ConsumerWidget {
           if (provider == OAuthProvider.discord) {
             ref.read(loginViewModelProvider.notifier).signInWithDiscord();
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('$label — próximamente'),
-                backgroundColor: c.surfaceHigh,
-              ),
-            );
+            ref.read(loginViewModelProvider.notifier).signInWithGoogle();
           }
         },
         style: OutlinedButton.styleFrom(
