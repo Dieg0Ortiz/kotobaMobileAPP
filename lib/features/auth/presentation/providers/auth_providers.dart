@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
@@ -68,23 +69,28 @@ final loginViewModelProvider =
 final registerViewModelProvider =
     AsyncNotifierProvider<RegisterViewModel, void>(RegisterViewModel.new);
 
-
+const _inactiveDaysLimit = 30;
+const _lastActiveKey = 'last_active_timestamp';
 
 // ── ¿Hay sesión? true/false. Se actualiza solo con Supabase ────
 final authStateProvider = StateProvider<bool>((ref) {
   final auth = Supabase.instance.client.auth;
 
+  // Check stored session synchronously (may be null on first call)
   final currentSession = auth.currentSession;
   if (currentSession != null) {
     _syncTokens(currentSession);
+    _updateActiveTimestamp();
   }
 
+  // Listen to auth changes (fires on session restore, login, logout)
   ref.onDispose(auth.onAuthStateChange.listen((data) {
     final session = data.session;
 
     if (session != null) {
       _syncTokens(session);
       _syncDiscordUser();
+      _updateActiveTimestamp();
     }
 
     ref.controller.state = session != null;
@@ -92,6 +98,42 @@ final authStateProvider = StateProvider<bool>((ref) {
 
   return currentSession != null;
 });
+
+/// Provider que inicializa la sesión (recupera sesión guardada y chequea inactividad).
+/// Usar este provider para esperar a que la sesión esté lista.
+final authInitProvider = FutureProvider<void>((ref) async {
+  final auth = Supabase.instance.client.auth;
+
+  // Check 30-day inactivity
+  final prefs = await SharedPreferences.getInstance();
+  final lastActive = prefs.getInt(_lastActiveKey);
+  if (lastActive != null) {
+    final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
+    final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
+    if (elapsed > limitMs) {
+      try {
+        await auth.signOut();
+      } catch (_) {}
+      await prefs.remove(_lastActiveKey);
+      ref.invalidate(authStateProvider);
+      return;
+    }
+  }
+
+  // Update auth state provider with the current session
+  ref.invalidate(authStateProvider);
+});
+
+Future<void> _updateActiveTimestamp() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt(_lastActiveKey, DateTime.now().millisecondsSinceEpoch);
+}
+
+/// Guarda la marca de actividad del usuario (se llama desde la app al abrir/interactuar)
+Future<void> updateLastActivity() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setInt(_lastActiveKey, DateTime.now().millisecondsSinceEpoch);
+}
 
 // ── Guarda accessToken y refreshToken en el dispositivo ─────────
 void _syncTokens(Session session) {

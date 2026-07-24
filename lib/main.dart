@@ -13,6 +13,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/kotoba_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'core/services/download_service.dart';
+import 'features/auth/presentation/providers/auth_providers.dart';
 import 'features/reader/presentation/providers/reader_providers.dart';
 
 import 'package:firebase_core/firebase_core.dart';
@@ -57,6 +58,13 @@ class KotobaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Initialize auth session and check inactivity
+    ref.watch(authInitProvider);
+    // Update last activity timestamp
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateLastActivity();
+    });
+
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
 
