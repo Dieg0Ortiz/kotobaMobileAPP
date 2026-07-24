@@ -62,8 +62,11 @@ final balanceProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   );
 });
 
-final requestPayoutProvider = FutureProvider<void>((ref) async {
+final requestPayoutProvider = FutureProvider<String>((ref) async {
   final api = ref.read(paymentApiClientProvider);
-  final result = await api.post('/payments/payout', data: {});
-  return result.fold((f) => throw f, (_) {});
+  final result = await api.post<Map<String, dynamic>>('/payments/payout', data: {});
+  return result.fold(
+    (f) => throw f,
+    (data) => data['message'] as String? ?? 'Pago procesado',
+  );
 });

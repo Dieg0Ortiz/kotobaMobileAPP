@@ -277,16 +277,16 @@ class AuthorDashboardScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         backgroundColor: c.surface,
         title: const Text('Solicitar pago'),
-        content: const Text('Se moverá tu saldo disponible a pendiente de pago. ¿Continuar?'),
+        content: const Text('Se enviará tu saldo disponible a tu cuenta de PayPal configurada. ¿Continuar?'),
         actions: [
           TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
           FilledButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              ref.read(requestPayoutProvider.future).then((_) {
+              ref.read(requestPayoutProvider.future).then((message) {
                 ref.invalidate(balanceProvider);
                 ScaffoldMessenger.of(ref.context).showSnackBar(
-                  const SnackBar(content: Text('Pago solicitado correctamente')),
+                  SnackBar(content: Text(message)),
                 );
               }).catchError((e) {
                 ScaffoldMessenger.of(ref.context).showSnackBar(
