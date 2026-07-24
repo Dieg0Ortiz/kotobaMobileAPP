@@ -151,11 +151,11 @@ class ProfileHeader extends StatelessWidget {
           ),
         ),
 
-        // Settings Button at the top right
+        // Settings Button at the top left
         if (onSettingsTap != null)
           Positioned(
             top: MediaQuery.paddingOf(context).top + 8,
-            right: 8,
+            left: 8,
             child: IconButton(
               icon: Icon(Icons.settings_outlined, color: c.onSurface),
               onPressed: onSettingsTap,
