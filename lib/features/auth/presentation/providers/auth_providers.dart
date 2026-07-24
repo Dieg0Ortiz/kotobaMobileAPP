@@ -36,10 +36,10 @@ final paymentApiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(storage, baseUrl: ApiConstants.paymentBaseUrl);
 });
 
-// ── Cliente HTTP para el Social Microservice ───────────────────
+// ── Cliente HTTP para Social (likes compartidos con el backend principal) ──
 final socialApiClientProvider = Provider<ApiClient>((ref) {
   final storage = ref.read(secureStorageProvider);
-  return ApiClient(storage, baseUrl: ApiConstants.socialBaseUrl);
+  return ApiClient(storage, baseUrl: ApiConstants.baseUrl);
 });
 
 // ── Repositorio de autenticación (login, register, logout) ──────

@@ -34,8 +34,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
@@ -46,27 +44,31 @@ void main() async {
   await Hive.initFlutter();
   await DownloadService.init();
 
-  final settings = await FirebaseMessaging.instance.requestPermission(
-    provisional: true,
-  );
-  print('Notification permission: ${settings.authorizationStatus}');
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  if (defaultTargetPlatform == TargetPlatform.iOS) {
-    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-    if (apnsToken != null) {
+    final settings = await FirebaseMessaging.instance.requestPermission(
+      provisional: true,
+    );
+    print('Notification permission: ${settings.authorizationStatus}');
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+      if (apnsToken != null) {
+        final fcmToken = await FirebaseMessaging.instance.getToken();
+        print('FCM Token: $fcmToken');
+      }
+    } else {
       final fcmToken = await FirebaseMessaging.instance.getToken();
       print('FCM Token: $fcmToken');
     }
-  } else {
-    final fcmToken = await FirebaseMessaging.instance.getToken();
-    print('FCM Token: $fcmToken');
-  }
 
-  FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
-    print('FCM Token refreshed: $fcmToken');
-  }).onError((err) {
-    print('Error refreshing FCM token: $err');
-  });
+    FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
+      print('FCM Token refreshed: $fcmToken');
+    }).onError((err) {
+      print('Error refreshing FCM token: $err');
+    });
+  }
 
   runApp(
     DevicePreview(

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../reader/domain/entities/comment.dart';
+import '../../../reader/presentation/providers/reader_providers.dart';
 import '../../data/repositories/social_repository.dart';
 
 final socialRepositoryProvider = Provider<SocialRepository>((ref) {
@@ -27,7 +28,15 @@ final workCommentsWithLikesProvider =
   final repo = ref.read(socialRepositoryProvider);
   final result = await repo.getCommentsWithLikes(workId);
   return result.fold(
-    (f) => <Comment>[],
+    (f) {
+      final mainRepo = ref.read(contentRepositoryProvider);
+      return mainRepo.getComments(workId).then(
+        (mainResult) => mainResult.fold(
+          (_) => <Comment>[],
+          (comments) => comments,
+        ),
+      );
+    },
     (list) => list
         .map((e) => Comment.fromJson(e as Map<String, dynamic>))
         .toList(),
