@@ -1,6 +1,7 @@
 import  'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -76,17 +77,26 @@ class LoginViewModel extends AsyncNotifier<void> {
     );
   }
 
+  String _redirectTo() {
+    if (kIsWeb) {
+      return Uri.base.origin;
+    }
+    return 'com.devshainyv.kotobaapp://login-callback/';
+  }
+
   Future<void> signInWithDiscord() async {
     state = const AsyncLoading();
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.discord,
-        redirectTo: 'com.devshainyv.kotobaapp://login-callback/',
-        authScreenLaunchMode: LaunchMode.externalApplication,
+        redirectTo: _redirectTo(),
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
       );
-      
+
       state = const AsyncData(null);
-      
+
     } catch (e) {
       state = AsyncError('Error al iniciar sesión con Discord', StackTrace.current);
     }
@@ -97,8 +107,10 @@ class LoginViewModel extends AsyncNotifier<void> {
     try {
       await Supabase.instance.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: 'com.devshainyv.kotobaapp://login-callback/',
-        authScreenLaunchMode: LaunchMode.externalApplication,
+        redirectTo: _redirectTo(),
+        authScreenLaunchMode: kIsWeb
+            ? LaunchMode.platformDefault
+            : LaunchMode.externalApplication,
       );
 
       state = const AsyncData(null);
