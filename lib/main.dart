@@ -15,10 +15,18 @@ import 'core/theme/theme_provider.dart';
 import 'core/services/download_service.dart';
 import 'features/reader/presentation/providers/reader_providers.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
