@@ -17,8 +17,13 @@ import 'features/auth/presentation/providers/auth_providers.dart';
 import 'features/reader/presentation/providers/reader_providers.dart';
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  print('Background message: ${message.messageId}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +34,8 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
@@ -38,6 +45,28 @@ void main() async {
 
   await Hive.initFlutter();
   await DownloadService.init();
+
+  final settings = await FirebaseMessaging.instance.requestPermission(
+    provisional: true,
+  );
+  print('Notification permission: ${settings.authorizationStatus}');
+
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+    if (apnsToken != null) {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      print('FCM Token: $fcmToken');
+    }
+  } else {
+    final fcmToken = await FirebaseMessaging.instance.getToken();
+    print('FCM Token: $fcmToken');
+  }
+
+  FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {
+    print('FCM Token refreshed: $fcmToken');
+  }).onError((err) {
+    print('Error refreshing FCM token: $err');
+  });
 
   runApp(
     DevicePreview(
