@@ -47,20 +47,24 @@ void main() async {
   if (!kIsWeb) {
     FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-    final settings = await FirebaseMessaging.instance.requestPermission(
-      provisional: true,
-    );
-    print('Notification permission: ${settings.authorizationStatus}');
+    try {
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        provisional: true,
+      );
+      print('Notification permission: ${settings.authorizationStatus}');
 
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
-      final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
-      if (apnsToken != null) {
+      if (defaultTargetPlatform == TargetPlatform.iOS) {
+        final apnsToken = await FirebaseMessaging.instance.getAPNSToken();
+        if (apnsToken != null) {
+          final fcmToken = await FirebaseMessaging.instance.getToken();
+          print('FCM Token: $fcmToken');
+        }
+      } else {
         final fcmToken = await FirebaseMessaging.instance.getToken();
         print('FCM Token: $fcmToken');
       }
-    } else {
-      final fcmToken = await FirebaseMessaging.instance.getToken();
-      print('FCM Token: $fcmToken');
+    } catch (e) {
+      print('Error obtaining FCM token at startup: $e');
     }
 
     FirebaseMessaging.instance.onTokenRefresh.listen((fcmToken) {

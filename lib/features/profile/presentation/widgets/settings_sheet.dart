@@ -1,4 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -52,6 +55,43 @@ class SettingsSheet extends ConsumerWidget {
               onChanged: (v) {},
               activeThumbColor: c.primary,
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.key_outlined),
+            title: Text('Copiar Token FCM', style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
+            subtitle: Text('Token de prueba para Firebase', style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
+            onTap: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                final token = await FirebaseMessaging.instance.getToken();
+                if (token != null) {
+                  await Clipboard.setData(ClipboardData(text: token));
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text('Token FCM copiado: ${token.substring(0, 20)}...'),
+                      backgroundColor: c.primary,
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    const SnackBar(content: Text('No se pudo obtener el token de FCM')),
+                  );
+                }
+              } catch (e) {
+                if (defaultTargetPlatform == TargetPlatform.iOS) {
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('iOS requiere cuenta de Apple Developer paga para Notificaciones APNs Push en dispositivo físico.'),
+                      duration: Duration(seconds: 5),
+                    ),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(content: Text('Error al obtener token: $e')),
+                  );
+                }
+              }
+            },
           ),
           ListTile(
             leading: const Icon(Icons.edit_outlined),
