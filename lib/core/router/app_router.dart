@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/complete_profile_screen.dart';
 import '../../features/catalog/presentation/screens/home_screen.dart';
 import '../../features/catalog/presentation/screens/search_screen.dart';
 import '../../features/profile/presentation/screens/author_dashboard_screen.dart';
@@ -26,15 +27,26 @@ final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final isLoggedIn = ref.watch(authStateProvider);
+  final needsProfile = ref.watch(needsProfileCompletionProvider);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/home',
     redirect: (context, state) {
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
+      final isCompleteRoute = state.matchedLocation == '/auth/complete-profile';
+      final needsProfileComplete = needsProfile.valueOrNull;
+      final profileCheckDone = needsProfileComplete != null;
 
       if (!isLoggedIn && !isAuthRoute) return '/auth/login';
-      if (isLoggedIn && isAuthRoute) return '/home';
+      if (isLoggedIn && isAuthRoute) {
+        if (!profileCheckDone) return null;
+        if (needsProfileComplete && !isCompleteRoute) return '/auth/complete-profile';
+        return '/home';
+      }
+      if (isLoggedIn && needsProfileComplete == true && !isCompleteRoute) {
+        return '/auth/complete-profile';
+      }
       return null;
     },
     routes: [
@@ -45,6 +57,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth/register',
         builder: (_, __) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: '/auth/complete-profile',
+        builder: (_, __) => const CompleteProfileScreen(),
       ),
       GoRoute(
         path: '/users/:userId',

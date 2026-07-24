@@ -89,8 +89,9 @@ final authStateProvider = StateProvider<bool>((ref) {
 
     if (session != null) {
       _syncTokens(session);
-      _syncDiscordUser();
+      _syncOAuthUser();
       _updateActiveTimestamp();
+      ref.invalidate(needsProfileCompletionProvider);
     }
 
     ref.controller.state = session != null;
@@ -144,11 +145,38 @@ void _syncTokens(Session session) {
   );
 }
 
-// ── Safety net: asegura que el usuario de Discord exista en la BD ─
-Future<void> _syncDiscordUser() async {
+// ── Safety net: asegura que el usuario OAuth exista en la BD ────
+Future<void> _syncOAuthUser() async {
   try {
     final storage = SecureStorageService();
     final api = ApiClient(storage);
     (await api.post('/auth/discord', data: {})).fold((_) => null, (_) => null);
   } catch (_) {}
 }
+
+/// Provider que indica si el usuario OAuth necesita completar su perfil
+final userProfileCompleteProvider = StateProvider<bool>((ref) => false);
+
+/// Verifica si el usuario actual tiene username completo
+final needsProfileCompletionProvider = FutureProvider<bool>((ref) async {
+  final auth = Supabase.instance.client.auth;
+  final user = auth.currentUser;
+  if (user == null) return false;
+
+  try {
+    final storage = SecureStorageService();
+    final api = ApiClient(storage);
+    final result = await api.get<Map<String, dynamic>>('/users/me');
+    return result.fold(
+      (_) => false,
+      (data) {
+        final username = data['username'] as String?;
+        final needsComplete = username == null || username.startsWith('user_');
+        ref.read(userProfileCompleteProvider.notifier).state = !needsComplete;
+        return needsComplete;
+      },
+    );
+  } catch (_) {
+    return false;
+  }
+});
