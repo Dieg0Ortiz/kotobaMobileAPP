@@ -27,7 +27,7 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.devshainyv.kotoba_app</string>
+				<string>com.devshainyv.kotobaapp</string>
 			</array>
 		</dict>
 	</array>
