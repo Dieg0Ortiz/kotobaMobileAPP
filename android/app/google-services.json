@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "205058012615",
+    "project_id": "kotobanotis",
+    "storage_bucket": "kotobanotis.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205058012615:android:1ccb615e15a6a3fd8e15e2",
+        "android_client_info": {
+          "package_name": "com.devshainyv.kotoba_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMYU1AL8ZyZzjgdatN8B9PHBbx8dKT5Tc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205058012615:android:7c0d53542fe5b58a8e15e2",
+        "android_client_info": {
+          "package_name": "com.devshainyv.kotobaapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDMYU1AL8ZyZzjgdatN8B9PHBbx8dKT5Tc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
