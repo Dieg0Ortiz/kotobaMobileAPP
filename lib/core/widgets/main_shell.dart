@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../theme/kotoba_colors.dart';
-import 'package:go_router/go_router.dart';
+import '../../features/notifications/presentation/providers/notification_providers.dart';
 
 /// Shell con BottomNavigationBar para las pestañas principales.
 ///
 /// Envuelve las rutas dentro del ShellRoute de GoRouter.
-class MainShell extends StatelessWidget {
+class MainShell extends ConsumerWidget {
   final Widget child;
 
   const MainShell({required this.child, super.key});
@@ -32,9 +34,11 @@ class MainShell extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = _currentIndex(context);
     final c = KotobaColors.of(context);
+    final unreadAsync = ref.watch(unreadCountProvider);
+    final unreadCount = unreadAsync.whenOrNull(data: (count) => count) ?? 0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -145,7 +149,57 @@ class MainShell extends StatelessWidget {
 
         // ── Mobile Layout (Bottom Nav Bar) ──
         return Scaffold(
-          body: child,
+          body: Stack(
+            children: [
+              child,
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 16,
+                child: GestureDetector(
+                  onTap: () => context.push('/notifications'),
+                  child: Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: c.surface.withValues(alpha: 0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Icon(Icons.notifications_outlined, color: c.onSurface, size: 22),
+                        if (unreadCount > 0)
+                          Positioned(
+                            top: 2,
+                            right: 2,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFD9735A),
+                                shape: BoxShape.circle,
+                              ),
+                              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                              child: Text(
+                                unreadCount > 99 ? '99+' : '$unreadCount',
+                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               border: Border(

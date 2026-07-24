@@ -18,6 +18,7 @@ import '../../features/write/presentation/screens/edit_story_screen.dart';
 import '../../features/write/presentation/screens/my_stories_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/write/presentation/screens/write_dashboard_screen.dart';
+import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -122,6 +123,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/dashboard',
             builder: (_, __) => const AuthorDashboardScreen(),
+          ),
+          GoRoute(
+            path: '/notifications',
+            builder: (_, __) => const NotificationsScreen(),
           ),
         ],
       ),

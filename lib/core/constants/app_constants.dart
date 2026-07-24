@@ -35,6 +35,7 @@ class ApiConstants {
   static const String chapters = '/chapters';
   static const String comments = '/comments';
   static const String bookmarks = '/bookmarks';
+  static const String notifications = '/notifications';
   static const String uploadCover = '/upload/cover';
   static const String search = '/search';
 
@@ -44,6 +45,9 @@ class ApiConstants {
   static const String newAuthors = '$users/new-authors';
   static String workById(String id) => '$works/$id';
   static String chapterById(String id) => '$chapters/$id';
+  static String notificationById(String id) => '$notifications/$id';
+  static const String notificationsUnreadCount = '$notifications/unread-count';
+  static const String notificationsReadAll = '$notifications/read-all';
 }
 
 /// Constantes generales de la app.
