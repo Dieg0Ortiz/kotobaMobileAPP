@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../../../core/constants/app_strings.dart';
 import '../../../../core/theme/kotoba_colors.dart';
@@ -17,6 +18,7 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../social/presentation/providers/social_providers.dart';
 import '../../domain/entities/chapter.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';
@@ -499,6 +501,30 @@ class _ActionBar extends ConsumerWidget {
                 child: Icon(ref.watch(isWorkDownloadedProvider(workId)) ? Icons.download_done : Icons.download_outlined),
               ),
             ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () {
+                  final workTitle = (work as Work).title;
+                  final url = 'https://kotoba.app/works/$workId';
+                  Share.share('$workTitle\n\n$url');
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: c.surfaceHigh,
+                  foregroundColor: c.primaryContainer,
+                  side: BorderSide(
+                    color: c.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+                child: const Icon(Icons.share_outlined),
+              ),
+            ),
         ],
       ),
     );
@@ -719,7 +745,7 @@ class _CommunitySection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = KotobaColors.of(context);
-    final commentsAsync = ref.watch(workCommentsProvider(workId));
+    final commentsAsync = ref.watch(workCommentsWithLikesProvider(workId));
     final isAuthenticated = ref.watch(authStateProvider);
 
     return Padding(
@@ -814,7 +840,7 @@ class _CommentInputState extends ConsumerState<_CommentInput> {
       ),
       (_) {
         _controller.clear();
-        ref.invalidate(workCommentsProvider(widget.workId));
+        ref.invalidate(workCommentsWithLikesProvider(widget.workId));
       },
     );
   }
@@ -873,14 +899,17 @@ class _CommentInputState extends ConsumerState<_CommentInput> {
   }
 }
 
-class _CommentTile extends StatelessWidget {
+class _CommentTile extends ConsumerWidget {
   final Comment comment;
 
   const _CommentTile({required this.comment});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = KotobaColors.of(context);
+    final isLiked = comment.isLiked;
+    final likeCount = comment.likeCount;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: ClipRRect(
@@ -947,6 +976,41 @@ class _CommentTile extends StatelessWidget {
                       style: KotobaTypography.bodyMd.copyWith(
                         color: c.onSurface.withValues(alpha: 0.85),
                       ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () async {
+                            final repo = ref.read(socialRepositoryProvider);
+                            if (isLiked) {
+                              await repo.unlikeComment(comment.id);
+                            } else {
+                              await repo.likeComment(comment.id);
+                            }
+                            ref.invalidate(workCommentsWithLikesProvider(comment.workId));
+                          },
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isLiked ? Icons.favorite : Icons.favorite_border,
+                                size: 16,
+                                color: isLiked
+                                    ? const Color(0xFFE53935)
+                                    : c.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$likeCount',
+                                style: KotobaTypography.labelSm.copyWith(
+                                  color: c.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

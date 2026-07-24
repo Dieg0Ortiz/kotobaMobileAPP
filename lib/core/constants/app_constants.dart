@@ -24,6 +24,14 @@ class ApiConstants {
     if (defineUrl.isNotEmpty) return defineUrl;
     return 'https://kotobapay-production.up.railway.app/api';
   }
+
+  /// URL base para el Social Microservice.
+  /// Se puede sobrescribir con --dart-define=SOCIAL_API_URL=...
+  static String get socialBaseUrl {
+    const defineUrl = String.fromEnvironment('SOCIAL_API_URL', defaultValue: '');
+    if (defineUrl.isNotEmpty) return defineUrl;
+    return 'https://kotobasocial-production.up.railway.app/api';
+  }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
 

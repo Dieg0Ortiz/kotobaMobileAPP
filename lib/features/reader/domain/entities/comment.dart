@@ -9,6 +9,8 @@ class Comment extends Equatable {
   final DateTime createdAt;
   final String? username;
   final String? avatarUrl;
+  final int likeCount;
+  final bool isLiked;
 
   const Comment({
     required this.id,
@@ -19,7 +21,24 @@ class Comment extends Equatable {
     required this.createdAt,
     this.username,
     this.avatarUrl,
+    this.likeCount = 0,
+    this.isLiked = false,
   });
+
+  Comment copyWith({int? likeCount, bool? isLiked}) {
+    return Comment(
+      id: id,
+      workId: workId,
+      chapterId: chapterId,
+      userId: userId,
+      content: content,
+      createdAt: createdAt,
+      username: username,
+      avatarUrl: avatarUrl,
+      likeCount: likeCount ?? this.likeCount,
+      isLiked: isLiked ?? this.isLiked,
+    );
+  }
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     final user = json['users'] as Map<String, dynamic>?;
@@ -32,6 +51,8 @@ class Comment extends Equatable {
       createdAt: DateTime.tryParse(json['created_at'] as String? ?? '') ?? DateTime.now(),
       username: user?['username'] as String?,
       avatarUrl: user?['avatar_url'] as String?,
+      likeCount: (json['like_count'] as int?) ?? 0,
+      isLiked: (json['is_liked'] as bool?) ?? false,
     );
   }
 
