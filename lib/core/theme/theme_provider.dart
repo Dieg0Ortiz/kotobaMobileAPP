@@ -29,6 +29,7 @@ class ThemeModeNotifier extends StateNotifier<ThemeMode> {
   void setThemeMode(ThemeMode mode) {
     state = mode;
     _prefs.setString(_key, mode.name);
+
   }
 
   // Alterna entre claro y oscuro

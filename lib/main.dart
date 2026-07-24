@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:device_preview/device_preview.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -11,6 +12,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/kotoba_theme.dart';
 import 'core/theme/theme_provider.dart';
+import 'core/services/download_service.dart';
 import 'features/reader/presentation/providers/reader_providers.dart';
 
 void main() async {
@@ -24,6 +26,9 @@ void main() async {
   );
 
   final prefs = await SharedPreferences.getInstance();
+
+  await Hive.initFlutter();
+  await DownloadService.init();
 
   runApp(
     DevicePreview(

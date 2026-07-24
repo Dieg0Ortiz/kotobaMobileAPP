@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../../core/providers/offline_providers.dart';
+import '../../../../core/services/download_service.dart';
 import '../../../catalog/domain/entities/work.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../reader/presentation/providers/reader_providers.dart';
@@ -17,6 +19,7 @@ class LibraryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final bookmarksAsync = ref.watch(myBookmarksProvider);
     final followingAsync = ref.watch(followingAuthorsProvider);
+    final downloadedWorks = ref.watch(downloadedWorksProvider);
     final c = KotobaColors.of(context);
 
     return Scaffold(
@@ -88,6 +91,34 @@ class LibraryScreen extends ConsumerWidget {
                   );
                 },
               ),
+
+              // ── Sección: Obras Descargadas ─────────────
+              if (downloadedWorks.isNotEmpty) ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 12, 24, 8),
+                    child: Row(
+                      children: [
+                        Text('Descargados', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
+                        const Spacer(),
+                        Text('${DownloadService.getDownloadedWorkIds().length} obras', style: KotobaTypography.labelXs.copyWith(color: c.outlineVariant)),
+                      ],
+                    ),
+                  ),
+                ),
+                SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      final work = downloadedWorks[index];
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+                        child: _LibraryWorkCard(work: work, onTap: () => context.push('/works/${work.id}')),
+                      );
+                    },
+                    childCount: downloadedWorks.length,
+                  ),
+                ),
+              ],
 
               // ── Sección: Obras Guardadas ────────────────
               if (works.isEmpty)

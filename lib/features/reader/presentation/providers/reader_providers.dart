@@ -9,6 +9,7 @@ import '../../domain/entities/comment.dart';
 import '../../domain/repositories/i_content_repository.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../viewmodels/work_detail_viewmodel.dart';
+import '../../../../core/services/download_service.dart';
 
 final contentRepositoryProvider = Provider<IContentRepository>((ref) {
   final api = ref.read(contentApiClientProvider);
@@ -24,7 +25,16 @@ final chapterContentProvider =
     FutureProvider.family<Chapter, String>((ref, chapterId) async {
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.getChapter(chapterId);
-  return result.fold((f) => throw f, (chapter) => chapter);
+  return result.fold((f) async {
+    // Fallback to offline cache
+    final works = DownloadService.getDownloadedWorkIds();
+    for (final workId in works) {
+      final chapters = DownloadService.loadChapters(workId);
+      final chapter = chapters.where((c) => c.id == chapterId).firstOrNull;
+      if (chapter != null) return chapter;
+    }
+    throw f;
+  }, (chapter) => chapter);
 });
 
 final workCommentsProvider =

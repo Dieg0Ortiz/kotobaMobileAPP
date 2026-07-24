@@ -24,6 +24,30 @@ class Work extends Equatable {
   final DateTime publishedAt;
   final DateTime updatedAt;
 
+  factory Work.fromJson(Map<String, dynamic> json) {
+    return Work(
+      id: json['id'] as String,
+      title: json['title'] as String,
+      authorId: json['author_id'] as String,
+      authorName: (json['author_name'] as String?) ?? (json['users'] is Map ? (json['users'] as Map)['username'] as String? ?? '' : ''),
+      coverUrl: json['cover_url'] as String?,
+      synopsis: json['synopsis'] as String? ?? json['description'] as String? ?? '',
+      genres: (json['genres'] as List<dynamic>?)?.cast<String>() ?? [],
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
+      status: json['status'] as String? ?? 'ongoing',
+      chapterCount: json['chapters'] is Map ? (json['chapters'] as Map)['count'] as int? ?? 0 : (json['chapter_count'] as int? ?? 0),
+      wordCount: json['word_count'] as int? ?? 0,
+      viewCount: json['view_count'] as int? ?? 0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 0,
+      ratingCount: json['rating_count'] as int? ?? 0,
+      language: json['language'] as String? ?? 'es',
+      frequency: json['frequency'] as String?,
+      isMature: json['is_mature'] as bool? ?? false,
+      publishedAt: DateTime.tryParse(json['published_at'] as String? ?? json['created_at'] as String? ?? '') ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? json['created_at'] as String? ?? '') ?? DateTime.now(),
+    );
+  }
+
   const Work({
     required this.id,
     required this.title,
@@ -91,4 +115,26 @@ class Work extends Equatable {
 
   @override
   List<Object?> get props => [id];
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'title': title,
+    'author_id': authorId,
+    'author_name': authorName,
+    'cover_url': coverUrl,
+    'synopsis': synopsis,
+    'genres': genres,
+    'tags': tags,
+    'status': status,
+    'chapter_count': chapterCount,
+    'word_count': wordCount,
+    'view_count': viewCount,
+    'rating': rating,
+    'rating_count': ratingCount,
+    'language': language,
+    'frequency': frequency,
+    'is_mature': isMature,
+    'published_at': publishedAt.toIso8601String(),
+    'updated_at': updatedAt.toIso8601String(),
+  };
 }

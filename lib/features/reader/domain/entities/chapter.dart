@@ -81,4 +81,17 @@ class Chapter extends Equatable {
 
   @override
   List<Object?> get props => [id];
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'work_id': workId,
+    'order_number': number,
+    'title': title,
+    'content': content,
+    'status': status,
+    'word_count': wordCount,
+    'read_time_minutes': readTimeMinutes,
+    'published_at': publishedAt.toIso8601String(),
+    'is_locked': isLocked,
+  };
 }

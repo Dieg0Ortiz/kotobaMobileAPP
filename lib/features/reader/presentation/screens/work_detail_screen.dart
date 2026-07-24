@@ -11,7 +11,10 @@ import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_chip.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../../core/services/download_service.dart';
+import '../../../../core/providers/offline_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/domain/entities/work.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../domain/entities/chapter.dart';
@@ -419,34 +422,83 @@ class _ActionBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 8),
-          SizedBox(
-            width: 52,
-            height: 52,
-            child: OutlinedButton(
-              onPressed: () async {
-                final repo = ref.read(contentRepositoryProvider);
-                if (isBookmarked) {
-                  await repo.unbookmarkWork(workId);
-                } else {
-                  await repo.bookmarkWork(workId);
-                }
-                ref.invalidate(myBookmarkProvider(workId));
-                ref.invalidate(myBookmarksProvider);
-              },
-              style: OutlinedButton.styleFrom(
-                backgroundColor: isBookmarked ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
-                foregroundColor: isBookmarked ? c.primary : c.primaryContainer,
-                side: BorderSide(
-                  color: isBookmarked ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () async {
+                  final repo = ref.read(contentRepositoryProvider);
+                  if (isBookmarked) {
+                    await repo.unbookmarkWork(workId);
+                  } else {
+                    await repo.bookmarkWork(workId);
+                  }
+                  ref.invalidate(myBookmarkProvider(workId));
+                  ref.invalidate(myBookmarksProvider);
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: isBookmarked ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                  foregroundColor: isBookmarked ? c.primary : c.primaryContainer,
+                  side: BorderSide(
+                    color: isBookmarked ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: EdgeInsets.zero,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                padding: EdgeInsets.zero,
+                child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_add_outlined),
               ),
-              child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_add_outlined),
             ),
-          ),
+            const SizedBox(width: 8),
+            SizedBox(
+              width: 52,
+              height: 52,
+              child: OutlinedButton(
+                onPressed: () async {
+                  final isDownloaded = DownloadService.isWorkDownloaded(workId);
+                  if (isDownloaded) {
+                    await DownloadService.deleteWork(workId);
+                    ref.invalidate(isWorkDownloadedProvider(workId));
+                    ref.invalidate(downloadedWorkIdsProvider);
+                  } else {
+                    final repo = ref.read(contentRepositoryProvider);
+                    final chaptersResult = await repo.getChapters(workId);
+                    chaptersResult.fold(
+                      (f) => ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error al descargar: $f')),
+                      ),
+                      (chapters) async {
+                        await DownloadService.downloadWork(
+                          work: work as Work,
+                          chapters: chapters,
+                          onProgress: (progress) {},
+                        );
+                        ref.invalidate(isWorkDownloadedProvider(workId));
+                        ref.invalidate(downloadedWorkIdsProvider);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Obra descargada correctamente')),
+                          );
+                        }
+                      },
+                    );
+                  }
+                },
+                style: OutlinedButton.styleFrom(
+                  backgroundColor: ref.watch(isWorkDownloadedProvider(workId)) ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                  foregroundColor: ref.watch(isWorkDownloadedProvider(workId)) ? c.primary : c.primaryContainer,
+                  side: BorderSide(
+                    color: ref.watch(isWorkDownloadedProvider(workId)) ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  padding: EdgeInsets.zero,
+                ),
+                child: Icon(ref.watch(isWorkDownloadedProvider(workId)) ? Icons.download_done : Icons.download_outlined),
+              ),
+            ),
         ],
       ),
     );
