@@ -77,14 +77,7 @@ const _lastActiveKey = 'last_active_timestamp';
 final authStateProvider = StateProvider<bool>((ref) {
   final auth = Supabase.instance.client.auth;
 
-  // Check stored session synchronously (may be null on first call)
-  final currentSession = auth.currentSession;
-  if (currentSession != null) {
-    _syncTokens(currentSession);
-    _updateActiveTimestamp();
-  }
-
-  // Listen to auth changes (fires on session restore, login, logout)
+  // Escucha cambios de auth (login, logout, session restore)
   ref.onDispose(auth.onAuthStateChange.listen((data) {
     final session = data.session;
 
@@ -99,7 +92,7 @@ final authStateProvider = StateProvider<bool>((ref) {
     ref.controller.state = session != null;
   }).cancel);
 
-  return currentSession != null;
+  return false; // arranca como false; authInitProvider lo corrige
 });
 
 /// Provider que inicializa la sesión (recupera sesión guardada y chequea inactividad).
@@ -107,23 +100,36 @@ final authStateProvider = StateProvider<bool>((ref) {
 final authInitProvider = FutureProvider<void>((ref) async {
   final auth = Supabase.instance.client.auth;
 
-  // Check 30-day inactivity
-  final prefs = await SharedPreferences.getInstance();
-  final lastActive = prefs.getInt(_lastActiveKey);
-  if (lastActive != null) {
-    final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
-    final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
-    if (elapsed > limitMs) {
-      try {
-        await auth.signOut();
-      } catch (_) {}
-      await prefs.remove(_lastActiveKey);
-      ref.invalidate(authStateProvider);
-      return;
+  // Espera a que Supabase recupere la sesión del almacenamiento local
+  final firstEvent = await auth.onAuthStateChange.first;
+  final session = firstEvent.session;
+
+  if (session != null) {
+    _syncTokens(session);
+    _syncOAuthUser();
+    _sendFcmTokenToBackend();
+    _updateActiveTimestamp();
+    ref.invalidate(needsProfileCompletionProvider);
+
+    // Check 30-day inactivity
+    final prefs = await SharedPreferences.getInstance();
+    final lastActive = prefs.getInt(_lastActiveKey);
+    if (lastActive != null) {
+      final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
+      final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
+      if (elapsed > limitMs) {
+        try {
+          await auth.signOut();
+        } catch (_) {}
+        await prefs.remove(_lastActiveKey);
+        ref.invalidate(authStateProvider);
+        return;
+      }
     }
+
+    await _updateActiveTimestamp();
   }
 
-  // Update auth state provider with the current session
   ref.invalidate(authStateProvider);
 });
 
