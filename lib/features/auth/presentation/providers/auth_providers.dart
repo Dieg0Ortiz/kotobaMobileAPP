@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -90,6 +91,7 @@ final authStateProvider = StateProvider<bool>((ref) {
     if (session != null) {
       _syncTokens(session);
       _syncOAuthUser();
+      _sendFcmTokenToBackend();
       _updateActiveTimestamp();
       ref.invalidate(needsProfileCompletionProvider);
     }
@@ -151,6 +153,21 @@ Future<void> _syncOAuthUser() async {
     final storage = SecureStorageService();
     final api = ApiClient(storage);
     (await api.post('/auth/discord', data: {})).fold((_) => null, (_) => null);
+  } catch (_) {}
+}
+
+// ── Envía el token FCM al backend para notificaciones ──────────
+Future<void> _sendFcmTokenToBackend() async {
+  try {
+    final token = await FirebaseMessaging.instance.getToken();
+    if (token == null) return;
+
+    final storage = SecureStorageService();
+    final api = ApiClient(storage);
+    await api.post('/notifications/fcm-token', data: {
+      'token': token,
+      'platform': 'mobile',
+    });
   } catch (_) {}
 }
 
