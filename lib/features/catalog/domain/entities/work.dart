@@ -20,6 +20,7 @@ class Work extends Equatable {
   final int ratingCount;
   final String language;
   final String? frequency; // 'weekly', 'biweekly', 'monthly'
+  final bool isMature;
   final DateTime publishedAt;
   final DateTime updatedAt;
 
@@ -40,6 +41,7 @@ class Work extends Equatable {
     this.ratingCount = 0,
     this.language = 'es',
     this.frequency,
+    this.isMature = false,
     required this.publishedAt,
     required this.updatedAt,
   });
@@ -67,6 +69,7 @@ class Work extends Equatable {
       ratingCount: ratingCount ?? this.ratingCount,
       language: language,
       frequency: frequency,
+      isMature: isMature,
       publishedAt: publishedAt,
       updatedAt: updatedAt,
     );

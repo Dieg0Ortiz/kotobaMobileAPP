@@ -100,6 +100,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
         _selectedGenres = work.genres.where(_availableGenres.contains).toList();
         _coverUrl = work.coverUrl;
         isCompleted = work.status == 'completed';
+        isMature = work.isMature;
       },
     );
     _loadChapters();
@@ -176,6 +177,7 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       'genres': _selectedGenres,
       'status': status,
       'language': 'es',
+      'is_mature': isMature,
     };
 
     final workId = _actualWorkId ?? widget.storyId;

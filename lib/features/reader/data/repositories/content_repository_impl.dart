@@ -35,6 +35,7 @@ class ContentRepositoryImpl implements IContentRepository {
       ratingCount: json['rating_count'] as int? ?? 0,
       language: json['language'] as String? ?? 'es',
       frequency: json['frequency'] as String?,
+      isMature: json['is_mature'] as bool? ?? false,
       publishedAt: DateTime.tryParse(json['published_at'] as String? ?? '') ?? DateTime.now(),
       updatedAt: DateTime.tryParse(json['updated_at'] as String? ?? '') ?? DateTime.now(),
     );

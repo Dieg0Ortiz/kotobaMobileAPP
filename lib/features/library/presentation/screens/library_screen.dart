@@ -58,6 +58,7 @@ class LibraryScreen extends ConsumerWidget {
                               ratingCount: w['rating_count'] as int? ?? 0,
                               publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
                               updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
+                              isMature: w['is_mature'] as bool? ?? false,
                             ))
                         .toList() ?? [];
 
