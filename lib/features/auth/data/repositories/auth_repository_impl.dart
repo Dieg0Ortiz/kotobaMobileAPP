@@ -1,5 +1,7 @@
 import 'package:dartz/dartz.dart';
 
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
+
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/api_client.dart';
@@ -21,9 +23,9 @@ class AuthRepositoryImpl implements IAuthRepository {
       data: {'email': email, 'password': password},
     );
 
-    return result.fold(
-      (failure) => Left(failure),
-      (data) {
+    return await result.fold<Future<Either<Failure, AuthToken>>>(
+      (failure) async => Left(failure),
+      (data) async {
         final session = data['session'] as Map<String, dynamic>;
 
         final token = AuthToken(
@@ -37,6 +39,12 @@ class AuthRepositoryImpl implements IAuthRepository {
         _storage.saveTokens(
           accessToken: token.accessToken,
           refreshToken: token.refreshToken,
+        );
+
+        // Sincroniza la sesión con el SDK de Supabase para que persista al reiniciar
+        await Supabase.instance.client.auth.setSession(
+          token.refreshToken,
+          accessToken: token.accessToken,
         );
 
         return Right(token);
