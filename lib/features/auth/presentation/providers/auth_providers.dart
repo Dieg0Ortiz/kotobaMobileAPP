@@ -77,6 +77,13 @@ const _lastActiveKey = 'last_active_timestamp';
 final authStateProvider = StateProvider<bool>((ref) {
   final auth = Supabase.instance.client.auth;
 
+  // Sincrónico: si Supabase ya recuperó la sesión, la usamos
+  final currentSession = auth.currentSession;
+  if (currentSession != null) {
+    _syncTokens(currentSession);
+    _updateActiveTimestamp();
+  }
+
   // Escucha cambios de auth (login, logout, session restore)
   ref.onDispose(auth.onAuthStateChange.listen((data) {
     final session = data.session;
@@ -92,45 +99,44 @@ final authStateProvider = StateProvider<bool>((ref) {
     ref.controller.state = session != null;
   }).cancel);
 
-  return false; // arranca como false; authInitProvider lo corrige
+  return currentSession != null;
 });
 
-/// Provider que inicializa la sesión (recupera sesión guardada y chequea inactividad).
-/// Usar este provider para esperar a que la sesión esté lista.
+/// Provider que inicializa la sesión y chequea inactividad.
+/// Espera a que Supabase recupere la sesión si aún no está lista.
 final authInitProvider = FutureProvider<void>((ref) async {
   final auth = Supabase.instance.client.auth;
+  final prefs = await SharedPreferences.getInstance();
 
-  // Espera a que Supabase recupere la sesión del almacenamiento local
-  final firstEvent = await auth.onAuthStateChange.first;
-  final session = firstEvent.session;
-
-  if (session != null) {
-    _syncTokens(session);
-    _syncOAuthUser();
-    _sendFcmTokenToBackend();
-    _updateActiveTimestamp();
-    ref.invalidate(needsProfileCompletionProvider);
-
-    // Check 30-day inactivity
-    final prefs = await SharedPreferences.getInstance();
-    final lastActive = prefs.getInt(_lastActiveKey);
-    if (lastActive != null) {
-      final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
-      final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
-      if (elapsed > limitMs) {
-        try {
-          await auth.signOut();
-        } catch (_) {}
-        await prefs.remove(_lastActiveKey);
-        ref.invalidate(authStateProvider);
-        return;
-      }
-    }
-
-    await _updateActiveTimestamp();
+  // Si Supabase aún no ha recuperado la sesión, esperamos el primer evento
+  if (auth.currentSession == null) {
+    await auth.onAuthStateChange.first;
   }
 
-  ref.invalidate(authStateProvider);
+  final session = auth.currentSession;
+  if (session == null) return;
+
+  _syncTokens(session);
+  _syncOAuthUser();
+  _sendFcmTokenToBackend();
+  ref.invalidate(needsProfileCompletionProvider);
+
+  // Check 30-day inactivity
+  final lastActive = prefs.getInt(_lastActiveKey);
+  if (lastActive != null) {
+    final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
+    final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
+    if (elapsed > limitMs) {
+      try {
+        await auth.signOut();
+      } catch (_) {}
+      await prefs.remove(_lastActiveKey);
+      ref.invalidate(authStateProvider);
+      return;
+    }
+  }
+
+  await _updateActiveTimestamp();
 });
 
 Future<void> _updateActiveTimestamp() async {
@@ -200,6 +206,7 @@ final needsProfileCompletionProvider = FutureProvider<bool>((ref) async {
       },
     );
   } catch (_) {
-    return false;
+    // Si falla la consulta, el usuario no existe en la BD → necesita completar perfil
+    return true;
   }
 });
