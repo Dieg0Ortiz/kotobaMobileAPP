@@ -20,6 +20,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'firebase_options.dart';
 
+const _inactiveDaysLimit = 30;
+const _lastActiveKey = 'last_active_timestamp';
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   print('Background message: ${message.messageId}');
@@ -38,6 +41,9 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     publishableKey: dotenv.env['SUPABASE_PUBLISHABLE_KEY']!,
   );
+
+  // Espera a que Supabase recupere la sesión guardada y chequea inactividad
+  await _initSession();
 
   final prefs = await SharedPreferences.getInstance();
 
@@ -87,19 +93,39 @@ void main() async {
   );
 }
 
+Future<void> _initSession() async {
+  final auth = Supabase.instance.client.auth;
+
+  // Si la sesión aún no se ha recuperado, esperamos el primer evento
+  if (auth.currentSession == null) {
+    await auth.onAuthStateChange.first;
+  }
+
+  final session = auth.currentSession;
+  if (session == null) return;
+
+  // Check 30-day inactivity
+  final prefs = await SharedPreferences.getInstance();
+  final lastActive = prefs.getInt(_lastActiveKey);
+  if (lastActive != null) {
+    final elapsed = DateTime.now().millisecondsSinceEpoch - lastActive;
+    final limitMs = _inactiveDaysLimit * 24 * 60 * 60 * 1000;
+    if (elapsed > limitMs) {
+      await auth.signOut();
+      await prefs.remove(_lastActiveKey);
+      return;
+    }
+  }
+
+  await prefs.setInt(_lastActiveKey, DateTime.now().millisecondsSinceEpoch);
+}
+
 // ── Widget raíz de la app ──────────────────────────────────────
 class KotobaApp extends ConsumerWidget {
   const KotobaApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize auth session and check inactivity
-    ref.watch(authInitProvider);
-    // Update last activity timestamp
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateLastActivity();
-    });
-
     final router = ref.watch(appRouterProvider);
     final themeMode = ref.watch(themeModeProvider);
 
