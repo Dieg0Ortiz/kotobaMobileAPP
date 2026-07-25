@@ -26,13 +26,23 @@ final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final appRouterProvider = Provider<GoRouter>((ref) {
-  final isLoggedIn = ref.watch(authStateProvider);
-  final needsProfile = ref.watch(needsProfileCompletionProvider);
+  final routerRefresh = ValueNotifier<int>(0);
+
+  ref.listen(authStateProvider, (prev, next) {
+    routerRefresh.value++;
+  });
+
+  ref.listen<AsyncValue<bool>>(needsProfileCompletionProvider, (prev, next) {
+    routerRefresh.value++;
+  });
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/home',
+    refreshListenable: routerRefresh,
     redirect: (context, state) {
+      final isLoggedIn = ref.read(authStateProvider);
+      final needsProfile = ref.read(needsProfileCompletionProvider);
       final isAuthRoute = state.matchedLocation.startsWith('/auth');
       final isCompleteRoute = state.matchedLocation == '/auth/complete-profile';
       final needsProfileComplete = needsProfile.valueOrNull;
