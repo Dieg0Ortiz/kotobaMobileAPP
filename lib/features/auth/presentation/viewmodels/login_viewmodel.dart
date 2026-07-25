@@ -69,11 +69,7 @@ class LoginViewModel extends AsyncNotifier<void> {
     );
     state = result.fold(
       (failure) => AsyncError(failure.message, StackTrace.current),
-      (_) {
-        // Update global auth state on success
-        ref.read(authStateProvider.notifier).state = true;
-        return const AsyncData(null);
-      },
+      (_) => const AsyncData(null),
     );
   }
 

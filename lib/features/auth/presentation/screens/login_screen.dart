@@ -22,7 +22,13 @@ class LoginScreen extends ConsumerWidget {
 
     ref.listen(loginViewModelProvider, (_, next) {
       next.whenOrNull(
-        data: (_) => context.go('/home'),
+        data: (_) {
+          // El router ya redirige por el cambio de authState;
+          // usamos post-frame para evitar conflictos
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            context.go('/home');
+          });
+        },
         error: (err, _) => ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(err.toString()),
