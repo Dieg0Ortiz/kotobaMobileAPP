@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide User;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
@@ -21,13 +22,8 @@ class AuthorProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(publicAuthorProfileProvider(userId));
-    final currentUserAsync = ref.watch(currentProfileProvider);
-    final followingAsync = ref.watch(followingAuthorsProvider);
     final c = KotobaColors.of(context);
-    final currentUserId = currentUserAsync.maybeWhen(
-      data: (u) => u.id,
-      orElse: () => '',
-    );
+    final currentUserId = Supabase.instance.client.auth.currentUser?.id ?? '';
 
     return Scaffold(
       backgroundColor: c.background,
@@ -70,11 +66,7 @@ class AuthorProfileScreen extends ConsumerWidget {
                 .where((w) => w.status != 'draft')
                 .toList() ??
                 [];
-            final isFollowedInList = followingAsync.maybeWhen(
-              data: (list) => list.any((a) => a['id'] == userId),
-              orElse: () => false,
-            );
-            final isFollowedByMe = (data['is_followed_by_me'] as bool?) == true || isFollowedInList;
+            final isFollowedByMe = (data['is_followed_by_me'] as bool?) == true;
             final isMe = currentUserId == user.id;
 
           return CustomScrollView(
