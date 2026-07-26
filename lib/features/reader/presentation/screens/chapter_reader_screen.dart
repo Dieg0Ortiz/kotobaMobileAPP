@@ -6,6 +6,7 @@ import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -1272,22 +1273,30 @@ class _CommentTile extends StatelessWidget {
           CircleAvatar(
             radius: 16,
             backgroundColor: c.primary.withValues(alpha: 0.2),
-            child: Text(
-              (comment.username ?? 'U')[0].toUpperCase(),
-              style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 14),
-            ),
+            backgroundImage: comment.avatarUrl != null
+                ? CachedNetworkImageProvider(comment.avatarUrl!)
+                : null,
+            child: comment.avatarUrl == null
+                ? Text(
+                    (comment.username ?? 'U')[0].toUpperCase(),
+                    style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 14),
+                  )
+                : null,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  comment.username ?? 'Usuario',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                    color: c.onSurface,
+                GestureDetector(
+                  onTap: () => context.push('/users/${comment.userId}'),
+                  child: Text(
+                    comment.username ?? 'Usuario',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                      color: c.primary,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 2),
