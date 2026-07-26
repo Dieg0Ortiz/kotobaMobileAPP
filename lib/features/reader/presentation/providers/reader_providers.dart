@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
@@ -69,3 +70,36 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
 final readerPreferencesProvider =
     NotifierProvider<ReaderPreferencesViewModel, ReaderPreferences>(
         ReaderPreferencesViewModel.new);
+
+/// Realtime vote subscription for a specific work.
+/// When any vote changes for this work, it re-fetches the stats.
+final voteRealtimeProvider = StreamProvider.family<Map<String, dynamic>, String>((ref, workId) async* {
+  final channel = Supabase.instance.client
+      .channel('votes:$workId')
+      .onPostgresChanges(
+        event: PostgresChangeEvent.all,
+        schema: 'public',
+        table: 'work_votes',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'work_id',
+          value: workId,
+        ),
+        callback: (payload) async {
+          final repo = ref.read(contentRepositoryProvider);
+          final result = await repo.getWorkDetail(workId);
+          result.fold((_) {}, (work) {
+            final vm = ref.read(workDetailViewModelProvider(workId).notifier);
+            vm.updateVoteStats(work.rating, work.ratingCount);
+          });
+          ref.invalidate(myVoteProvider(workId));
+        },
+      )
+      .subscribe();
+
+  ref.onDispose(() {
+    Supabase.instance.client.removeChannel(channel);
+  });
+
+  yield {};
+});

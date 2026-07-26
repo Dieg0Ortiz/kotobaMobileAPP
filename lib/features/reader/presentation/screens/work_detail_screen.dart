@@ -33,6 +33,9 @@ class WorkDetailScreen extends ConsumerWidget {
     final stateAsync = ref.watch(workDetailViewModelProvider(workId));
     final c = KotobaColors.of(context);
 
+    // Subscribe to real-time vote updates
+    ref.watch(voteRealtimeProvider(workId));
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light,
       child: Scaffold(
