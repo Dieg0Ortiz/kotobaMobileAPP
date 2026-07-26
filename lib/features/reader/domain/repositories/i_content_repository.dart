@@ -18,6 +18,10 @@ abstract class IContentRepository {
   Future<Either<Failure, List<Comment>>> getComments(String workId);
   Future<Either<Failure, Comment>> createComment(String workId, String content);
 
+  // Chapter Comments
+  Future<Either<Failure, List<Comment>>> getChapterComments(String chapterId);
+  Future<Either<Failure, Comment>> createChapterComment(String chapterId, String workId, String content);
+
   // Views
   Future<Either<Failure, void>> incrementView(String workId);
 

@@ -242,4 +242,30 @@ class ContentRepositoryImpl implements IContentRepository {
       (data) => Right(_commentFromJson(data)),
     );
   }
+
+  // ── Chapter Comments ─────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, List<Comment>>> getChapterComments(String chapterId) async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.chapters}/$chapterId/comments/with-likes',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (list) => Right(list.map((e) => _commentFromJson(e as Map<String, dynamic>)).toList()),
+    );
+  }
+
+  @override
+  Future<Either<Failure, Comment>> createChapterComment(String chapterId, String workId, String content) async {
+    final result = await _api.post<Map<String, dynamic>>(
+      '${ApiConstants.chapters}/$chapterId/comments',
+      data: {'content': content, 'work_id': workId},
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(_commentFromJson(data)),
+    );
+  }
 }

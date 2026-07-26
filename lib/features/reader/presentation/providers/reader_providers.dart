@@ -57,6 +57,12 @@ final myBookmarkProvider = FutureProvider.family<bool, String>((ref, workId) asy
   return result.fold((f) => false, (data) => data);
 });
 
+final chapterCommentsProvider = FutureProvider.family<List<Comment>, String>((ref, chapterId) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.getChapterComments(chapterId);
+  return result.fold((f) => throw f, (comments) => comments);
+});
+
 final myBookmarksProvider = FutureProvider<List<Work>>((ref) async {
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.getMyBookmarks();

@@ -7,10 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../widgets/font_settings_sheet.dart';
@@ -74,6 +76,23 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
       context: context,
       backgroundColor: Colors.transparent,
       builder: (_) => const FontSettingsSheet(),
+    );
+  }
+
+  void _showChapterComments(String chapterId, String workId) {
+    final c = KotobaColors.of(context);
+    final TextEditingController commentController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _ChapterCommentsSheet(
+        chapterId: chapterId,
+        workId: workId,
+        colors: c,
+        commentController: commentController,
+      ),
     );
   }
 
@@ -1056,8 +1075,241 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
               icon: Icon(Icons.text_format, color: c.onSurfaceVariant),
               onPressed: _showFontSettings,
             ),
+            IconButton(
+              icon: Icon(Icons.chat_bubble_outline, color: c.onSurfaceVariant),
+              onPressed: () {
+                final workId = widget.workId ?? '';
+                _showChapterComments(widget.chapterId, workId);
+              },
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChapterCommentsSheet extends ConsumerStatefulWidget {
+  final String chapterId;
+  final String workId;
+  final KotobaColors colors;
+  final TextEditingController commentController;
+
+  const _ChapterCommentsSheet({
+    required this.chapterId,
+    required this.workId,
+    required this.colors,
+    required this.commentController,
+  });
+
+  @override
+  ConsumerState<_ChapterCommentsSheet> createState() => _ChapterCommentsSheetState();
+}
+
+class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
+  bool _isSubmitting = false;
+
+  Future<void> _submitComment() async {
+    final text = widget.commentController.text.trim();
+    if (text.isEmpty || _isSubmitting) return;
+
+    setState(() => _isSubmitting = true);
+    final repo = ref.read(contentRepositoryProvider);
+    final result = await repo.createChapterComment(widget.chapterId, widget.workId, text);
+
+    result.fold(
+      (f) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al enviar comentario')),
+          );
+        }
+      },
+      (_) {
+        widget.commentController.clear();
+        ref.invalidate(chapterCommentsProvider(widget.chapterId));
+      },
+    );
+
+    if (mounted) setState(() => _isSubmitting = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.colors;
+    final commentsAsync = ref.watch(chapterCommentsProvider(widget.chapterId));
+    final user = Supabase.instance.client.auth.currentUser;
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: c.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'Comentarios',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: c.onSurface,
+                ),
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: commentsAsync.when(
+                loading: () => const Center(child: KotobaLoading()),
+                error: (e, _) => Center(
+                  child: Text('Error al cargar comentarios', style: TextStyle(color: c.onSurfaceVariant)),
+                ),
+                data: (comments) => comments.isEmpty
+                    ? Center(
+                        child: Text(
+                          'Sé el primero en comentar',
+                          style: TextStyle(color: c.onSurfaceVariant),
+                        ),
+                      )
+                    : ListView.builder(
+                        controller: scrollController,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemCount: comments.length,
+                        itemBuilder: (_, i) => _CommentTile(comment: comments[i], colors: c),
+                      ),
+              ),
+            ),
+            if (user != null)
+              Container(
+                padding: EdgeInsets.only(
+                  left: 16,
+                  right: 8,
+                  top: 8,
+                  bottom: MediaQuery.of(context).padding.bottom + 8,
+                ),
+                decoration: BoxDecoration(
+                  color: c.surface,
+                  border: Border(top: BorderSide(color: c.outlineVariant.withValues(alpha: 0.3))),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: widget.commentController,
+                        style: TextStyle(color: c.onSurface),
+                        decoration: InputDecoration(
+                          hintText: 'Escribe un comentario...',
+                          hintStyle: TextStyle(color: c.onSurfaceVariant),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(color: c.outlineVariant),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(color: c.outlineVariant),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(24),
+                            borderSide: BorderSide(color: c.primary),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                          isDense: true,
+                        ),
+                        maxLines: null,
+                        textInputAction: TextInputAction.send,
+                        onSubmitted: (_) => _submitComment(),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: _isSubmitting
+                          ? SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: c.primary),
+                            )
+                          : Icon(Icons.send, color: c.primary),
+                      onPressed: _isSubmitting ? null : _submitComment,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CommentTile extends StatelessWidget {
+  final Comment comment;
+  final KotobaColors colors;
+
+  const _CommentTile({required this.comment, required this.colors});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = colors;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 16,
+            backgroundColor: c.primary.withValues(alpha: 0.2),
+            child: Text(
+              (comment.username ?? 'U')[0].toUpperCase(),
+              style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  comment.username ?? 'Usuario',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                    color: c.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  comment.content,
+                  style: TextStyle(fontSize: 14, color: c.onSurfaceVariant),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(Icons.favorite_border, size: 14, color: c.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${comment.likeCount}',
+                      style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
