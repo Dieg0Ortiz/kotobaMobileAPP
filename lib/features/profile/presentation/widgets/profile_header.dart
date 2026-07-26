@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
-import '../../../../core/widgets/common/kotoba_button.dart';
 import '../../../auth/domain/entities/user.dart';
 
 class ProfileHeader extends StatelessWidget {
@@ -85,29 +84,6 @@ class ProfileHeader extends StatelessWidget {
                     _buildStat(context, '${user.worksCount}', 'OBRAS'),
                     _buildStat(context, '0', 'LISTAS'),
                     _buildStat(context, '${user.followers}', 'SEGUIDORES'),
-                  ],
-                ),
-                const SizedBox(height: 32),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: KotobaButton(
-                        label: 'Seguir',
-                        icon: Icons.person_add_alt_1,
-                        variant: KotobaButtonVariant.action,
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: KotobaButton(
-                        label: 'Apoyar',
-                        icon: Icons.favorite_border,
-                        variant: KotobaButtonVariant.ghost,
-                        onPressed: () {},
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 32),
