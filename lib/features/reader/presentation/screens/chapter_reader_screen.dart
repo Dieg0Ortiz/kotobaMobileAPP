@@ -15,6 +15,7 @@ import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../domain/entities/comment.dart';
 import '../../../social/presentation/providers/social_providers.dart';
+import '../../../analytics/presentation/providers/analytics_providers.dart';
 import '../providers/reader_providers.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../widgets/font_settings_sheet.dart';
@@ -56,17 +57,43 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
   String _lastPageKey = '';
   List<List<Widget>> _pageGroups = [];
 
+  // ── Analytics tracking ──
+  ReadingSessionTracker? _tracker;
+  DateTime? _chapterStartTime;
+
   @override
   void initState() {
     super.initState();
     _pageController = PageController();
+    _chapterStartTime = DateTime.now();
+    _tracker = ReadingSessionTracker(ref.read(analyticsRepositoryProvider));
   }
 
   @override
   void dispose() {
+    _endTracking();
     _scrollController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _endTracking() async {
+    if (_tracker != null) {
+      await _tracker!.endSession();
+      _tracker = null;
+    }
+  }
+
+  Future<void> _sendChapterRead() async {
+    if (_tracker == null || _chapterStartTime == null) return;
+    final timeSpent = DateTime.now().difference(_chapterStartTime!).inSeconds;
+    final progress = _pageGroups.isNotEmpty
+        ? (_currentPage + 1) / _pageGroups.length
+        : 0.0;
+    await _tracker!.sendChapterRead(
+      readProgress: progress,
+      timeSpentSeconds: timeSpent,
+    );
   }
 
   void _toggleOverlay() {
@@ -778,6 +805,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
 
     if (result == true) {
       await _saveProgress(workId, chapterId, scrollOffset, _currentPage);
+      await _sendChapterRead();
       return true;
     }
     return true; // We always pop the screen even if they don't save
@@ -800,6 +828,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
       
       final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
       await _saveProgress(workId, widget.chapterId, scrollOffset, _currentPage);
+      await _sendChapterRead();
 
       if (mounted) {
         context.pushReplacement('/works/$workId/chapters/${nextChapter.id}');
@@ -822,6 +851,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
       
       final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 0.0;
       await _saveProgress(workId, widget.chapterId, scrollOffset, _currentPage);
+      await _sendChapterRead();
 
       if (mounted) {
         context.pushReplacement('/works/$workId/chapters/${prevChapter.id}');
@@ -875,6 +905,13 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
               // Invalidate to refresh stats, but we also watch it below to ensure it loads
               ref.invalidate(
                   workDetailViewModelProvider(chapter.workId));
+
+              // Start analytics tracking session
+              final workId = widget.workId ?? chapter.workId;
+              _tracker?.startSession(
+                workId: workId,
+                chapterId: widget.chapterId,
+              );
             }
 
             final workId = widget.workId ?? chapter.workId;

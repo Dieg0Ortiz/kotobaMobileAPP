@@ -26,12 +26,40 @@ class ProfileRepositoryImpl implements IProfileRepository {
 
   @override
   Future<Either<Failure, DashboardStats>> getAuthorStats(String authorId) async {
-    final result = await _api.get<Map<String, dynamic>>(
-      ApiConstants.userStats(authorId),
+    // Try to get real analytics data from the analytics endpoint
+    final analyticsResult = await _api.get<Map<String, dynamic>>(
+      '/analytics/author/$authorId/overview',
     );
-    return result.fold(
-      (failure) => Left(failure),
-      (data) => Right(DashboardStats.fromJson(data)),
+    return analyticsResult.fold(
+      (failure) async {
+        // Fallback to the user stats endpoint
+        final result = await _api.get<Map<String, dynamic>>(
+          ApiConstants.userStats(authorId),
+        );
+        return result.fold(
+          (failure) => Left(failure),
+          (data) => Right(DashboardStats.fromJson(data)),
+        );
+      },
+      (analyticsData) async {
+        // Also get published works count
+        final worksResult = await _api.get<List<dynamic>>(
+          '${ApiConstants.works}?author_id=$authorId',
+          fromJson: (data) => data as List<dynamic>,
+        );
+        final publishedWorks = worksResult.fold(
+          (f) => 0,
+          (list) => list.length,
+        );
+        return Right(DashboardStats(
+          activeReaders: analyticsData['activeReaders'] as int? ?? 0,
+          totalReads: analyticsData['totalReads'] as int? ?? 0,
+          publishedWorks: publishedWorks,
+          followers: analyticsData['totalFollowers'] as int? ?? 0,
+          avgSessionDuration: analyticsData['avgSessionDuration'] as int? ?? 0,
+          completionRate: analyticsData['completionRate'] as int? ?? 0,
+        ));
+      },
     );
   }
 

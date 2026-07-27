@@ -6,6 +6,8 @@ class DashboardStats extends Equatable {
   final int totalReads;
   final int publishedWorks;
   final int followers;
+  final int avgSessionDuration;
+  final int completionRate;
   final List<EngagementPoint> engagementData;
   final DateTime? nextPublicationDeadline;
 
@@ -14,6 +16,8 @@ class DashboardStats extends Equatable {
     required this.totalReads,
     required this.publishedWorks,
     required this.followers,
+    this.avgSessionDuration = 0,
+    this.completionRate = 0,
     this.engagementData = const [],
     this.nextPublicationDeadline,
   });
@@ -23,7 +27,9 @@ class DashboardStats extends Equatable {
       activeReaders: json['activeReaders'] as int? ?? 0,
       totalReads: json['totalReads'] as int? ?? 0,
       publishedWorks: json['publishedWorks'] as int? ?? 0,
-      followers: json['followers'] as int? ?? 0,
+      followers: json['followers'] as int? ?? json['totalFollowers'] as int? ?? 0,
+      avgSessionDuration: json['avgSessionDuration'] as int? ?? 0,
+      completionRate: json['completionRate'] as int? ?? 0,
       nextPublicationDeadline: json['nextPublicationDeadline'] != null
           ? DateTime.parse(json['nextPublicationDeadline'] as String)
           : null,

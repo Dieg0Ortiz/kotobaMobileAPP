@@ -344,190 +344,230 @@ class _ActionBar extends ConsumerWidget {
 
     final targetChapterId = continueChapterId ?? (chapters.isNotEmpty ? chapters.first.id : null);
 
+    final isDownloaded = ref.watch(isWorkDownloadedProvider(workId));
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      child: Row(
+      child: Column(
         children: [
-          Expanded(
-            child: SizedBox(
-              height: 52,
-              child: FilledButton(
-                onPressed: targetChapterId != null
-                    ? () => context.push('/works/$workId/chapters/$targetChapterId')
-                    : null,
-                style: FilledButton.styleFrom(
-                  backgroundColor: c.primaryContainer,
-                  foregroundColor: c.onPrimary,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  elevation: 0,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(continueChapterId != null ? Icons.play_circle : Icons.book, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      continueChapterId != null ? 'CONTINUAR $continueLabel' : 'LEER AHORA',
-                      style: KotobaTypography.labelMd.copyWith(
-                        color: c.onPrimary,
-                        letterSpacing: 0.1,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
+          // ── Primary CTA: full-width read/continue button ──
           SizedBox(
-            width: 52,
+            width: double.infinity,
             height: 52,
-            child: OutlinedButton(
-              onPressed: () async {
-                final repo = ref.read(contentRepositoryProvider);
-                final Map<String, dynamic> stats;
-                if (currentVote != 0) {
-                  stats = await repo.unvoteWork(workId).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
-                } else {
-                  stats = await repo.voteWork(workId, 1).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
-                }
-                ref.invalidate(myVoteProvider(workId));
-                
-                // Invalidate catalog providers so the Home screen updates with the new vote count
-                ref.invalidate(trendingWorksProvider);
-                ref.invalidate(recommendedWorksProvider);
-                
-                final viewModel = ref.read(workDetailViewModelProvider(workId).notifier);
-                
-                if (stats.containsKey('rating_count')) {
-                  viewModel.updateVoteStats(
-                    (stats['rating'] as num?)?.toDouble() ?? work.rating,
-                    (stats['rating_count'] as int?) ?? work.ratingCount,
-                  );
-                } else {
-                  final newCount = work.ratingCount + (currentVote != 0 ? -1 : 1);
-                  viewModel.updateVoteStats(work.rating, newCount < 0 ? 0 : newCount);
-                }
-              },
-              style: OutlinedButton.styleFrom(
-                backgroundColor: currentVote != 0 ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
-                foregroundColor: currentVote != 0 ? c.primary : c.primaryContainer,
-                side: BorderSide(
-                  color: currentVote != 0 ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
-                ),
+            child: FilledButton(
+              onPressed: targetChapterId != null
+                  ? () => context.push('/works/$workId/chapters/$targetChapterId')
+                  : null,
+              style: FilledButton.styleFrom(
+                backgroundColor: c.primaryContainer,
+                foregroundColor: c.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
-                padding: EdgeInsets.zero,
+                elevation: 0,
               ),
-              child: Icon(currentVote != 0 ? Icons.thumb_up : Icons.thumb_up_outlined),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(continueChapterId != null ? Icons.play_circle : Icons.book, size: 18),
+                  const SizedBox(width: 8),
+                  Text(
+                    continueChapterId != null ? 'CONTINUAR $continueLabel' : 'LEER AHORA',
+                    style: KotobaTypography.labelMd.copyWith(
+                      color: c.onPrimary,
+                      letterSpacing: 0.1,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-          const SizedBox(width: 8),
-            SizedBox(
-              width: 52,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () async {
-                  final repo = ref.read(contentRepositoryProvider);
-                  if (isBookmarked) {
-                    await repo.unbookmarkWork(workId);
-                  } else {
-                    await repo.bookmarkWork(workId);
-                  }
-                  ref.invalidate(myBookmarkProvider(workId));
-                  ref.invalidate(myBookmarksProvider);
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: isBookmarked ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
-                  foregroundColor: isBookmarked ? c.primary : c.primaryContainer,
-                  side: BorderSide(
-                    color: isBookmarked ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: EdgeInsets.zero,
-                ),
-                child: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_add_outlined),
-              ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 52,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () async {
-                  final isDownloaded = DownloadService.isWorkDownloaded(workId);
-                  if (isDownloaded) {
-                    await DownloadService.deleteWork(workId);
-                    ref.invalidate(isWorkDownloadedProvider(workId));
-                    ref.invalidate(downloadedWorkIdsProvider);
-                  } else {
-                    final repo = ref.read(contentRepositoryProvider);
-                    final chaptersResult = await repo.getChapters(workId);
-                    chaptersResult.fold(
-                      (f) => ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Error al descargar: $f')),
-                      ),
-                      (chapters) async {
-                        await DownloadService.downloadWork(
-                          work: work as Work,
-                          chapters: chapters,
-                          onProgress: (progress) {},
+          const SizedBox(height: 12),
+          // ── Secondary actions: evenly spaced icon buttons ──
+          Row(
+            children: [
+              // Vote button
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final repo = ref.read(contentRepositoryProvider);
+                      final Map<String, dynamic> stats;
+                      if (currentVote != 0) {
+                        stats = await repo.unvoteWork(workId).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
+                      } else {
+                        stats = await repo.voteWork(workId, 1).then((r) => r.fold((_) => <String, dynamic>{}, (d) => d));
+                      }
+                      ref.invalidate(myVoteProvider(workId));
+
+                      // Invalidate catalog providers so the Home screen updates with the new vote count
+                      ref.invalidate(trendingWorksProvider);
+                      ref.invalidate(recommendedWorksProvider);
+
+                      final viewModel = ref.read(workDetailViewModelProvider(workId).notifier);
+
+                      if (stats.containsKey('rating_count')) {
+                        viewModel.updateVoteStats(
+                          (stats['rating'] as num?)?.toDouble() ?? work.rating,
+                          (stats['rating_count'] as int?) ?? work.ratingCount,
                         );
+                      } else {
+                        final newCount = work.ratingCount + (currentVote != 0 ? -1 : 1);
+                        viewModel.updateVoteStats(work.rating, newCount < 0 ? 0 : newCount);
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: currentVote != 0 ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                      foregroundColor: currentVote != 0 ? c.primary : c.primaryContainer,
+                      side: BorderSide(
+                        color: currentVote != 0 ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    icon: Icon(currentVote != 0 ? Icons.thumb_up : Icons.thumb_up_outlined, size: 20),
+                    label: Text(
+                      'Votar',
+                      style: KotobaTypography.labelXs.copyWith(
+                        color: currentVote != 0 ? c.primary : c.primaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Bookmark button
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      final repo = ref.read(contentRepositoryProvider);
+                      if (isBookmarked) {
+                        await repo.unbookmarkWork(workId);
+                      } else {
+                        await repo.bookmarkWork(workId);
+                      }
+                      ref.invalidate(myBookmarkProvider(workId));
+                      ref.invalidate(myBookmarksProvider);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: isBookmarked ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                      foregroundColor: isBookmarked ? c.primary : c.primaryContainer,
+                      side: BorderSide(
+                        color: isBookmarked ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_add_outlined, size: 20),
+                    label: Text(
+                      'Guardar',
+                      style: KotobaTypography.labelXs.copyWith(
+                        color: isBookmarked ? c.primary : c.primaryContainer,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              // Download button
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () async {
+                      if (isDownloaded) {
+                        await DownloadService.deleteWork(workId);
                         ref.invalidate(isWorkDownloadedProvider(workId));
                         ref.invalidate(downloadedWorkIdsProvider);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Obra descargada correctamente')),
-                          );
-                        }
-                      },
-                    );
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: ref.watch(isWorkDownloadedProvider(workId)) ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
-                  foregroundColor: ref.watch(isWorkDownloadedProvider(workId)) ? c.primary : c.primaryContainer,
-                  side: BorderSide(
-                    color: ref.watch(isWorkDownloadedProvider(workId)) ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                      } else {
+                        final repo = ref.read(contentRepositoryProvider);
+                        final chaptersResult = await repo.getChapters(workId);
+                        chaptersResult.fold(
+                          (f) => ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error al descargar: $f')),
+                          ),
+                          (chapters) async {
+                            await DownloadService.downloadWork(
+                              work: work as Work,
+                              chapters: chapters,
+                              onProgress: (progress) {},
+                            );
+                            ref.invalidate(isWorkDownloadedProvider(workId));
+                            ref.invalidate(downloadedWorkIdsProvider);
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Obra descargada correctamente')),
+                              );
+                            }
+                          },
+                        );
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: isDownloaded ? c.primaryContainer.withValues(alpha: 0.2) : c.surfaceHigh,
+                      foregroundColor: isDownloaded ? c.primary : c.primaryContainer,
+                      side: BorderSide(
+                        color: isDownloaded ? c.primary.withValues(alpha: 0.4) : c.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    icon: Icon(isDownloaded ? Icons.download_done : Icons.download_outlined, size: 20),
+                    label: Text(
+                      'Descargar',
+                      style: KotobaTypography.labelXs.copyWith(
+                        color: isDownloaded ? c.primary : c.primaryContainer,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: EdgeInsets.zero,
                 ),
-                child: Icon(ref.watch(isWorkDownloadedProvider(workId)) ? Icons.download_done : Icons.download_outlined),
               ),
-            ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 52,
-              height: 52,
-              child: OutlinedButton(
-                onPressed: () {
-                  final workTitle = (work as Work).title;
-                  final url = 'https://kotoba.app/works/$workId';
-                  Share.share('$workTitle\n\n$url');
-                },
-                style: OutlinedButton.styleFrom(
-                  backgroundColor: c.surfaceHigh,
-                  foregroundColor: c.primaryContainer,
-                  side: BorderSide(
-                    color: c.outlineVariant.withValues(alpha: 0.5),
+              const SizedBox(width: 8),
+              // Share button
+              Expanded(
+                child: SizedBox(
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      final workTitle = (work as Work).title;
+                      final url = 'https://kotoba.app/works/$workId';
+                      Share.share('$workTitle\n\n$url');
+                    },
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: c.surfaceHigh,
+                      foregroundColor: c.primaryContainer,
+                      side: BorderSide(
+                        color: c.outlineVariant.withValues(alpha: 0.5),
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: EdgeInsets.zero,
+                    ),
+                    icon: const Icon(Icons.share_outlined, size: 20),
+                    label: Text(
+                      'Compartir',
+                      style: KotobaTypography.labelXs.copyWith(
+                        color: c.primaryContainer,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: EdgeInsets.zero,
                 ),
-                child: const Icon(Icons.share_outlined),
               ),
-            ),
+            ],
+          ),
         ],
       ),
     );

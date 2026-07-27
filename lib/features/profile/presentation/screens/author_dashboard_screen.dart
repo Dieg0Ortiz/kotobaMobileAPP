@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
+import '../../../analytics/presentation/screens/author_analytics_screen.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/stat_card.dart';
 
@@ -146,32 +147,32 @@ class AuthorDashboardScreen extends ConsumerWidget {
                         mainAxisSpacing: 24,
                         childAspectRatio: childAspectRatio,
                         children: [
-                          const StatCard(
+                          StatCard(
                             label: 'Active Readers',
-                            value: '2,847', // Mock for UI as requested
+                            value: stats.activeReaders.toString(),
                             icon: Icons.visibility,
-                            trend: '+12%',
+                            trend: '',
                             isPositive: true,
                           ),
-                          const StatCard(
+                          StatCard(
                             label: 'Total Reads',
-                            value: '48,320', // Mock
+                            value: stats.totalReads.toString(),
                             icon: Icons.menu_book,
-                            trend: '+5%',
+                            trend: '',
                             isPositive: true,
                           ),
                           StatCard(
                             label: 'Published Works',
                             value: stats.publishedWorks.toString(),
                             icon: Icons.library_books,
-                            trend: '- 0',
+                            trend: '',
                             isPositive: false,
                           ),
-                          const StatCard(
+                          StatCard(
                             label: 'Followers',
-                            value: '1,204', // Mock
+                            value: stats.followers.toString(),
                             icon: Icons.people,
-                            trend: '+24',
+                            trend: '',
                             isPositive: true,
                           ),
                         ],
@@ -182,7 +183,37 @@ class AuthorDashboardScreen extends ConsumerWidget {
 
                   // ── Income Section ──
                   _buildIncomeSection(ref, c),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
+
+                  // ── Additional Stats ──
+                  _buildAdditionalStats(stats, c),
+                  const SizedBox(height: 32),
+
+                  // ── View Detailed Analytics Button ──
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const AuthorAnalyticsScreen(),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.analytics_outlined, size: 18),
+                      label: const Text('VER ANALÍTICAS DETALLADAS',
+                          style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: c.primary,
+                        side: BorderSide(color: c.primary),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
 
                   // ── Bottom Area (Chart + Next Publication) ──
                   if (isWide)
@@ -210,6 +241,66 @@ class AuthorDashboardScreen extends ConsumerWidget {
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildAdditionalStats(dynamic stats, KotobaColors c) {
+    final avgMinutes = stats.avgSessionDuration > 0
+        ? '${(stats.avgSessionDuration / 60).toStringAsFixed(1)} min'
+        : '—';
+    final completionPct = stats.completionRate > 0
+        ? '${stats.completionRate}%'
+        : '—';
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: c.surfaceLowest,
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: c.outlineVariant.withValues(alpha: 0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'MÉTRICAS DE LECTURA',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+              color: const Color(0xFF735B28),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildMetricItem(c, Icons.timer, 'Tiempo promedio', avgMinutes),
+              _buildMetricItem(c, Icons.check_circle, 'Tasa de completado', completionPct),
+              _buildMetricItem(c, Icons.menu_book, 'Capítulos leídos', '${stats.totalReads}'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMetricItem(KotobaColors c, IconData icon, String label, String value) {
+    return Column(
+      children: [
+        Icon(icon, size: 24, color: c.primary),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontFamily: 'Noto Serif JP',
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: c.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(label, style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+      ],
     );
   }
 

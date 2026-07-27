@@ -250,7 +250,8 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
     showModalBottomSheet(
       context: context,
       backgroundColor: c.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       builder: (ctx) {
         double? selectedAmount;
         bool loading = false;
@@ -261,82 +262,191 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
           builder: (context, setSheetState) {
             final isPending = pendingOrderId != null;
             return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
+              padding: EdgeInsets.fromLTRB(24, 16, 24, 24 + MediaQuery.of(context).viewInsets.bottom),
+              child: SingleChildScrollView(
+                child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Apoyar a @${user.username}', style: KotobaTypography.headlineMd.copyWith(color: c.onSurface)),
-                  const SizedBox(height: 16),
+                  // ── Drag handle ──
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: c.outlineVariant.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // ── Title with heart icon ──
+                  Row(
+                    children: [
+                      const Icon(Icons.favorite_rounded, color: Color(0xFFD9735A), size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Apoyar a @${user.username}',
+                          style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
                   if (!isPending) ...[
-                    Text('Elige un monto para tu tip:', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
+                    Text(
+                      'Elige un monto para tu tip:',
+                      style: KotobaTypography.labelMd.copyWith(
+                        color: c.onSurfaceVariant,
+                        letterSpacing: 0.05,
+                      ),
+                    ),
                     const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                    // ── Amount selector: 4 elegant cards ──
+                    Row(
                       children: [1.0, 3.0, 5.0, 10.0].map((amount) {
                         final isSelected = selectedAmount == amount;
-                        return SizedBox(
-                          width: 64,
-                          height: 48,
-                          child: isSelected
-                              ? FilledButton(
-                                  onPressed: () => setSheetState(() => selectedAmount = amount),
-                                  style: FilledButton.styleFrom(backgroundColor: c.primary),
-                                  child: Text('\$${amount.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                                )
-                              : OutlinedButton(
-                                  onPressed: () => setSheetState(() => selectedAmount = amount),
-                                  style: OutlinedButton.styleFrom(side: BorderSide(color: c.outlineVariant)),
-                                  child: Text('\$${amount.toInt()}', style: TextStyle(color: c.onSurface)),
+                        return Expanded(
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              right: amount == 10.0 ? 0 : 10,
+                            ),
+                            child: GestureDetector(
+                              onTap: () => setSheetState(() => selectedAmount = amount),
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeOut,
+                                height: 72,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? c.primaryContainer.withValues(alpha: 0.15)
+                                      : c.surfaceLow,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: isSelected
+                                        ? c.primaryContainer
+                                        : c.outlineVariant.withValues(alpha: 0.3),
+                                    width: isSelected ? 2 : 1,
+                                  ),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: c.primaryContainer.withValues(alpha: 0.2),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      '\$',
+                                      style: KotobaTypography.labelXs.copyWith(
+                                        color: isSelected ? c.primaryContainer : c.onSurfaceVariant,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    Text(
+                                      '${amount.toInt()}',
+                                      style: TextStyle(
+                                        fontFamily: 'Noto Serif JP',
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.1,
+                                        color: isSelected ? c.primaryContainer : c.onSurface,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
                         );
                       }).toList(),
                     ),
                     const SizedBox(height: 24),
                   ],
                   if (isPending) ...[
-                    Text('Orden creada. Abre PayPal y aprueba el pago.', style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant)),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E7D32).withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2E7D32).withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.open_in_new_rounded, size: 18, color: Color(0xFF2E7D32)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'Orden creada. Abre PayPal y aprueba el pago.',
+                              style: KotobaTypography.bodyMd.copyWith(color: c.onSurface),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     if (captureError != null) ...[
                       const SizedBox(height: 8),
                       Text(captureError!, style: KotobaTypography.labelMd.copyWith(color: const Color(0xFFD9735A))),
                     ],
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 20),
                   ],
                   if (user.paypalEmail != null && !isPending) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       decoration: BoxDecoration(
                         color: c.surfaceLow,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: c.outlineVariant.withValues(alpha: 0.15)),
                       ),
                       child: Row(
                         children: [
+                          Icon(Icons.account_balance_wallet_outlined, size: 18, color: c.onSurfaceVariant),
+                          const SizedBox(width: 10),
                           Expanded(
-                            child: Text(user.paypalEmail!, style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant)),
+                            child: Text(
+                              user.paypalEmail!,
+                              style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          IconButton(
-                            icon: const Icon(Icons.copy, size: 18),
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               Clipboard.setData(ClipboardData(text: user.paypalEmail!));
                               ScaffoldMessenger.of(ctx).showSnackBar(
                                 const SnackBar(content: Text('Email copiado al portapapeles')),
                               );
                             },
+                            child: Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: c.surface,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(Icons.copy_rounded, size: 16, color: c.primaryContainer),
+                            ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 24),
                   ],
+                  // ── CTA Button ──
                   SizedBox(
                     width: double.infinity,
-                    height: 48,
+                    height: 52,
                     child: FilledButton.icon(
                       icon: loading
                           ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : Icon(isPending ? Icons.check : Icons.favorite),
+                          : Icon(isPending ? Icons.check_circle_rounded : Icons.favorite_rounded, size: 20),
                       onPressed: !loading
                           ? () async {
                               if (isPending) {
@@ -384,12 +494,23 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                               }
                             }
                           : null,
-                      label: Text(isPending
-                          ? 'Ya pagué'
-                          : (selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto')),
+                      label: Text(
+                        isPending
+                            ? 'Ya pagué'
+                            : (selectedAmount != null ? 'Pagar \$${selectedAmount!.toStringAsFixed(0)}' : 'Selecciona un monto'),
+                        style: KotobaTypography.labelMd.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.05,
+                        ),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: isPending ? const Color(0xFF2E7D32) : const Color(0xFFD9735A),
                         foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                        disabledBackgroundColor: c.outlineVariant.withValues(alpha: 0.3),
+                        disabledForegroundColor: c.onSurfaceVariant,
                       ),
                     ),
                   ),
@@ -399,12 +520,16 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                       width: double.infinity,
                       child: TextButton(
                         onPressed: () => Navigator.of(ctx).pop(),
-                        child: Text('Cancelar', style: TextStyle(color: c.onSurfaceVariant)),
+                        style: TextButton.styleFrom(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('Cancelar', style: KotobaTypography.labelMd.copyWith(color: c.onSurfaceVariant)),
                       ),
                     ),
                   ],
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 8),
                 ],
+              ),
               ),
             );
           },
