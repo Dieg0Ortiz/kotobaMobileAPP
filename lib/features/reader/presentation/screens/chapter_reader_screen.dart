@@ -14,6 +14,7 @@ import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../domain/entities/comment.dart';
+import '../../../social/presentation/providers/social_providers.dart';
 import '../providers/reader_providers.dart';
 import '../viewmodels/reader_viewmodel.dart';
 import '../widgets/font_settings_sheet.dart';
@@ -1180,6 +1181,9 @@ class _ChapterCommentsSheet extends ConsumerStatefulWidget {
 
 class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
   bool _isSubmitting = false;
+  String? _replyingToId;
+  String? _replyingToUsername;
+  final TextEditingController _replyController = TextEditingController();
 
   Future<void> _submitComment() async {
     final text = widget.commentController.text.trim();
@@ -1199,6 +1203,40 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
       },
       (_) {
         widget.commentController.clear();
+        ref.invalidate(chapterCommentsProvider(widget.chapterId));
+      },
+    );
+
+    if (mounted) setState(() => _isSubmitting = false);
+  }
+
+  Future<void> _submitReply() async {
+    final text = _replyController.text.trim();
+    if (text.isEmpty || _isSubmitting || _replyingToId == null) return;
+
+    setState(() => _isSubmitting = true);
+    final repo = ref.read(contentRepositoryProvider);
+    final result = await repo.replyToComment(
+      _replyingToId!,
+      text,
+      workId: widget.workId,
+      chapterId: widget.chapterId,
+    );
+
+    result.fold(
+      (f) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al enviar respuesta')),
+          );
+        }
+      },
+      (_) {
+        _replyController.clear();
+        setState(() {
+          _replyingToId = null;
+          _replyingToUsername = null;
+        });
         ref.invalidate(chapterCommentsProvider(widget.chapterId));
       },
     );
@@ -1261,10 +1299,50 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
                         controller: scrollController,
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                         itemCount: comments.length,
-                        itemBuilder: (_, i) => _CommentTile(comment: comments[i], colors: c),
+                        itemBuilder: (_, i) => _CommentTile(
+                          comment: comments[i],
+                          colors: c,
+                          chapterId: widget.chapterId,
+                          workId: widget.workId,
+                          onReply: (commentId, username) {
+                            setState(() {
+                              _replyingToId = commentId;
+                              _replyingToUsername = username;
+                            });
+                          },
+                        ),
                       ),
               ),
             ),
+            if (_replyingToId != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: c.primary.withValues(alpha: 0.1),
+                  border: Border(top: BorderSide(color: c.primary.withValues(alpha: 0.3))),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.reply, size: 16, color: c.primary),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Respondiendo a $_replyingToUsername',
+                        style: TextStyle(fontSize: 12, color: c.primary, fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, size: 16, color: c.onSurfaceVariant),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: () => setState(() {
+                        _replyingToId = null;
+                        _replyingToUsername = null;
+                      }),
+                    ),
+                  ],
+                ),
+              ),
             if (user != null)
               Container(
                 padding: EdgeInsets.only(
@@ -1281,10 +1359,10 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
                   children: [
                     Expanded(
                       child: TextField(
-                        controller: widget.commentController,
+                        controller: _replyingToId != null ? _replyController : widget.commentController,
                         style: TextStyle(color: c.onSurface),
                         decoration: InputDecoration(
-                          hintText: 'Escribe un comentario...',
+                          hintText: _replyingToId != null ? 'Escribe una respuesta...' : 'Escribe un comentario...',
                           hintStyle: TextStyle(color: c.onSurfaceVariant),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(24),
@@ -1303,7 +1381,7 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
                         ),
                         maxLines: null,
                         textInputAction: TextInputAction.send,
-                        onSubmitted: (_) => _submitComment(),
+                        onSubmitted: (_) => _replyingToId != null ? _submitReply() : _submitComment(),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -1315,7 +1393,7 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
                               child: CircularProgressIndicator(strokeWidth: 2, color: c.primary),
                             )
                           : Icon(Icons.send, color: c.primary),
-                      onPressed: _isSubmitting ? null : _submitComment,
+                      onPressed: _isSubmitting ? null : (_replyingToId != null ? _submitReply : _submitComment),
                     ),
                   ],
                 ),
@@ -1327,64 +1405,269 @@ class _ChapterCommentsSheetState extends ConsumerState<_ChapterCommentsSheet> {
   }
 }
 
-class _CommentTile extends StatelessWidget {
+class _CommentTile extends ConsumerStatefulWidget {
   final Comment comment;
   final KotobaColors colors;
+  final String chapterId;
+  final String workId;
+  final void Function(String commentId, String username) onReply;
 
-  const _CommentTile({required this.comment, required this.colors});
+  const _CommentTile({
+    required this.comment,
+    required this.colors,
+    required this.chapterId,
+    required this.workId,
+    required this.onReply,
+  });
+
+  @override
+  ConsumerState<_CommentTile> createState() => _CommentTileState();
+}
+
+class _CommentTileState extends ConsumerState<_CommentTile> {
+  bool _isLiking = false;
+
+  Future<void> _toggleLike() async {
+    if (_isLiking) return;
+    setState(() => _isLiking = true);
+
+    final socialRepo = ref.read(socialRepositoryProvider);
+
+    if (widget.comment.isLiked) {
+      final result = await socialRepo.unlikeComment(widget.comment.id);
+      result.fold(
+        (_) {},
+        (data) {
+          ref.invalidate(chapterCommentsProvider(widget.chapterId));
+        },
+      );
+    } else {
+      final result = await socialRepo.likeComment(widget.comment.id);
+      result.fold(
+        (_) {},
+        (data) {
+          ref.invalidate(chapterCommentsProvider(widget.chapterId));
+        },
+      );
+    }
+
+    if (mounted) setState(() => _isLiking = false);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final c = colors;
+    final c = widget.colors;
+    final comment = widget.comment;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 16,
+                backgroundColor: c.primary.withValues(alpha: 0.2),
+                backgroundImage: comment.avatarUrl != null
+                    ? CachedNetworkImageProvider(comment.avatarUrl!)
+                    : null,
+                child: comment.avatarUrl == null
+                    ? Text(
+                        (comment.username ?? 'U')[0].toUpperCase(),
+                        style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 14),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () => context.push('/users/${comment.userId}'),
+                      child: Text(
+                        comment.username ?? 'Usuario',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                          color: c.primary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      comment.content,
+                      style: TextStyle(fontSize: 14, color: c.onSurfaceVariant),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        GestureDetector(
+                          onTap: _isLiking ? null : _toggleLike,
+                          child: Row(
+                            children: [
+                              Icon(
+                                comment.isLiked ? Icons.favorite : Icons.favorite_border,
+                                size: 14,
+                                color: comment.isLiked ? Colors.red : c.onSurfaceVariant,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${comment.likeCount}',
+                                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        GestureDetector(
+                          onTap: () => widget.onReply(comment.id, comment.username ?? 'Usuario'),
+                          child: Row(
+                            children: [
+                              Icon(Icons.reply, size: 14, color: c.onSurfaceVariant),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Responder',
+                                style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (comment.replyCount > 0) ...[
+                          const SizedBox(width: 16),
+                          Text(
+                            '${comment.replyCount} ${comment.replyCount == 1 ? 'respuesta' : 'respuestas'}',
+                            style: TextStyle(fontSize: 12, color: c.primary),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (comment.replies.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(left: 44, top: 8),
+              child: Column(
+                children: comment.replies.map((reply) => _ReplyTile(
+                  reply: reply,
+                  colors: c,
+                  chapterId: widget.chapterId,
+                )).toList(),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReplyTile extends ConsumerStatefulWidget {
+  final Comment reply;
+  final KotobaColors colors;
+  final String chapterId;
+
+  const _ReplyTile({
+    required this.reply,
+    required this.colors,
+    required this.chapterId,
+  });
+
+  @override
+  ConsumerState<_ReplyTile> createState() => _ReplyTileState();
+}
+
+class _ReplyTileState extends ConsumerState<_ReplyTile> {
+  bool _isLiking = false;
+
+  Future<void> _toggleLike() async {
+    if (_isLiking) return;
+    setState(() => _isLiking = true);
+
+    final socialRepo = ref.read(socialRepositoryProvider);
+
+    if (widget.reply.isLiked) {
+      final result = await socialRepo.unlikeComment(widget.reply.id);
+      result.fold(
+        (_) {},
+        (_) => ref.invalidate(chapterCommentsProvider(widget.chapterId)),
+      );
+    } else {
+      final result = await socialRepo.likeComment(widget.reply.id);
+      result.fold(
+        (_) {},
+        (_) => ref.invalidate(chapterCommentsProvider(widget.chapterId)),
+      );
+    }
+
+    if (mounted) setState(() => _isLiking = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.colors;
+    final reply = widget.reply;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 16,
-            backgroundColor: c.primary.withValues(alpha: 0.2),
-            backgroundImage: comment.avatarUrl != null
-                ? CachedNetworkImageProvider(comment.avatarUrl!)
+            radius: 12,
+            backgroundColor: c.primary.withValues(alpha: 0.15),
+            backgroundImage: reply.avatarUrl != null
+                ? CachedNetworkImageProvider(reply.avatarUrl!)
                 : null,
-            child: comment.avatarUrl == null
+            child: reply.avatarUrl == null
                 ? Text(
-                    (comment.username ?? 'U')[0].toUpperCase(),
-                    style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 14),
+                    (reply.username ?? 'U')[0].toUpperCase(),
+                    style: TextStyle(color: c.primary, fontWeight: FontWeight.w600, fontSize: 11),
                   )
                 : null,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GestureDetector(
-                  onTap: () => context.push('/users/${comment.userId}'),
+                  onTap: () => context.push('/users/${reply.userId}'),
                   child: Text(
-                    comment.username ?? 'Usuario',
+                    reply.username ?? 'Usuario',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      fontSize: 13,
+                      fontSize: 12,
                       color: c.primary,
                     ),
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  comment.content,
-                  style: TextStyle(fontSize: 14, color: c.onSurfaceVariant),
+                  reply.content,
+                  style: TextStyle(fontSize: 13, color: c.onSurfaceVariant),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.favorite_border, size: 14, color: c.onSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${comment.likeCount}',
-                      style: TextStyle(fontSize: 12, color: c.onSurfaceVariant),
-                    ),
-                  ],
+                GestureDetector(
+                  onTap: _isLiking ? null : _toggleLike,
+                  child: Row(
+                    children: [
+                      Icon(
+                        reply.isLiked ? Icons.favorite : Icons.favorite_border,
+                        size: 12,
+                        color: reply.isLiked ? Colors.red : c.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${reply.likeCount}',
+                        style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

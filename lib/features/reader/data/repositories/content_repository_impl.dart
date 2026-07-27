@@ -282,4 +282,22 @@ class ContentRepositoryImpl implements IContentRepository {
       (data) => Right(data['recap'] as String? ?? 'No se pudo generar el resumen.'),
     );
   }
+
+  // ── Replies ───────────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, Comment>> replyToComment(String commentId, String content, {String? workId, String? chapterId}) async {
+    final result = await _api.post<Map<String, dynamic>>(
+      '${ApiConstants.comments}/$commentId/replies',
+      data: {
+        'content': content,
+        if (workId != null) 'work_id': workId,
+        if (chapterId != null) 'chapter_id': chapterId,
+      },
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(_commentFromJson(data)),
+    );
+  }
 }

@@ -11,6 +11,9 @@ class Comment extends Equatable {
   final String? avatarUrl;
   final int likeCount;
   final bool isLiked;
+  final String? parentId;
+  final int replyCount;
+  final List<Comment> replies;
 
   const Comment({
     required this.id,
@@ -23,9 +26,12 @@ class Comment extends Equatable {
     this.avatarUrl,
     this.likeCount = 0,
     this.isLiked = false,
+    this.parentId,
+    this.replyCount = 0,
+    this.replies = const [],
   });
 
-  Comment copyWith({int? likeCount, bool? isLiked}) {
+  Comment copyWith({int? likeCount, bool? isLiked, int? replyCount, List<Comment>? replies}) {
     return Comment(
       id: id,
       workId: workId,
@@ -37,11 +43,15 @@ class Comment extends Equatable {
       avatarUrl: avatarUrl,
       likeCount: likeCount ?? this.likeCount,
       isLiked: isLiked ?? this.isLiked,
+      parentId: parentId,
+      replyCount: replyCount ?? this.replyCount,
+      replies: replies ?? this.replies,
     );
   }
 
   factory Comment.fromJson(Map<String, dynamic> json) {
     final user = json['users'] as Map<String, dynamic>?;
+    final rawReplies = json['replies'] as List<dynamic>?;
     return Comment(
       id: json['id'] as String,
       workId: json['work_id'] as String,
@@ -53,6 +63,11 @@ class Comment extends Equatable {
       avatarUrl: user?['avatar_url'] as String?,
       likeCount: (json['like_count'] as int?) ?? 0,
       isLiked: (json['is_liked'] as bool?) ?? false,
+      parentId: json['parent_id'] as String?,
+      replyCount: (json['reply_count'] as int?) ?? 0,
+      replies: rawReplies != null
+          ? rawReplies.map((r) => Comment.fromJson(r as Map<String, dynamic>)).toList()
+          : [],
     );
   }
 
