@@ -81,7 +81,7 @@ class _WorkShareBubble extends StatelessWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
-        onTap: workId != null ? () => context.push('/works/$workId') : null,
+        onTap: workId != null ? () => context.go('/works/$workId') : null,
         child: Container(
           margin: const EdgeInsets.only(bottom: 4),
           constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
