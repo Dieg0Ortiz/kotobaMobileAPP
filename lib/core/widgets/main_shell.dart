@@ -22,14 +22,14 @@ class MainShell extends ConsumerWidget {
     if (location.startsWith('/write')) {
       return 2;
     }
-    if (location.startsWith('/chat')) {
+    if (location.startsWith('/library')) {
       return 3;
     }
-    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
+    if (location.startsWith('/chat')) {
       return 4;
     }
-    if (location.startsWith('/library')) {
-      return 0; // library from old nav, fallback to home
+    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
+      return 5;
     }
     if (location.startsWith('/works')) {
       return 0; // detail from home
@@ -232,8 +232,10 @@ class MainShell extends ConsumerWidget {
                   case 2:
                     context.go('/write');
                   case 3:
-                    context.go('/chat');
+                    context.go('/library');
                   case 4:
+                    context.go('/chat');
+                  case 5:
                     context.go('/profile');
                 }
               },
@@ -252,6 +254,11 @@ class MainShell extends ConsumerWidget {
                   icon: Icon(Icons.edit_outlined),
                   activeIcon: Icon(Icons.edit),
                   label: 'Escribir',
+                ),
+                const BottomNavigationBarItem(
+                  icon: Icon(Icons.menu_book_outlined),
+                  activeIcon: Icon(Icons.menu_book),
+                  label: 'Biblioteca',
                 ),
                 BottomNavigationBarItem(
                   icon: Stack(
