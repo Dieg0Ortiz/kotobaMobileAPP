@@ -28,7 +28,7 @@ class KotobaNotification extends Equatable {
       type: json['type'] as String,
       title: json['title'] as String,
       body: json['body'] as String,
-      data: json['data'] as Map<String, dynamic>?,
+      data: json['data'] is Map<String, dynamic> ? json['data'] as Map<String, dynamic> : null,
       read: json['read'] as bool? ?? false,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
