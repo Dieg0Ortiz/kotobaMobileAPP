@@ -23,7 +23,6 @@ class MockContentRepository implements IContentRepository {
   @override
   Future<Either<Failure, List<Chapter>>> getChapters(String workId) async {
     await Future.delayed(const Duration(milliseconds: 400));
-    // En mock, devolvemos los mismos capítulos para cualquier obra
     return Right(MockData.sampleChapters);
   }
 
@@ -60,7 +59,7 @@ class MockContentRepository implements IContentRepository {
   @override
   Future<Either<Failure, List<Comment>>> getComments(String workId) async {
     await Future.delayed(const Duration(milliseconds: 300));
-    return Right(<Comment>[]);
+    return const Right([]);
   }
 
   @override
@@ -73,6 +72,47 @@ class MockContentRepository implements IContentRepository {
       content: content,
       createdAt: DateTime.now(),
       username: 'MockUser',
+    ));
+  }
+
+  @override
+  Future<Either<Failure, List<Comment>>> getChapterComments(String chapterId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return const Right([]);
+  }
+
+  @override
+  Future<Either<Failure, Comment>> createChapterComment(String chapterId, String workId, String content) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(Comment(
+      id: 'mock_chapter_cmt',
+      workId: workId,
+      chapterId: chapterId,
+      userId: 'mock_user',
+      content: content,
+      createdAt: DateTime.now(),
+      username: 'MockUser',
+    ));
+  }
+
+  @override
+  Future<Either<Failure, String>> getRecap(String chapterId, double progress) async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const Right('Resumen mock: No hay contenido real disponible.');
+  }
+
+  @override
+  Future<Either<Failure, Comment>> replyToComment(String commentId, String content, {String? workId, String? chapterId}) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    return Right(Comment(
+      id: 'mock_reply',
+      workId: workId ?? '',
+      chapterId: chapterId,
+      userId: 'mock_user',
+      content: content,
+      createdAt: DateTime.now(),
+      username: 'MockUser',
+      parentId: commentId,
     ));
   }
 
