@@ -116,20 +116,23 @@ class _ConversationTile extends StatelessWidget {
     return ListTile(
       onTap: () => context.push('/chat/${conversation.id}'),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        radius: 28,
-        backgroundColor: c.surfaceHigh,
-        backgroundImage: conversation.otherAvatarUrl != null
-            ? CachedNetworkImageProvider(conversation.otherAvatarUrl!)
-            : null,
-        child: conversation.otherAvatarUrl == null
-            ? Text(
-                conversation.otherUsername.isNotEmpty
-                    ? conversation.otherUsername[0].toUpperCase()
-                    : '?',
-                style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
-              )
-            : null,
+      leading: GestureDetector(
+        onTap: () => context.push('/users/${conversation.otherUserId}'),
+        child: CircleAvatar(
+          radius: 28,
+          backgroundColor: c.surfaceHigh,
+          backgroundImage: conversation.otherAvatarUrl != null
+              ? CachedNetworkImageProvider(conversation.otherAvatarUrl!)
+              : null,
+          child: conversation.otherAvatarUrl == null
+              ? Text(
+                  conversation.otherUsername.isNotEmpty
+                      ? conversation.otherUsername[0].toUpperCase()
+                      : '?',
+                  style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
+                )
+              : null,
+        ),
       ),
       title: Row(
         children: [

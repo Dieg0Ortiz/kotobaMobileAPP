@@ -26,6 +26,7 @@ class ChatScreen extends ConsumerStatefulWidget {
 class _ChatScreenState extends ConsumerState<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  String? _otherUserId;
   String? _otherUsername;
   String? _otherAvatarUrl;
 
@@ -54,6 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         (data) {
           if (mounted) {
             setState(() {
+              _otherUserId = data['id'] as String?;
               _otherUsername = data['username'] as String?;
               _otherAvatarUrl = data['avatar_url'] as String?;
             });
@@ -101,24 +103,29 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
-        title: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: c.surfaceHigh,
-              backgroundImage: _otherAvatarUrl != null
-                  ? CachedNetworkImageProvider(_otherAvatarUrl!)
-                  : null,
-              child: _otherAvatarUrl == null
-                  ? Text(
-                      (_otherUsername ?? '?')[0].toUpperCase(),
-                      style: KotobaTypography.labelMd.copyWith(color: c.onSurface),
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Text(_otherUsername ?? 'Chat', style: KotobaTypography.labelMd),
-          ],
+        title: GestureDetector(
+          onTap: _otherUserId != null
+              ? () => context.push('/users/$_otherUserId')
+              : null,
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: c.surfaceHigh,
+                backgroundImage: _otherAvatarUrl != null
+                    ? CachedNetworkImageProvider(_otherAvatarUrl!)
+                    : null,
+                child: _otherAvatarUrl == null
+                    ? Text(
+                        (_otherUsername ?? '?')[0].toUpperCase(),
+                        style: KotobaTypography.labelMd.copyWith(color: c.onSurface),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              Text(_otherUsername ?? 'Chat', style: KotobaTypography.labelMd),
+            ],
+          ),
         ),
         centerTitle: false,
       ),
