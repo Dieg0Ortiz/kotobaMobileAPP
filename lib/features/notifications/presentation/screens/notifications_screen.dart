@@ -97,6 +97,12 @@ class NotificationsScreen extends ConsumerWidget {
       context.go('/dashboard');
     } else if (notif.type == 'new_story' && data != null && data['workId'] != null) {
       context.push('/works/${data['workId']}');
+    } else if (notif.type == 'new_message' && data != null && data['conversation_id'] != null) {
+      context.push('/chat/${data['conversation_id']}');
+    } else if (notif.type == 'follow') {
+      if (data != null && data['follower_id'] != null) {
+        context.push('/users/${data['follower_id']}');
+      }
     }
   }
 }
@@ -118,6 +124,10 @@ class _NotificationTile extends StatelessWidget {
         return Icons.attach_money;
       case 'new_story':
         return Icons.auto_stories;
+      case 'new_message':
+        return Icons.chat_bubble_outline;
+      case 'follow':
+        return Icons.person_add_outlined;
       default:
         return Icons.notifications;
     }
@@ -130,6 +140,10 @@ class _NotificationTile extends StatelessWidget {
         return const Color(0xFF2E7D32);
       case 'new_story':
         return c.primary;
+      case 'new_message':
+        return const Color(0xFF1E88E5);
+      case 'follow':
+        return c.secondary;
       default:
         return c.onSurfaceVariant;
     }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../theme/kotoba_colors.dart';
 import '../../features/notifications/presentation/providers/notification_providers.dart';
+import '../../features/chat/presentation/providers/chat_providers.dart';
 
 /// Shell con BottomNavigationBar para las pestañas principales.
 ///
@@ -21,11 +22,14 @@ class MainShell extends ConsumerWidget {
     if (location.startsWith('/write')) {
       return 2;
     }
+    if (location.startsWith('/chat')) {
+      return 3;
+    }
     if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
       return 4;
     }
     if (location.startsWith('/library')) {
-      return 3;
+      return 0; // library from old nav, fallback to home
     }
     if (location.startsWith('/works')) {
       return 0; // detail from home
@@ -39,6 +43,8 @@ class MainShell extends ConsumerWidget {
     final c = KotobaColors.of(context);
     final unreadAsync = ref.watch(unreadCountProvider);
     final unreadCount = unreadAsync.whenOrNull(data: (count) => count) ?? 0;
+    final chatUnreadAsync = ref.watch(totalUnreadProvider);
+    final chatUnreadCount = chatUnreadAsync.whenOrNull(data: (count) => count) ?? 0;
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -99,6 +105,12 @@ class MainShell extends ConsumerWidget {
                         label: 'LIBRARY',
                         isSelected: currentIndex == 3,
                         onTap: () => context.go('/library'),
+                      ),
+                      _SidebarItem(
+                        icon: Icons.chat_bubble_outline,
+                        label: 'CHATS',
+                        isSelected: GoRouterState.of(context).matchedLocation.startsWith('/chat'),
+                        onTap: () => context.go('/chat'),
                       ),
                       _SidebarItem(
                         icon: Icons.person_outline,
@@ -220,33 +232,79 @@ class MainShell extends ConsumerWidget {
                   case 2:
                     context.go('/write');
                   case 3:
-                    context.go('/library');
+                    context.go('/chat');
                   case 4:
                     context.go('/profile');
                 }
               },
-              items: const [
-                BottomNavigationBarItem(
+              items: [
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home),
                   label: 'Inicio',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.search),
                   activeIcon: Icon(Icons.search),
                   label: 'Buscar',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.edit_outlined),
                   activeIcon: Icon(Icons.edit),
                   label: 'Escribir',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.menu_book_outlined),
-                  activeIcon: Icon(Icons.menu_book),
-                  label: 'Biblioteca',
+                  icon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.chat_bubble_outline),
+                      if (chatUnreadCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD9735A),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                            child: Text(
+                              chatUnreadCount > 99 ? '99+' : '$chatUnreadCount',
+                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  activeIcon: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      const Icon(Icons.chat_bubble),
+                      if (chatUnreadCount > 0)
+                        Positioned(
+                          top: -4,
+                          right: -4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFD9735A),
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                            child: Text(
+                              chatUnreadCount > 99 ? '99+' : '$chatUnreadCount',
+                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  label: 'Chats',
                 ),
-                BottomNavigationBarItem(
+                const BottomNavigationBarItem(
                   icon: Icon(Icons.person_outline),
                   activeIcon: Icon(Icons.person),
                   label: 'Perfil',

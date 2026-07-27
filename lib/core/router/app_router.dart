@@ -81,11 +81,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: '/chat',
-        builder: (_, __) => const ChatListScreen(),
-      ),
-      GoRoute(
         path: '/chat/:conversationId',
+        parentNavigatorKey: _rootNavigatorKey,
         builder: (_, state) => ChatScreen(
           conversationId: state.pathParameters['conversationId']!,
         ),
@@ -165,6 +162,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/notifications',
             builder: (_, __) => const NotificationsScreen(),
+          ),
+          GoRoute(
+            path: '/chat',
+            builder: (_, __) => const ChatListScreen(),
           ),
         ],
       ),

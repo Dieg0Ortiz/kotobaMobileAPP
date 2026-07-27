@@ -1,18 +1,53 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../providers/chat_providers.dart';
 import '../../domain/entities/conversation.dart';
 
-class ChatListScreen extends ConsumerWidget {
+class ChatListScreen extends ConsumerStatefulWidget {
   const ChatListScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChatListScreen> createState() => _ChatListScreenState();
+}
+
+class _ChatListScreenState extends ConsumerState<ChatListScreen> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _subscribeToNewMessages();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  void _subscribeToNewMessages() {
+    _subscription = Supabase.instance.client
+        .from('messages')
+        .stream(primaryKey: ['id'])
+        .order('created_at', ascending: false)
+        .limit(1)
+        .listen((_) {
+      if (mounted) {
+        ref.invalidate(conversationsProvider);
+        ref.invalidate(totalUnreadProvider);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
     final c = KotobaColors.of(context);
 
@@ -20,6 +55,12 @@ class ChatListScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text('Chats', style: KotobaTypography.headlineMd),
         centerTitle: false,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined, color: c.onSurface),
+            onPressed: () => context.push('/notifications'),
+          ),
+        ],
       ),
       body: conversationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -40,12 +81,18 @@ class ChatListScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            itemCount: convos.length,
-            itemBuilder: (context, index) {
-              final conv = convos[index];
-              return _ConversationTile(conversation: conv);
+          return RefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(conversationsProvider);
+              ref.invalidate(totalUnreadProvider);
             },
+            child: ListView.builder(
+              itemCount: convos.length,
+              itemBuilder: (context, index) {
+                final conv = convos[index];
+                return _ConversationTile(conversation: conv);
+              },
+            ),
           );
         },
       ),
@@ -70,7 +117,7 @@ class _ConversationTile extends StatelessWidget {
       onTap: () => context.push('/chat/${conversation.id}'),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
-        radius: 24,
+        radius: 28,
         backgroundColor: c.surfaceHigh,
         backgroundImage: conversation.otherAvatarUrl != null
             ? CachedNetworkImageProvider(conversation.otherAvatarUrl!)
@@ -99,7 +146,10 @@ class _ConversationTile extends StatelessWidget {
           if (timeStr.isNotEmpty)
             Text(
               timeStr,
-              style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
+              style: KotobaTypography.labelXs.copyWith(
+                color: hasUnread ? c.primary : c.onSurfaceVariant,
+                fontWeight: hasUnread ? FontWeight.w600 : FontWeight.normal,
+              ),
             ),
         ],
       ),
@@ -137,7 +187,8 @@ class _ConversationTile extends StatelessWidget {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final diff = now.difference(time);
-    if (diff.inDays > 0) return DateFormat('dd/MM').format(time);
+    if (diff.inDays > 7) return DateFormat('dd/MM').format(time);
+    if (diff.inDays > 0) return '${diff.inDays}d';
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}m';
     return 'Ahora';
