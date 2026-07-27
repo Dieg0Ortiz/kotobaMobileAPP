@@ -32,6 +32,14 @@ class ApiConstants {
     if (defineUrl.isNotEmpty) return defineUrl;
     return 'https://kotobasocial-production.up.railway.app/api';
   }
+
+  /// URL base para el Chat Microservice.
+  /// Se puede sobrescribir con --dart-define=CHAT_API_URL=...
+  static String get chatBaseUrl {
+    const defineUrl = String.fromEnvironment('CHAT_API_URL', defaultValue: '');
+    if (defineUrl.isNotEmpty) return defineUrl;
+    return 'https://kotobachat-production.up.railway.app/api';
+  }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
 

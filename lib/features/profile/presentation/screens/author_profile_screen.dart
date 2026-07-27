@@ -12,6 +12,7 @@ import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/domain/entities/user.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
+import '../../../chat/presentation/providers/chat_providers.dart';
 import '../providers/profile_providers.dart';
 
 class AuthorProfileScreen extends ConsumerWidget {
@@ -227,6 +228,21 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
       _followersCount += _isFollowed ? 1 : -1;
     });
     widget.onFollow();
+  }
+
+  Future<void> _openChat(BuildContext context) async {
+    final chatRepo = ProviderScope.containerOf(context).read(chatRepositoryProvider);
+    final result = await chatRepo.createOrGetConversation(widget.user.id);
+    result.fold(
+      (failure) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al abrir chat')),
+        );
+      },
+      (conversation) {
+        context.push('/chat/${conversation.id}');
+      },
+    );
   }
 
   void _showSupportSheet(BuildContext context, User user) {
@@ -522,6 +538,19 @@ class _ProfileHeaderSectionState extends State<_ProfileHeaderSection> {
                             side: BorderSide(color: c.outlineVariant),
                           ),
                           label: const Text('Apoyar'),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      SizedBox(
+                        height: 44,
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+                          onPressed: () => _openChat(context),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: c.onSurface,
+                            side: BorderSide(color: c.outlineVariant),
+                          ),
+                          label: const Text('Chat'),
                         ),
                       ),
                     ],
