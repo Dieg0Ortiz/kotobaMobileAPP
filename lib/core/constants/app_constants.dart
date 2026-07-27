@@ -38,7 +38,7 @@ class ApiConstants {
   static String get chatBaseUrl {
     const defineUrl = String.fromEnvironment('CHAT_API_URL', defaultValue: '');
     if (defineUrl.isNotEmpty) return defineUrl;
-    return 'https://kotobachat-production.up.railway.app/api';
+    return 'https://kotobachat-production.up.railway.app';
   }
   static const Duration connectTimeout = Duration(seconds: 10);
   static const Duration receiveTimeout = Duration(seconds: 15);
