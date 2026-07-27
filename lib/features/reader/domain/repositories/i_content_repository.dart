@@ -22,6 +22,9 @@ abstract class IContentRepository {
   Future<Either<Failure, List<Comment>>> getChapterComments(String chapterId);
   Future<Either<Failure, Comment>> createChapterComment(String chapterId, String workId, String content);
 
+  // Recap
+  Future<Either<Failure, String>> getRecap(String chapterId, double progress);
+
   // Views
   Future<Either<Failure, void>> incrementView(String workId);
 

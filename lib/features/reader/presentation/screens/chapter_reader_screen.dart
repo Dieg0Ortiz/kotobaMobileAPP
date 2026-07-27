@@ -97,6 +97,61 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
     );
   }
 
+  void _showRecap(String chapterId) {
+    final c = KotobaColors.of(context);
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _RecapSheet(chapterId: chapterId, colors: c),
+    );
+  }
+
+  Future<void> _checkAndShowRecapAuto(String workId, String chapterId, int pageIndex, int totalPages) async {
+    final prefs = await SharedPreferences.getInstance();
+    final all = prefs.getString('reading_progress') ?? '{}';
+    final map = jsonDecode(all) as Map<String, dynamic>;
+    final progress = map[workId] as Map<String, dynamic>?;
+    if (progress == null) return;
+
+    final lastReadStr = progress['lastReadAt'] as String?;
+    if (lastReadStr == null) return;
+
+    final lastRead = DateTime.tryParse(lastReadStr);
+    if (lastRead == null) return;
+
+    final daysSince = DateTime.now().difference(lastRead).inDays;
+    if (daysSince < 3) return;
+
+    if (!mounted) return;
+    final c = KotobaColors.of(context);
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: c.surface,
+        title: Text('¿Quieres un resumen?', style: TextStyle(color: c.onSurface)),
+        content: Text(
+          'Han pasado $daysSince días desde la última vez que leíste. ¿Te gustaría un resumen rápido de lo que ha pasado?',
+          style: TextStyle(color: c.onSurfaceVariant),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('No, gracias', style: TextStyle(color: c.onSurfaceVariant)),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sí, resumen'),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && mounted) {
+      _showRecap(chapterId);
+    }
+  }
+
   // ── Delta parsing ─────────────────────────────────────────────────
 
   Delta _parseDelta(String content) {
@@ -679,6 +734,7 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
       'chapterId': chapterId, 
       'scrollOffset': scrollOffset,
       'pageIndex': pageIndex,
+      'lastReadAt': DateTime.now().toIso8601String(),
     };
     await prefs.setString('reading_progress', jsonEncode(map));
   }
@@ -832,6 +888,17 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                 _pageController.dispose();
                 _pageController = PageController(initialPage: _currentPage);
               }
+
+              // Auto-recap check
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                final savedProgress = _loadProgress(workId);
+                if (savedProgress != null && savedProgress['chapterId'] == widget.chapterId) {
+                  final savedPageIndex = savedProgress['pageIndex'] is num ? (savedProgress['pageIndex'] as num).toInt() : 0;
+                  final totalPages = _pageGroups.isNotEmpty ? _pageGroups.length : 1;
+                  _checkAndShowRecapAuto(workId, widget.chapterId, savedPageIndex, totalPages);
+                }
+              });
             }
 
             // Parse delta once
@@ -1083,6 +1150,10 @@ class _ChapterReaderScreenState extends ConsumerState<ChapterReaderScreen> {
                 _showChapterComments(widget.chapterId, workId);
               },
             ),
+            IconButton(
+              icon: Icon(Icons.auto_stories, color: c.onSurfaceVariant),
+              onPressed: () => _showRecap(widget.chapterId),
+            ),
           ],
         ),
       ),
@@ -1319,6 +1390,111 @@ class _CommentTile extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _RecapSheet extends ConsumerStatefulWidget {
+  final String chapterId;
+  final KotobaColors colors;
+
+  const _RecapSheet({required this.chapterId, required this.colors});
+
+  @override
+  ConsumerState<_RecapSheet> createState() => _RecapSheetState();
+}
+
+class _RecapSheetState extends ConsumerState<_RecapSheet> {
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.colors;
+    final recapAsync = ref.watch(recapProvider((
+      chapterId: widget.chapterId,
+      progress: 0.5,
+    )));
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      minChildSize: 0.3,
+      maxChildSize: 0.9,
+      builder: (_, scrollController) => Container(
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 12),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: c.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Icon(Icons.auto_stories, color: c.primary, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Resumen',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: c.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: recapAsync.when(
+                loading: () => const Center(child: KotobaLoading()),
+                error: (e, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.error_outline, size: 48, color: c.onSurfaceVariant),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No se pudo generar el resumen',
+                          style: TextStyle(color: c.onSurfaceVariant, fontSize: 16),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () => ref.invalidate(recapProvider((
+                            chapterId: widget.chapterId,
+                            progress: 0.5,
+                          ))),
+                          child: Text('Reintentar', style: TextStyle(color: c.primary)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                data: (recap) => SingleChildScrollView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.all(20),
+                  child: Text(
+                    recap,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.7,
+                      color: c.onSurface,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

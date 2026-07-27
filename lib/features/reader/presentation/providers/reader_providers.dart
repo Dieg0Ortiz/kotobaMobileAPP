@@ -63,6 +63,12 @@ final chapterCommentsProvider = FutureProvider.family<List<Comment>, String>((re
   return result.fold((f) => throw f, (comments) => comments);
 });
 
+final recapProvider = FutureProvider.family<String, ({String chapterId, double progress})>((ref, params) async {
+  final repo = ref.read(contentRepositoryProvider);
+  final result = await repo.getRecap(params.chapterId, params.progress);
+  return result.fold((f) => throw f, (recap) => recap);
+});
+
 final myBookmarksProvider = FutureProvider<List<Work>>((ref) async {
   final repo = ref.read(contentRepositoryProvider);
   final result = await repo.getMyBookmarks();

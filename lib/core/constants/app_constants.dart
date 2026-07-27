@@ -46,6 +46,7 @@ class ApiConstants {
   static const String notifications = '/notifications';
   static const String uploadCover = '/upload/cover';
   static const String search = '/search';
+  static const String recap = '/recap';
 
   static String userById(String id) => '$users/$id';
   static String userStats(String authorId) => '$users/$authorId/stats';

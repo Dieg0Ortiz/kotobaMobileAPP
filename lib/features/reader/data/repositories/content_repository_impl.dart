@@ -268,4 +268,18 @@ class ContentRepositoryImpl implements IContentRepository {
       (data) => Right(_commentFromJson(data)),
     );
   }
+
+  // ── Recap ──────────────────────────────────────────────────────
+
+  @override
+  Future<Either<Failure, String>> getRecap(String chapterId, double progress) async {
+    final result = await _api.post<Map<String, dynamic>>(
+      '${ApiConstants.recap}/$chapterId',
+      data: {'progress': progress},
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (data) => Right(data['recap'] as String? ?? 'No se pudo generar el resumen.'),
+    );
+  }
 }
