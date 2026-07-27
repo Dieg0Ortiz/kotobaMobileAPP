@@ -32,3 +32,9 @@ final searchResultsProvider = FutureProvider<List<Work>>((ref) async {
   final result = await repo.search(query, genre: genre);
   return result.fold((f) => throw f, (works) => works);
 });
+
+final myWorksProvider = FutureProvider.family<List<Work>, String>((ref, authorId) async {
+  final repo = ref.read(workRepositoryProvider);
+  final result = await repo.getWorksByAuthor(authorId);
+  return result.fold((f) => throw f, (works) => works);
+});

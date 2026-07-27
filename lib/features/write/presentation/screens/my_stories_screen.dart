@@ -10,12 +10,6 @@ import '../../../catalog/domain/entities/work.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 
-final myWorksProvider = FutureProvider.family<List<Work>, String>((ref, authorId) async {
-  final repo = ref.read(workRepositoryProvider);
-  final result = await repo.getWorksByAuthor(authorId);
-  return result.fold((f) => throw f, (works) => works);
-});
-
 class MyStoriesScreen extends ConsumerWidget {
   const MyStoriesScreen({super.key});
 

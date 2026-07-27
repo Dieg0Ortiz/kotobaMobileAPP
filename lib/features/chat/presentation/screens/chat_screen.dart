@@ -7,6 +7,9 @@ import 'package:intl/intl.dart';
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
+import '../../../catalog/domain/entities/work.dart';
+import '../../../catalog/presentation/providers/catalog_providers.dart';
+import '../../../profile/presentation/providers/profile_providers.dart';
 import '../providers/chat_providers.dart';
 import '../widgets/message_bubble.dart';
 import '../../domain/entities/message.dart';
@@ -232,8 +235,10 @@ class _ShareWorkSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final c = KotobaColors.of(context);
+    final profileAsync = ref.watch(currentProfileProvider);
+
     return Container(
-      height: 300,
+      height: 400,
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -241,16 +246,101 @@ class _ShareWorkSheet extends ConsumerWidget {
           Text('Compartir obra', style: KotobaTypography.labelMd),
           const SizedBox(height: 16),
           Expanded(
-            child: Center(
-              child: Text(
-                'Próximamente: selecciona una de tus obras para compartir',
-                style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
-                textAlign: TextAlign.center,
-              ),
+            child: profileAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (user) {
+                if (user.id.isEmpty) return const SizedBox();
+
+                final worksAsync = ref.watch(myWorksProvider(user.id));
+                return worksAsync.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(child: Text('Error cargando obras')),
+                  data: (works) {
+                    if (works.isEmpty) {
+                      return Center(
+                        child: Text(
+                          'No tienes obras aún',
+                          style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
+                        ),
+                      );
+                    }
+                    return ListView.builder(
+                      itemCount: works.length,
+                      itemBuilder: (context, index) {
+                        final work = works[index];
+                        return _WorkTile(
+                          work: work,
+                          onTap: () {
+                            Navigator.pop(context);
+                            onWorkSelected(work.id, work.title, work.coverUrl);
+                          },
+                        );
+                      },
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _WorkTile extends StatelessWidget {
+  final Work work;
+  final VoidCallback onTap;
+
+  const _WorkTile({required this.work, required this.onTap});
+
+  String _statusLabel(String status) {
+    switch (status) {
+      case 'ongoing': return 'En curso';
+      case 'completed': return 'Finalizada';
+      case 'hiatus': return 'Hiatus';
+      case 'draft': return 'Borrador';
+      default: return status;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = KotobaColors.of(context);
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(vertical: 4),
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: work.coverUrl != null
+            ? CachedNetworkImage(
+                imageUrl: work.coverUrl!,
+                width: 44,
+                height: 60,
+                fit: BoxFit.cover,
+                errorWidget: (_, __, ___) => _placeholder(c),
+              )
+            : _placeholder(c),
+      ),
+      title: Text(
+        work.title,
+        style: KotobaTypography.labelMd.copyWith(color: c.onSurface),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        '${work.chapterCount} capítulos · ${_statusLabel(work.status)}',
+        style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant),
+      ),
+      trailing: Icon(Icons.chevron_right, color: c.onSurfaceVariant, size: 20),
+    );
+  }
+
+  Widget _placeholder(KotobaColors c) => Container(
+    width: 44,
+    height: 60,
+    color: c.surfaceHigh,
+    child: Icon(Icons.book, color: c.onSurfaceVariant, size: 20),
+  );
 }
