@@ -286,7 +286,14 @@ class HorizontalWorkCarouselCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(work.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
-
+                  const SizedBox(height: 2),
+                  Row(
+                    children: [
+                      Icon(Icons.menu_book, size: 10, color: c.onSurfaceVariant),
+                      const SizedBox(width: 2),
+                      Text('${work.chapterCount}', style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
+                    ],
+                  ),
                 ],
               ),
             ),
