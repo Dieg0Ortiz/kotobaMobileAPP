@@ -8,6 +8,7 @@ final paymentApiProvider = Provider<ApiClient>((ref) {
 
 final subscriptionStatusProvider = FutureProvider.autoDispose<Map<String, dynamic>?>((ref) async {
   final api = ref.read(paymentApiProvider);
+  await api.post<Map<String, dynamic>>('/payments/subscription/claim');
   final result = await api.get<Map<String, dynamic>>('/payments/subscription/me');
   return result.fold((_) => null, (data) => data);
 });

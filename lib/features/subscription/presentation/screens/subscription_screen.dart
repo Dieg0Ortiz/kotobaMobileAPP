@@ -226,7 +226,7 @@ class _ActiveSubscriptionView extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              '$4.99/mes',
+              r'$4.99/mes',
               style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
