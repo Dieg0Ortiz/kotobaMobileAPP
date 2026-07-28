@@ -20,7 +20,6 @@ import '../../features/write/presentation/screens/my_stories_screen.dart';
 import '../../features/library/presentation/screens/library_screen.dart';
 import '../../features/write/presentation/screens/write_dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
-import '../../features/analytics/presentation/screens/story_dashboard_screen.dart';
 import '../../features/analytics/presentation/screens/author_dashboard_screen.dart' as analytics_screens;
 import '../../features/chat/presentation/screens/chat_list_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
@@ -176,13 +175,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (_, __) => const ChatListScreen(),
           ),
         ],
-      ),
-      GoRoute(
-        path: '/analytics/story/:workId',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (_, state) => StoryDashboardScreen(
-          workId: state.pathParameters['workId']!,
-        ),
       ),
       GoRoute(
         path: '/analytics/dashboard',

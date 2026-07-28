@@ -221,7 +221,7 @@ class _HeroSection extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.analytics_outlined),
                     tooltip: 'Story Dashboard',
-                    onPressed: () => context.push('/analytics/story/$workId'),
+                    onPressed: () => context.push('/analytics/dashboard'),
                   ),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined),
