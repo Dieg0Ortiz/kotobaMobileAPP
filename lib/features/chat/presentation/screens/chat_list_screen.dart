@@ -55,12 +55,6 @@ class _ChatListScreenState extends ConsumerState<ChatListScreen> {
       appBar: AppBar(
         title: Text('Chats', style: KotobaTypography.headlineMd),
         centerTitle: false,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined, color: c.onSurface),
-            onPressed: () => context.push('/notifications'),
-          ),
-        ],
       ),
       body: conversationsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

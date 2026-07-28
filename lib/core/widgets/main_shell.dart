@@ -130,8 +130,9 @@ class MainShell extends ConsumerWidget {
 
         // ── Mobile Layout (Bottom Nav Bar) ──
         return Scaffold(
-          body: Column(
+          body: Stack(
             children: [
+              child,
               SafeArea(
                 child: Align(
                   alignment: Alignment.topRight,
@@ -182,7 +183,6 @@ class MainShell extends ConsumerWidget {
                   ),
                 ),
               ),
-              Expanded(child: child),
             ],
           ),
           bottomNavigationBar: Container(
