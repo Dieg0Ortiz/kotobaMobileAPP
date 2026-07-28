@@ -157,10 +157,13 @@ class MainShell extends ConsumerWidget {
         }
 
         // ── Mobile Layout (Bottom Nav Bar) ──
+        final location = GoRouterState.of(context).matchedLocation;
+        final showNotification = !location.startsWith('/search') && !location.startsWith('/write');
         return Scaffold(
           body: Stack(
             children: [
               child,
+              if (showNotification)
               SafeArea(
                 child: Align(
                   alignment: Alignment.topRight,
