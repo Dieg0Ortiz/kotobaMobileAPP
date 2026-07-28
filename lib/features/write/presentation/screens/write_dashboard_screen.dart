@@ -167,12 +167,6 @@ class WriteDashboardScreen extends ConsumerWidget {
             context: context,
           ),
           _buildMenuOption(
-            icon: Icons.collections_bookmark,
-            title: 'Series',
-            onTap: () {},
-            context: context,
-          ),
-          _buildMenuOption(
             icon: Icons.add_box_outlined,
             title: 'Crea una historia nueva',
             onTap: () => context.push('/write/edit/new'),
