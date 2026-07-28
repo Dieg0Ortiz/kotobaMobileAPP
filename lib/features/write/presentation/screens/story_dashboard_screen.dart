@@ -110,8 +110,11 @@ class StoryDashboardScreen extends StatelessWidget {
               const SizedBox(height: 32),
               
               // Chart Section
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              Wrap(
+                alignment: WrapAlignment.spaceBetween,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 12,
+                runSpacing: 12,
                 children: [
                   Text(
                     'Reader Engagement',
@@ -123,6 +126,7 @@ class StoryDashboardScreen extends StatelessWidget {
                     ),
                   ),
                   Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),

@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
-import '../../../analytics/presentation/screens/author_analytics_screen.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/stat_card.dart';
 
@@ -58,7 +57,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
       body: statsAsync.when(
         loading: () => const Center(child: KotobaLoading()),
         error: (_, __) => SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: Column(
             children: [
               const SizedBox(height: 24),
@@ -70,7 +69,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 800;
             return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 24),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -193,13 +192,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const AuthorAnalyticsScreen(),
-                          ),
-                        );
-                      },
+                      onPressed: () => context.push('/analytics/dashboard'),
                       icon: const Icon(Icons.analytics_outlined, size: 18),
                       label: const Text('VER ANALÍTICAS DETALLADAS',
                           style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
@@ -271,12 +264,14 @@ class AuthorDashboardScreen extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Wrap(
+            alignment: WrapAlignment.spaceAround,
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              _buildMetricItem(c, Icons.timer, 'Tiempo promedio', avgMinutes),
-              _buildMetricItem(c, Icons.check_circle, 'Tasa de completado', completionPct),
-              _buildMetricItem(c, Icons.menu_book, 'Capítulos leídos', '${stats.totalReads}'),
+              _buildMetricItem(c, Icons.timer, 'Tiempo\npromedio', avgMinutes),
+              _buildMetricItem(c, Icons.check_circle, 'Tasa de\ncompletado', completionPct),
+              _buildMetricItem(c, Icons.menu_book, 'Capítulos\nleídos', '${stats.totalReads}'),
             ],
           ),
         ],
@@ -299,7 +294,11 @@ class AuthorDashboardScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 11, color: c.onSurfaceVariant)),
+        Text(
+          label,
+          style: TextStyle(fontSize: 11, color: c.onSurfaceVariant),
+          textAlign: TextAlign.center,
+        ),
       ],
     );
   }
@@ -333,12 +332,12 @@ class AuthorDashboardScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
+              Wrap(
+                spacing: 24,
+                runSpacing: 16,
                 children: [
                   _buildIncomeStat(c, 'Disponible', '\$$available', Icons.account_balance_wallet),
-                  const SizedBox(width: 48),
                   _buildIncomeStat(c, 'Total ganado', '\$$totalEarned', Icons.trending_up),
-                  const SizedBox(width: 48),
                   _buildIncomeStat(c, 'Pendiente', '\$$pending', Icons.hourglass_bottom),
                 ],
               ),
@@ -427,8 +426,11 @@ class AuthorDashboardScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Wrap(
+            alignment: WrapAlignment.spaceBetween,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               Text(
                 'Reader Engagement',
@@ -440,6 +442,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
                 ),
               ),
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),

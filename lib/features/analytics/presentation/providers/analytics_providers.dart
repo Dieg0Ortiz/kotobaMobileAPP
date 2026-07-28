@@ -13,7 +13,82 @@ final analyticsRepositoryProvider = Provider<IAnalyticsRepository>((ref) {
   return AnalyticsRepositoryImpl(api);
 });
 
-// ── Analytics queries ────────────────────────────────────────────
+// ── Story Analytics Providers ──────────────────────────────────
+
+final storyOverviewProvider = FutureProvider.family<StoryOverview, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryOverview(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyVoteTrendProvider = FutureProvider.family<List<VoteTrendPoint>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryVoteTrend(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyDemographicsProvider = FutureProvider.family<ReaderDemographics, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryDemographics(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyChaptersProvider = FutureProvider.family<List<ChapterAnalytics>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryChapters(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyPeaksProvider = FutureProvider.family<ReadingPeaksData, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryPeaks(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyReReadsProvider = FutureProvider.family<List<ReReadPattern>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryReReads(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+// ── Author Dashboard Providers ─────────────────────────────────
+
+final authorDashboardOverviewProvider = FutureProvider<AuthorDashboardOverview>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getAuthorDashboardOverview(user.id);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final followerGrowthProvider = FutureProvider<List<FollowerGrowthPoint>>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getFollowerGrowth(user.id);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final followerDemographicsProvider = FutureProvider<FollowerDemographics>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getFollowerDemographics(user.id);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final worksPerformanceProvider = FutureProvider<List<WorkPerformance>>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getWorksPerformance(user.id);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final recentActivityProvider = FutureProvider<List<ActivityItem>>((ref) async {
+  final user = await ref.watch(currentProfileProvider.future);
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getRecentActivity(user.id);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+// ── Legacy Author Analytics ────────────────────────────────────
 
 final authorOverviewProvider = FutureProvider<AuthorOverview>((ref) async {
   final user = await ref.watch(currentProfileProvider.future);
@@ -50,7 +125,7 @@ final genreAnalyticsProvider = FutureProvider<List<GenreAnalytics>>((ref) async 
   return result.fold((f) => throw f, (data) => data);
 });
 
-// ── Tracking helper (used by reader) ────────────────────────────
+// ── Reading Session Tracker ────────────────────────────────────
 
 class ReadingSessionTracker {
   final IAnalyticsRepository _repo;
@@ -63,30 +138,13 @@ class ReadingSessionTracker {
 
   String? get sessionId => _sessionId;
 
-  Future<void> startSession({
-    required String workId,
-    required String chapterId,
-  }) async {
+  Future<void> startSession({required String workId, required String chapterId}) async {
     _currentWorkId = workId;
     _currentChapterId = chapterId;
     _startTime = DateTime.now();
-
-    final platformName = Platform.isAndroid
-        ? 'android'
-        : Platform.isIOS
-            ? 'ios'
-            : 'web';
-
-    final result = await _repo.startSession(
-      workId: workId,
-      chapterId: chapterId,
-      deviceType: 'mobile',
-      platform: platformName,
-    );
-    result.fold(
-      (_) {},
-      (sessionId) => _sessionId = sessionId,
-    );
+    final platformName = Platform.isAndroid ? 'android' : Platform.isIOS ? 'ios' : 'web';
+    final result = await _repo.startSession(workId: workId, chapterId: chapterId, deviceType: 'mobile', platform: platformName);
+    result.fold((_) {}, (sessionId) => _sessionId = sessionId);
   }
 
   Future<void> endSession() async {
@@ -97,16 +155,8 @@ class ReadingSessionTracker {
     _startTime = null;
   }
 
-  Future<void> sendChapterRead({
-    required double readProgress,
-    required int timeSpentSeconds,
-  }) async {
+  Future<void> sendChapterRead({required double readProgress, required int timeSpentSeconds}) async {
     if (_currentWorkId == null || _currentChapterId == null) return;
-    await _repo.chapterRead(
-      workId: _currentWorkId!,
-      chapterId: _currentChapterId!,
-      readProgress: readProgress,
-      timeSpentSeconds: timeSpentSeconds,
-    );
+    await _repo.chapterRead(workId: _currentWorkId!, chapterId: _currentChapterId!, readProgress: readProgress, timeSpentSeconds: timeSpentSeconds);
   }
 }
