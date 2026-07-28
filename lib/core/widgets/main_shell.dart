@@ -1,8 +1,10 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../theme/kotoba_colors.dart';
+import '../theme/liquid_glass.dart';
 import '../../features/notifications/presentation/providers/notification_providers.dart';
 import '../../features/chat/presentation/providers/chat_providers.dart';
 
@@ -185,101 +187,191 @@ class MainShell extends ConsumerWidget {
               ),
             ],
           ),
-          bottomNavigationBar: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                top: BorderSide(
-                  color: c.outlineVariant.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: BottomNavigationBar(
-              currentIndex: currentIndex,
-              onTap: (index) {
-                switch (index) {
-                  case 0:
-                    context.go('/home');
-                  case 1:
-                    context.go('/library');
-                  case 2:
-                    context.go('/chat');
-                  case 3:
-                    context.go('/profile');
-                }
-              },
-              items: [
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Inicio',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.menu_book_outlined),
-                  activeIcon: Icon(Icons.menu_book),
-                  label: 'Biblioteca',
-                ),
-                BottomNavigationBarItem(
-                  icon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(Icons.chat_bubble_outline),
-                      if (chatUnreadCount > 0)
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD9735A),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                            child: Text(
-                              chatUnreadCount > 99 ? '99+' : '$chatUnreadCount',
-                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  activeIcon: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const Icon(Icons.chat_bubble),
-                      if (chatUnreadCount > 0)
-                        Positioned(
-                          top: -4,
-                          right: -4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFD9735A),
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                            child: Text(
-                              chatUnreadCount > 99 ? '99+' : '$chatUnreadCount',
-                              style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                  label: 'Chats',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Perfil',
-                ),
-              ],
-            ),
-          ),
+          bottomNavigationBar: isIOS(context)
+              ? _buildGlassBottomNav(context, c, currentIndex, chatUnreadCount)
+              : _buildDefaultBottomNav(context, c, currentIndex, chatUnreadCount),
         );
       },
+    );
+  }
+
+  Widget _buildGlassBottomNav(
+    BuildContext context,
+    KotobaColors c,
+    int currentIndex,
+    int chatUnreadCount,
+  ) {
+    const cfg = LiquidGlassConfig.bar;
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ui.ImageFilter.blur(
+          sigmaX: cfg.blurSigma,
+          sigmaY: cfg.blurSigma,
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: c.surface.withValues(alpha: cfg.backgroundOpacity),
+            border: Border(
+              top: BorderSide(
+                color: c.onSurface.withValues(alpha: cfg.borderGlowOpacity),
+                width: 0.5,
+              ),
+            ),
+          ),
+          foregroundDecoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                c.onSurface.withValues(alpha: cfg.highlightOpacity),
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.5],
+            ),
+          ),
+          child: BottomNavigationBar(
+            currentIndex: currentIndex,
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            selectedItemColor: c.primary,
+            unselectedItemColor: c.onSurfaceVariant,
+            type: BottomNavigationBarType.fixed,
+            onTap: (index) {
+              switch (index) {
+                case 0:
+                  context.go('/home');
+                case 1:
+                  context.go('/library');
+                case 2:
+                  context.go('/chat');
+                case 3:
+                  context.go('/profile');
+              }
+            },
+            items: [
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home),
+                label: 'Inicio',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.menu_book_outlined),
+                activeIcon: Icon(Icons.menu_book),
+                label: 'Biblioteca',
+              ),
+              BottomNavigationBarItem(
+                icon: _ChatBadge(count: chatUnreadCount, icon: Icons.chat_bubble_outline),
+                activeIcon: _ChatBadge(count: chatUnreadCount, icon: Icons.chat_bubble),
+                label: 'Chats',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
+                label: 'Perfil',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDefaultBottomNav(
+    BuildContext context,
+    KotobaColors c,
+    int currentIndex,
+    int chatUnreadCount,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(
+          top: BorderSide(
+            color: c.outlineVariant.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: currentIndex,
+        backgroundColor: c.surfaceLowest,
+        elevation: 0,
+        selectedItemColor: c.primary,
+        unselectedItemColor: c.onSurfaceVariant,
+        type: BottomNavigationBarType.fixed,
+        onTap: (index) {
+          switch (index) {
+            case 0:
+              context.go('/home');
+            case 1:
+              context.go('/library');
+            case 2:
+              context.go('/chat');
+            case 3:
+              context.go('/profile');
+          }
+        },
+        items: [
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Inicio',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.menu_book_outlined),
+            activeIcon: Icon(Icons.menu_book),
+            label: 'Biblioteca',
+          ),
+          BottomNavigationBarItem(
+            icon: _ChatBadge(count: chatUnreadCount, icon: Icons.chat_bubble_outline),
+            activeIcon: _ChatBadge(count: chatUnreadCount, icon: Icons.chat_bubble),
+            label: 'Chats',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Perfil',
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChatBadge extends StatelessWidget {
+  final int count;
+  final IconData icon;
+
+  const _ChatBadge({required this.count, required this.icon});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icon),
+        if (count > 0)
+          Positioned(
+            top: -4,
+            right: -4,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: Color(0xFFD9735A),
+                shape: BoxShape.circle,
+              ),
+              constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+              child: Text(
+                count > 99 ? '99+' : '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

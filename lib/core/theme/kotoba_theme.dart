@@ -7,7 +7,11 @@ class KotobaTheme {
   KotobaTheme._();
 
   // ── Tema oscuro ────────────────────────────────────────────────
-  static ThemeData get darkTheme => ThemeData(
+  static ThemeData get darkTheme => _buildDarkTheme(isIOS: false);
+
+  static ThemeData get darkThemeIOS => _buildDarkTheme(isIOS: true);
+
+  static ThemeData _buildDarkTheme({required bool isIOS}) => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         scaffoldBackgroundColor: AppColors.background,
@@ -38,8 +42,10 @@ class KotobaTheme {
         ),
 
         // AppBar: transparente, sin elevación, fondo del scaffold
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.background,
+        appBarTheme: AppBarTheme(
+          backgroundColor: isIOS
+              ? AppColors.surface.withValues(alpha: 0.7)
+              : AppColors.background,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -47,23 +53,34 @@ class KotobaTheme {
             fontFamily: 'Noto Serif JP',
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColors.primary,
+            color: isIOS
+                ? AppColors.primary.withValues(alpha: 0.95)
+                : AppColors.primary,
           ),
-          iconTheme: IconThemeData(color: AppColors.onSurface),
+          iconTheme: IconThemeData(
+            color: isIOS
+                ? AppColors.onSurface.withValues(alpha: 0.9)
+                : AppColors.onSurface,
+          ),
         ),
 
         // Cards: superficie oscura con borde sutil
         cardTheme: CardThemeData(
-          color: AppColors.surfaceLow,
+          color: isIOS
+              ? AppColors.surface.withValues(alpha: 0.55)
+              : AppColors.surfaceLow,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: AppColors.onSurface.withValues(alpha: 0.05),
-              width: 1,
+              color: AppColors.onSurface.withValues(
+                alpha: isIOS ? 0.08 : 0.05,
+              ),
+              width: 0.5,
             ),
           ),
+          clipBehavior: isIOS ? Clip.antiAlias : Clip.none,
         ),
 
         // NavigationRail (tablet/desktop)
@@ -158,13 +175,46 @@ class KotobaTheme {
           space: 0,
         ),
 
+        // Dialog (glass on iOS, solid elsewhere)
+        dialogTheme: DialogThemeData(
+          backgroundColor: isIOS
+              ? AppColors.surface.withValues(alpha: 0.75)
+              : AppColors.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+
+        // BottomSheet (glass on iOS)
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: isIOS
+              ? AppColors.surface.withValues(alpha: 0.75)
+              : AppColors.surface,
+          surfaceTintColor: Colors.transparent,
+          modalBackgroundColor: isIOS
+              ? AppColors.surface.withValues(alpha: 0.75)
+              : AppColors.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+        ),
+
         // IconTheme base
-        iconTheme: const IconThemeData(
-            color: AppColors.onSurfaceVariant, size: 20),
+        iconTheme: IconThemeData(
+          color: isIOS
+              ? AppColors.onSurface.withValues(alpha: 0.85)
+              : AppColors.onSurfaceVariant,
+          size: 20,
+        ),
       );
 
   // ── Tema claro ───────────────────────────────────────────────
-  static ThemeData get lightTheme => ThemeData(
+  static ThemeData get lightTheme => _buildLightTheme(isIOS: false);
+
+  static ThemeData get lightThemeIOS => _buildLightTheme(isIOS: true);
+
+  static ThemeData _buildLightTheme({required bool isIOS}) => ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
         scaffoldBackgroundColor: AppColorsLight.background,
@@ -194,8 +244,10 @@ class KotobaTheme {
           surfaceContainerHighest: AppColorsLight.surfaceHighest,
         ),
 
-        appBarTheme: const AppBarTheme(
-          backgroundColor: AppColorsLight.background,
+        appBarTheme: AppBarTheme(
+          backgroundColor: isIOS
+              ? AppColorsLight.surface.withValues(alpha: 0.7)
+              : AppColorsLight.background,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           scrolledUnderElevation: 0,
@@ -203,22 +255,33 @@ class KotobaTheme {
             fontFamily: 'Noto Serif JP',
             fontSize: 20,
             fontWeight: FontWeight.w600,
-            color: AppColorsLight.primary,
+            color: isIOS
+                ? AppColorsLight.primary.withValues(alpha: 0.95)
+                : AppColorsLight.primary,
           ),
-          iconTheme: IconThemeData(color: AppColorsLight.onSurface),
+          iconTheme: IconThemeData(
+            color: isIOS
+                ? AppColorsLight.onSurface.withValues(alpha: 0.9)
+                : AppColorsLight.onSurface,
+          ),
         ),
 
         cardTheme: CardThemeData(
-          color: AppColorsLight.surfaceLowest,
+          color: isIOS
+              ? AppColorsLight.surface.withValues(alpha: 0.5)
+              : AppColorsLight.surfaceLowest,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(12),
             side: BorderSide(
-              color: AppColorsLight.onSurface.withValues(alpha: 0.1),
-              width: 1,
+              color: AppColorsLight.onSurface.withValues(
+                alpha: isIOS ? 0.12 : 0.1,
+              ),
+              width: 0.5,
             ),
           ),
+          clipBehavior: isIOS ? Clip.antiAlias : Clip.none,
         ),
 
         navigationRailTheme: const NavigationRailThemeData(
@@ -299,6 +362,34 @@ class KotobaTheme {
           space: 0,
         ),
 
-        iconTheme: const IconThemeData(color: AppColorsLight.onSurfaceVariant, size: 20),
+        dialogTheme: DialogThemeData(
+          backgroundColor: isIOS
+              ? AppColorsLight.surface.withValues(alpha: 0.75)
+              : AppColorsLight.surface,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+
+        bottomSheetTheme: BottomSheetThemeData(
+          backgroundColor: isIOS
+              ? AppColorsLight.surface.withValues(alpha: 0.75)
+              : AppColorsLight.surface,
+          surfaceTintColor: Colors.transparent,
+          modalBackgroundColor: isIOS
+              ? AppColorsLight.surface.withValues(alpha: 0.75)
+              : AppColorsLight.surface,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+        ),
+
+        iconTheme: IconThemeData(
+          color: isIOS
+              ? AppColorsLight.onSurface.withValues(alpha: 0.85)
+              : AppColorsLight.onSurfaceVariant,
+          size: 20,
+        ),
       );
 }

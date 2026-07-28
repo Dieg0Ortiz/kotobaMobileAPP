@@ -132,9 +132,13 @@ class KotobaApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Kotoba',
 
-      // Tema claro y oscuro
-      theme: KotobaTheme.lightTheme,
-      darkTheme: KotobaTheme.darkTheme,
+      // Tema claro y oscuro (con Liquid Glass en iOS)
+      theme: defaultTargetPlatform == TargetPlatform.iOS
+          ? KotobaTheme.lightThemeIOS
+          : KotobaTheme.lightTheme,
+      darkTheme: defaultTargetPlatform == TargetPlatform.iOS
+          ? KotobaTheme.darkThemeIOS
+          : KotobaTheme.darkTheme,
       themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
