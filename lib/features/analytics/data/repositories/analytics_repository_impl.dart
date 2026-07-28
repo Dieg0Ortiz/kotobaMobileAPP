@@ -2,8 +2,8 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/network/api_client.dart';
-import '../entities/analytics_entities.dart';
-import '../repositories/i_analytics_repository.dart';
+import '../../domain/entities/analytics_entities.dart';
+import '../../domain/repositories/i_analytics_repository.dart';
 
 class AnalyticsRepositoryImpl implements IAnalyticsRepository {
   final ApiClient _api;

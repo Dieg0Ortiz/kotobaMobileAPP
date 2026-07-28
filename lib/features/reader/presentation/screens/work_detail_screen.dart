@@ -19,7 +19,6 @@ import '../../../catalog/domain/entities/work.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
 import '../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../social/presentation/providers/social_providers.dart';
-import '../../../analytics/presentation/screens/story_dashboard_screen.dart';
 import '../../domain/entities/chapter.dart';
 import '../../domain/entities/comment.dart';
 import '../providers/reader_providers.dart';

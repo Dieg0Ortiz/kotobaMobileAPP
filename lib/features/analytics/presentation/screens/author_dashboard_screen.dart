@@ -23,7 +23,7 @@ class AuthorDashboardScreen extends ConsumerWidget {
       backgroundColor: c.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        elevation: false,
+        elevation: 0,
         leading: IconButton(icon: Icon(Icons.arrow_back, color: c.onSurface), onPressed: () => Navigator.pop(context)),
         title: Text('Dashboard', style: TextStyle(fontFamily: 'Noto Serif JP', fontSize: 20, fontWeight: FontWeight.bold, color: c.onSurface)),
         actions: [
