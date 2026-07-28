@@ -12,26 +12,14 @@ class SubscriptionScreen extends ConsumerWidget {
   static const _plans = [
     {
       'id': 'P-8JK586133K777423TNJUH47I',
-      'name': 'Mensual',
+      'name': 'Premium',
       'price': r'$4.99',
       'period': '/mes',
       'features': [
-        'Perfil verificado',
-        'Insignia de apoyo',
+        'Insignia Premium en tu perfil',
+        'Acceso al Dashboard de autor',
         'Acceso anticipado a capítulos',
         'Sin anuncios',
-      ],
-    },
-    {
-      'id': 'P-7VW00209L1652123XNJUH47I',
-      'name': 'Anual',
-      'price': r'$49.99',
-      'period': '/año',
-      'features': [
-        'Todo del plan Mensual',
-        '2 meses gratis',
-        'Insignia exclusiva anual',
-        'Contenido exclusivo de autores',
       ],
     },
   ];
@@ -79,7 +67,7 @@ class SubscriptionScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                'Elige un plan para desbloquear beneficios exclusivos y apoyar a tus autores favoritos.',
+                'Obtén Premium para desbloquear beneficios exclusivos y apoyar a Kotoba.',
                 style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
@@ -223,8 +211,6 @@ class _ActiveSubscriptionView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = KotobaColors.of(context);
-    final planId = subscription['plan_id'] as String? ?? '';
-    final planName = planId.contains('Y') ? 'Anual' : 'Mensual';
 
     return Center(
       child: Padding(
@@ -235,12 +221,12 @@ class _ActiveSubscriptionView extends StatelessWidget {
             Icon(Icons.verified, size: 64, color: c.primary),
             const SizedBox(height: 16),
             Text(
-              'Suscrito',
+              'Premium activo',
               style: KotobaTypography.headlineMd.copyWith(color: c.onSurface),
             ),
             const SizedBox(height: 8),
             Text(
-              'Plan $planName activo',
+              '$4.99/mes',
               style: KotobaTypography.bodyMd.copyWith(color: c.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),

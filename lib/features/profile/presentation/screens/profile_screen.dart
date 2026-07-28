@@ -7,6 +7,7 @@ import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../catalog/domain/entities/work.dart';
+import '../../../subscription/presentation/providers/subscription_providers.dart';
 import '../providers/profile_providers.dart';
 import '../widgets/horizontal_work_card.dart';
 import '../widgets/profile_header.dart';
@@ -28,6 +29,8 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final profileAsync = ref.watch(currentProfileProvider);
     final c = KotobaColors.of(context);
+    final isPremiumAsync = ref.watch(isPremiumProvider);
+    final isPremium = isPremiumAsync.valueOrNull == true;
 
     return Scaffold(
       body: profileAsync.when(
@@ -58,26 +61,27 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
-            // 1.5. Dashboard y Suscripción
+            // 1.5. Dashboard (solo premium) y Suscripción
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
                 child: Row(
                   children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        icon: const Icon(Icons.bar_chart, size: 18),
-                        onPressed: () => context.go('/dashboard'),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: const Color(0xFFD9735A),
-                          side: const BorderSide(color: Color(0xFFD9735A)),
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    if (isPremium)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          icon: const Icon(Icons.bar_chart, size: 18),
+                          onPressed: () => context.go('/dashboard'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFFD9735A),
+                            side: const BorderSide(color: Color(0xFFD9735A)),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          label: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w600)),
                         ),
-                        label: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w600)),
                       ),
-                    ),
-                    const SizedBox(width: 12),
+                    if (isPremium) const SizedBox(width: 12),
                     Expanded(
                       child: OutlinedButton.icon(
                         icon: const Icon(Icons.workspace_premium, size: 18),
@@ -88,7 +92,7 @@ class ProfileScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        label: const Text('Premium', style: TextStyle(fontWeight: FontWeight.w600)),
+                        label: Text(isPremium ? 'Premium activo' : 'Premium', style: const TextStyle(fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ],

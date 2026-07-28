@@ -1,20 +1,24 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/theme/kotoba_typography.dart';
 import '../../../../core/widgets/common/kotoba_avatar.dart';
 import '../../../auth/domain/entities/user.dart';
+import '../../../subscription/presentation/providers/subscription_providers.dart';
 
-class ProfileHeader extends StatelessWidget {
+class ProfileHeader extends ConsumerWidget {
   final User user;
   final VoidCallback? onSettingsTap;
 
   const ProfileHeader({required this.user, this.onSettingsTap, super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final c = KotobaColors.of(context);
+    final isPremiumAsync = ref.watch(isPremiumProvider);
+    final isPremium = isPremiumAsync.valueOrNull == true;
     return Stack(
       children: [
         // Banner Image
@@ -70,11 +74,20 @@ class ProfileHeader extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  '@${user.username}',
-                  style: KotobaTypography.labelMd.copyWith(
-                    color: c.onSurfaceVariant,
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '@${user.username}',
+                      style: KotobaTypography.labelMd.copyWith(
+                        color: c.onSurfaceVariant,
+                      ),
+                    ),
+                    if (isPremium) ...[
+                      const SizedBox(width: 6),
+                      Icon(Icons.verified, size: 16, color: c.primary),
+                    ],
+                  ],
                 ),
                 const SizedBox(height: 24),
                 // Stats Row

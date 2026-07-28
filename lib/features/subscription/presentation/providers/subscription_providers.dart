@@ -23,3 +23,8 @@ final cancelSubscriptionProvider = FutureProvider.autoDispose<bool>((ref) async 
   final result = await api.post<Map<String, dynamic>>('/payments/subscription/cancel');
   return result.fold((_) => false, (_) => true);
 });
+
+final isPremiumProvider = FutureProvider.autoDispose<bool>((ref) async {
+  final status = await ref.watch(subscriptionStatusProvider.future);
+  return status?['active'] == true;
+});
