@@ -55,8 +55,7 @@ class LibraryScreen extends ConsumerWidget {
                           chapterCount: w['chapter_count'] as int? ?? 0,
                           wordCount: w['word_count'] as int? ?? 0,
                           viewCount: w['view_count'] as int? ?? 0,
-                          rating: (w['rating'] as num?)?.toDouble() ?? 0,
-                          ratingCount: w['rating_count'] as int? ?? 0,
+
                           publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
                           updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
                           isMature: w['is_mature'] as bool? ?? false,
@@ -287,14 +286,7 @@ class HorizontalWorkCarouselCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(work.title, maxLines: 1, overflow: TextOverflow.ellipsis, style: KotobaTypography.labelMd.copyWith(color: c.onSurface)),
-                  const SizedBox(height: 2),
-                  Row(
-                    children: [
-                      Icon(Icons.star, size: 10, color: c.onSurfaceVariant),
-                      const SizedBox(width: 2),
-                      Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
-                    ],
-                  ),
+
                 ],
               ),
             ),
@@ -353,10 +345,6 @@ class _LibraryWorkCard extends StatelessWidget {
                         Icon(Icons.visibility, size: 14, color: c.onSurfaceVariant),
                         const SizedBox(width: 4),
                         Text(work.formattedViewCount, style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
-                        const SizedBox(width: 12),
-                        Icon(Icons.star, size: 14, color: c.onSurfaceVariant),
-                        const SizedBox(width: 4),
-                        Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelXs.copyWith(color: c.onSurfaceVariant)),
                         const SizedBox(width: 12),
                         Icon(Icons.menu_book, size: 14, color: c.onSurfaceVariant),
                         const SizedBox(width: 4),

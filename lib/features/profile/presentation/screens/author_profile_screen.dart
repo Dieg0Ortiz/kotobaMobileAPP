@@ -58,8 +58,6 @@ class AuthorProfileScreen extends ConsumerWidget {
                       chapterCount: w['chapter_count'] as int? ?? 0,
                       wordCount: w['word_count'] as int? ?? 0,
                       viewCount: w['view_count'] as int? ?? 0,
-                      rating: (w['rating'] as num?)?.toDouble() ?? 0,
-                      ratingCount: w['rating_count'] as int? ?? 0,
                       publishedAt: DateTime.tryParse(w['published_at'] as String? ?? '') ?? DateTime.now(),
                       updatedAt: DateTime.tryParse(w['updated_at'] as String? ?? '') ?? DateTime.now(),
                       isMature: w['is_mature'] as bool? ?? false,

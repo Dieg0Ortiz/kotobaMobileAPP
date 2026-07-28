@@ -111,10 +111,7 @@ class DetailedWorkCard extends StatelessWidget {
                       Icon(Icons.visibility, size: 16, color: c.onSurfaceVariant),
                       const SizedBox(width: 6),
                       Text(work.formattedViewCount, style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
-                      const SizedBox(width: 20),
-                      Icon(Icons.star, size: 16, color: c.onSurfaceVariant),
-                      const SizedBox(width: 6),
-                      Text(work.rating.toStringAsFixed(1), style: KotobaTypography.labelSm.copyWith(color: c.onSurfaceVariant)),
+
                     ],
                   ),
                 ],

@@ -50,7 +50,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
   bool get _canPublish =>
       _titleCtrl.text.trim().isNotEmpty &&
       _synopsisCtrl.text.trim().isNotEmpty &&
-      _selectedGenres.isNotEmpty;
+      _selectedGenres.isNotEmpty &&
+      _chapters.isNotEmpty;
 
   @override
   void initState() {
@@ -214,6 +215,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Completa el título y la sinopsis antes de publicar')),
+        );
+      }
+      return false;
+    }
+    if (_chapters.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Agrega al menos un capítulo antes de publicar')),
         );
       }
       return false;
