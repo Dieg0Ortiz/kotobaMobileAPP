@@ -319,8 +319,6 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
                       const SizedBox(height: 24),
                       _buildGenresCard(c),
                       const SizedBox(height: 24),
-                      _buildTagsCard(c),
-                      const SizedBox(height: 24),
                       _buildTableOfContentsCard(c),
                       const SizedBox(height: 48),
                     ],

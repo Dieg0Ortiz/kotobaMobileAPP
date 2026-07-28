@@ -419,8 +419,6 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildMediaPlaceholder(c),
-                const SizedBox(height: 24),
                 _buildTitleField(c),
                 const SizedBox(height: 16),
                 _buildContentEditor(c),
