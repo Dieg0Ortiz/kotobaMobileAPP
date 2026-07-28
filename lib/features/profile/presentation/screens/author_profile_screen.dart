@@ -88,6 +88,8 @@ class AuthorProfileScreen extends ConsumerWidget {
                       (_) {
                         ref.invalidate(publicAuthorProfileProvider(userId));
                         ref.invalidate(followingAuthorsProvider);
+                        ref.invalidate(currentProfileProvider);
+                        ref.invalidate(authorDashboardProvider);
                       },
                     );
                   },
