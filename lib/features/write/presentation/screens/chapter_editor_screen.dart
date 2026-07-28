@@ -173,12 +173,6 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
     if (!stay && mounted && context.canPop()) context.pop();
   }
 
-  Future<void> _onPreview() async {
-    await _save(status: 'draft', stay: true);
-    if (_currentChapterId == null || !mounted) return;
-    context.push('/works/${widget.workId}/chapters/$_currentChapterId');
-  }
-
   void _onHistory(KotobaColors c) {
     showDialog(
       context: context,
@@ -372,13 +366,11 @@ class _ChapterEditorScreenState extends ConsumerState<ChapterEditorScreen> {
             color: c.surfaceHigh,
             onSelected: (val) {
               if (val == 'save') _save(status: 'draft', stay: true);
-              if (val == 'preview') _onPreview();
               if (val == 'history') _onHistory(c);
               if (val == 'delete') _onDelete(c);
             },
             itemBuilder: (context) => [
               PopupMenuItem(value: 'save', child: Text('Guardar', style: TextStyle(color: c.onSurface))),
-              PopupMenuItem(value: 'preview', child: Text('Vista previa', style: TextStyle(color: c.onSurface))),
               PopupMenuItem(value: 'history', child: Text('Historial de revisiones', style: TextStyle(color: c.onSurface))),
               PopupMenuItem(value: 'delete', child: Text('Eliminar', style: TextStyle(color: c.onSurface))),
             ],
