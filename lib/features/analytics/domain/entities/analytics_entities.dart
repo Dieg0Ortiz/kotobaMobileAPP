@@ -427,3 +427,136 @@ class GenreAnalytics extends Equatable {
   @override
   List<Object?> get props => [genre, reads, works];
 }
+
+// ── Detailed Per-Story Mining Entities ──────────────────────────
+
+class HeatmapChapter {
+  final String chapterId;
+  final String title;
+  final int orderNumber;
+  final int totalReaders;
+  final List<HeatmapSegment> segments;
+  final double avgProgress;
+  final int avgTimeSeconds;
+  const HeatmapChapter({required this.chapterId, required this.title, required this.orderNumber, required this.totalReaders, required this.segments, required this.avgProgress, required this.avgTimeSeconds});
+  factory HeatmapChapter.fromJson(Map<String, dynamic> json) {
+    return HeatmapChapter(
+      chapterId: json['chapterId'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      orderNumber: json['orderNumber'] as int? ?? 0,
+      totalReaders: json['totalReaders'] as int? ?? 0,
+      segments: (json['segments'] as List<dynamic>?)?.map((e) => HeatmapSegment.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+      avgProgress: (json['avgProgress'] as num?)?.toDouble() ?? 0.0,
+      avgTimeSeconds: json['avgTimeSeconds'] as int? ?? 0,
+    );
+  }
+}
+
+class HeatmapSegment {
+  final String range;
+  final int readersAtSegment;
+  final int dropOffPercent;
+  const HeatmapSegment({required this.range, required this.readersAtSegment, required this.dropOffPercent});
+  factory HeatmapSegment.fromJson(Map<String, dynamic> json) {
+    return HeatmapSegment(
+      range: json['range'] as String? ?? '',
+      readersAtSegment: json['readersAtSegment'] as int? ?? 0,
+      dropOffPercent: json['dropOffPercent'] as int? ?? 0,
+    );
+  }
+}
+
+class SentimentChapter {
+  final String chapterId;
+  final String title;
+  final int orderNumber;
+  final int totalComments;
+  final int positiveCount;
+  final int negativeCount;
+  final int neutralCount;
+  final double sentimentScore;
+  const SentimentChapter({required this.chapterId, required this.title, required this.orderNumber, required this.totalComments, required this.positiveCount, required this.negativeCount, required this.neutralCount, required this.sentimentScore});
+  factory SentimentChapter.fromJson(Map<String, dynamic> json) {
+    return SentimentChapter(
+      chapterId: json['chapterId'] as String? ?? '',
+      title: json['title'] as String? ?? '',
+      orderNumber: json['orderNumber'] as int? ?? 0,
+      totalComments: json['totalComments'] as int? ?? 0,
+      positiveCount: json['positiveCount'] as int? ?? 0,
+      negativeCount: json['negativeCount'] as int? ?? 0,
+      neutralCount: json['neutralCount'] as int? ?? 0,
+      sentimentScore: (json['sentimentScore'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+}
+
+class DemographicCrossData {
+  final List<DemographicCrossGroup> ageGroups;
+  final List<DemographicCrossGroup> countries;
+  const DemographicCrossData({required this.ageGroups, required this.countries});
+  factory DemographicCrossData.fromJson(Map<String, dynamic> json) {
+    return DemographicCrossData(
+      ageGroups: (json['ageGroups'] as List<dynamic>?)?.map((e) => DemographicCrossGroup.fromJson(e as Map<String, dynamic>, isAge: true)).toList() ?? [],
+      countries: (json['countries'] as List<dynamic>?)?.map((e) => DemographicCrossGroup.fromJson(e as Map<String, dynamic>, isAge: false)).toList() ?? [],
+    );
+  }
+}
+
+class DemographicCrossGroup {
+  final String label;
+  final int readerCount;
+  final double avgProgress;
+  final int completionRate;
+  const DemographicCrossGroup({required this.label, required this.readerCount, required this.avgProgress, required this.completionRate});
+  factory DemographicCrossGroup.fromJson(Map<String, dynamic> json, {bool isAge = true}) {
+    return DemographicCrossGroup(
+      label: isAge ? (json['ageRange'] as String? ?? '') : (json['country'] as String? ?? ''),
+      readerCount: json['readerCount'] as int? ?? 0,
+      avgProgress: (json['avgProgress'] as num?)?.toDouble() ?? 0.0,
+      completionRate: json['completionRate'] as int? ?? 0,
+    );
+  }
+}
+
+class ReaderPreferencesData {
+  final int expectedReadersPercent;
+  final int unexpectedReadersPercent;
+  final List<GenreAffinity> genreAffinity;
+  const ReaderPreferencesData({required this.expectedReadersPercent, required this.unexpectedReadersPercent, required this.genreAffinity});
+  factory ReaderPreferencesData.fromJson(Map<String, dynamic> json) {
+    return ReaderPreferencesData(
+      expectedReadersPercent: json['expectedReadersPercent'] as int? ?? 0,
+      unexpectedReadersPercent: json['unexpectedReadersPercent'] as int? ?? 0,
+      genreAffinity: (json['genreAffinity'] as List<dynamic>?)?.map((e) => GenreAffinity.fromJson(e as Map<String, dynamic>)).toList() ?? [],
+    );
+  }
+}
+
+class GenreAffinity {
+  final String genre;
+  final int readerCount;
+  const GenreAffinity({required this.genre, required this.readerCount});
+  factory GenreAffinity.fromJson(Map<String, dynamic> json) {
+    return GenreAffinity(genre: json['genre'] as String? ?? '', readerCount: json['readerCount'] as int? ?? 0);
+  }
+}
+
+class RetentionPoint {
+  final int chapterOrder;
+  final String chapterTitle;
+  final int readersAtChapter;
+  final int retainedToNext;
+  final int retentionRate;
+  final String nextChapterTitle;
+  const RetentionPoint({required this.chapterOrder, required this.chapterTitle, required this.readersAtChapter, required this.retainedToNext, required this.retentionRate, required this.nextChapterTitle});
+  factory RetentionPoint.fromJson(Map<String, dynamic> json) {
+    return RetentionPoint(
+      chapterOrder: json['chapterOrder'] as int? ?? 0,
+      chapterTitle: json['chapterTitle'] as String? ?? '',
+      readersAtChapter: json['readersAtChapter'] as int? ?? 0,
+      retainedToNext: json['retainedToNext'] as int? ?? 0,
+      retentionRate: json['retentionRate'] as int? ?? 0,
+      nextChapterTitle: json['nextChapterTitle'] as String? ?? '',
+    );
+  }
+}

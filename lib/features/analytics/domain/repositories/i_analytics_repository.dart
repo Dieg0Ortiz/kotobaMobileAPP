@@ -29,4 +29,11 @@ abstract class IAnalyticsRepository {
   Future<Either<Failure, SessionAnalytics>> getSessionAnalytics(String authorId);
   Future<Either<Failure, EngagementAnalytics>> getEngagement(String authorId);
   Future<Either<Failure, List<GenreAnalytics>>> getGenreAnalytics(String authorId);
+
+  // Detailed per-story mining
+  Future<Either<Failure, List<HeatmapChapter>>> getStoryHeatmap(String workId);
+  Future<Either<Failure, List<SentimentChapter>>> getStorySentiment(String workId);
+  Future<Either<Failure, DemographicCrossData>> getStoryDemographicCross(String workId);
+  Future<Either<Failure, ReaderPreferencesData>> getStoryReaderPreferences(String workId);
+  Future<Either<Failure, List<RetentionPoint>>> getStoryRetention(String workId);
 }

@@ -125,6 +125,38 @@ final genreAnalyticsProvider = FutureProvider<List<GenreAnalytics>>((ref) async 
   return result.fold((f) => throw f, (data) => data);
 });
 
+// ── Detailed Per-Story Mining Providers ────────────────────────
+
+final storyHeatmapProvider = FutureProvider.family<List<HeatmapChapter>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryHeatmap(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storySentimentProvider = FutureProvider.family<List<SentimentChapter>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStorySentiment(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyDemographicCrossProvider = FutureProvider.family<DemographicCrossData, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryDemographicCross(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyReaderPreferencesProvider = FutureProvider.family<ReaderPreferencesData, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryReaderPreferences(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
+final storyRetentionProvider = FutureProvider.family<List<RetentionPoint>, String>((ref, workId) async {
+  final repo = ref.read(analyticsRepositoryProvider);
+  final result = await repo.getStoryRetention(workId);
+  return result.fold((f) => throw f, (data) => data);
+});
+
 // ── Reading Session Tracker ────────────────────────────────────
 
 class ReadingSessionTracker {

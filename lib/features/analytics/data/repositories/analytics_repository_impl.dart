@@ -188,4 +188,54 @@ class AnalyticsRepositoryImpl implements IAnalyticsRepository {
       (list) => Right(list.map((e) => GenreAnalytics.fromJson(e as Map<String, dynamic>)).toList()),
     );
   }
+
+  // ── Detailed Per-Story Mining ───────────────────────────────
+
+  @override
+  Future<Either<Failure, List<HeatmapChapter>>> getStoryHeatmap(String workId) async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.analytics}/story/$workId/heatmap',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (f) => Left(f),
+      (list) => Right(list.map((e) => HeatmapChapter.fromJson(e as Map<String, dynamic>)).toList()),
+    );
+  }
+
+  @override
+  Future<Either<Failure, List<SentimentChapter>>> getStorySentiment(String workId) async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.analytics}/story/$workId/sentiment',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (f) => Left(f),
+      (list) => Right(list.map((e) => SentimentChapter.fromJson(e as Map<String, dynamic>)).toList()),
+    );
+  }
+
+  @override
+  Future<Either<Failure, DemographicCrossData>> getStoryDemographicCross(String workId) async {
+    final result = await _api.get<Map<String, dynamic>>('${ApiConstants.analytics}/story/$workId/demographics-cross');
+    return result.fold((f) => Left(f), (data) => Right(DemographicCrossData.fromJson(data)));
+  }
+
+  @override
+  Future<Either<Failure, ReaderPreferencesData>> getStoryReaderPreferences(String workId) async {
+    final result = await _api.get<Map<String, dynamic>>('${ApiConstants.analytics}/story/$workId/reader-preferences');
+    return result.fold((f) => Left(f), (data) => Right(ReaderPreferencesData.fromJson(data)));
+  }
+
+  @override
+  Future<Either<Failure, List<RetentionPoint>>> getStoryRetention(String workId) async {
+    final result = await _api.get<List<dynamic>>(
+      '${ApiConstants.analytics}/story/$workId/retention',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (f) => Left(f),
+      (list) => Right(list.map((e) => RetentionPoint.fromJson(e as Map<String, dynamic>)).toList()),
+    );
+  }
 }
