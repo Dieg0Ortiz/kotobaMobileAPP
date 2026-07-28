@@ -11,7 +11,7 @@ class SubscriptionScreen extends ConsumerWidget {
 
   static const _plans = [
     {
-      'id': 'P-3NK82930S8850532FM4YLWBY',
+      'id': 'P-8JK586133K777423TNJUH47I',
       'name': 'Mensual',
       'price': r'$4.99',
       'period': '/mes',
@@ -23,7 +23,7 @@ class SubscriptionScreen extends ConsumerWidget {
       ],
     },
     {
-      'id': 'P-1B262776P8384382UM4YLWFA',
+      'id': 'P-7VW00209L1652123XNJUH47I',
       'name': 'Anual',
       'price': r'$49.99',
       'period': '/año',
