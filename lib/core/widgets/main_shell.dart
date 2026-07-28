@@ -16,25 +16,19 @@ class MainShell extends ConsumerWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location.startsWith('/search')) {
+    if (location.startsWith('/library')) {
       return 1;
     }
-    if (location.startsWith('/write')) {
+    if (location.startsWith('/chat')) {
       return 2;
     }
-    if (location.startsWith('/library')) {
+    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
       return 3;
     }
-    if (location.startsWith('/chat')) {
-      return 4;
-    }
-    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
-      return 5;
-    }
     if (location.startsWith('/works')) {
-      return 0; // detail from home
+      return 0;
     }
-    return 0; // /home
+    return 0;
   }
 
   @override
@@ -95,15 +89,9 @@ class MainShell extends ConsumerWidget {
                         onTap: () => context.go('/home'),
                       ),
                       _SidebarItem(
-                        icon: Icons.search,
-                        label: 'SEARCH',
-                        isSelected: currentIndex == 1,
-                        onTap: () => context.go('/search'),
-                      ),
-                      _SidebarItem(
                         icon: Icons.menu_book_outlined,
                         label: 'LIBRARY',
-                        isSelected: currentIndex == 3,
+                        isSelected: currentIndex == 1,
                         onTap: () => context.go('/library'),
                       ),
                       _SidebarItem(
@@ -115,27 +103,8 @@ class MainShell extends ConsumerWidget {
                       _SidebarItem(
                         icon: Icons.person_outline,
                         label: 'PROFILE',
-                        isSelected: currentIndex == 4,
+                        isSelected: currentIndex == 3,
                         onTap: () => context.go('/profile'),
-                      ),
-                      const Spacer(),
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton(
-                            onPressed: () => context.go('/write'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFFD9735A), // Terracotta
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                            child: const Text('WRITE NOW', style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
-                          ),
-                        ),
                       ),
                     ],
                   ),
@@ -161,55 +130,59 @@ class MainShell extends ConsumerWidget {
 
         // ── Mobile Layout (Bottom Nav Bar) ──
         return Scaffold(
-          body: Stack(
+          body: Column(
             children: [
-              child,
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                right: 16,
-                child: GestureDetector(
-                  onTap: () => context.push('/notifications'),
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: c.surface.withValues(alpha: 0.9),
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.1),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Icon(Icons.notifications_outlined, color: c.onSurface, size: 22),
-                        if (unreadCount > 0)
-                          Positioned(
-                            top: 2,
-                            right: 2,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFD9735A),
-                                shape: BoxShape.circle,
-                              ),
-                              constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                              child: Text(
-                                unreadCount > 99 ? '99+' : '$unreadCount',
-                                style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                textAlign: TextAlign.center,
-                              ),
+              SafeArea(
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () => context.push('/notifications'),
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16, top: 8),
+                      child: Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: c.surface.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
                             ),
-                          ),
-                      ],
+                          ],
+                        ),
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Icon(Icons.notifications_outlined, color: c.onSurface, size: 22),
+                            if (unreadCount > 0)
+                              Positioned(
+                                top: 2,
+                                right: 2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFD9735A),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                                  child: Text(
+                                    unreadCount > 99 ? '99+' : '$unreadCount',
+                                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
+              Expanded(child: child),
             ],
           ),
           bottomNavigationBar: Container(
@@ -228,14 +201,10 @@ class MainShell extends ConsumerWidget {
                   case 0:
                     context.go('/home');
                   case 1:
-                    context.go('/search');
-                  case 2:
-                    context.go('/write');
-                  case 3:
                     context.go('/library');
-                  case 4:
+                  case 2:
                     context.go('/chat');
-                  case 5:
+                  case 3:
                     context.go('/profile');
                 }
               },
@@ -244,16 +213,6 @@ class MainShell extends ConsumerWidget {
                   icon: Icon(Icons.home_outlined),
                   activeIcon: Icon(Icons.home),
                   label: 'Inicio',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.search),
-                  activeIcon: Icon(Icons.search),
-                  label: 'Buscar',
-                ),
-                const BottomNavigationBarItem(
-                  icon: Icon(Icons.edit_outlined),
-                  activeIcon: Icon(Icons.edit),
-                  label: 'Escribir',
                 ),
                 const BottomNavigationBarItem(
                   icon: Icon(Icons.menu_book_outlined),
