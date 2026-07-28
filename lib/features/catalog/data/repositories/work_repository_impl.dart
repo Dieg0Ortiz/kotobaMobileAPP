@@ -50,7 +50,7 @@ class WorkRepositoryImpl implements IWorkRepository {
   @override
   Future<Either<Failure, List<Work>>> getRecommended() async {
     final result = await _api.get<List<dynamic>>(
-      '${ApiConstants.works}/recommended',
+      '/recommended',
       fromJson: (data) => data as List<dynamic>,
     );
     return result.fold(
