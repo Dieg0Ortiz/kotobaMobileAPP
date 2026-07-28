@@ -1,13 +1,13 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/kotoba_colors.dart';
 import '../../../../core/widgets/common/kotoba_loading.dart';
 import '../../domain/entities/analytics_entities.dart';
 import '../providers/analytics_providers.dart';
 import '../../../profile/presentation/providers/profile_providers.dart';
+import '../../../reader/presentation/screens/work_detail_screen.dart';
 
 class AuthorDashboardScreen extends ConsumerWidget {
   const AuthorDashboardScreen({super.key});
@@ -282,7 +282,7 @@ class _WorksPerformanceSection extends ConsumerWidget {
         if (works.isEmpty) return _empty('No hay obras publicadas', c);
         return Column(
           children: works.map((w) => GestureDetector(
-            onTap: () => context.push('/works/${w.workId}'),
+            onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WorkDetailScreen(workId: w.workId))),
             child: Container(
               margin: const EdgeInsets.only(bottom: 8),
               padding: const EdgeInsets.all(12),
