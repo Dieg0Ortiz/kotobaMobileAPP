@@ -22,6 +22,7 @@ import '../../features/write/presentation/screens/write_dashboard_screen.dart';
 import '../../features/notifications/presentation/screens/notifications_screen.dart';
 import '../../features/chat/presentation/screens/chat_list_screen.dart';
 import '../../features/chat/presentation/screens/chat_screen.dart';
+import '../../features/subscription/presentation/screens/subscription_screen.dart';
 import '../widgets/main_shell.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -123,6 +124,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: 'edit',
                 parentNavigatorKey: _rootNavigatorKey,
                 builder: (_, __) => const EditProfileScreen(),
+              ),
+              GoRoute(
+                path: 'subscription',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (_, __) => const SubscriptionScreen(),
               ),
             ],
           ),

@@ -58,20 +58,40 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
-            // 1.5. Dashboard (ingresos y estadísticas)
+            // 1.5. Dashboard y Suscripción
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                child: OutlinedButton.icon(
-                  icon: const Icon(Icons.bar_chart, size: 18),
-                  onPressed: () => context.go('/dashboard'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFD9735A),
-                    side: const BorderSide(color: Color(0xFFD9735A)),
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
-                  label: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w600)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.bar_chart, size: 18),
+                        onPressed: () => context.go('/dashboard'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFD9735A),
+                          side: const BorderSide(color: Color(0xFFD9735A)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        label: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        icon: const Icon(Icons.workspace_premium, size: 18),
+                        onPressed: () => context.push('/profile/subscription'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: const Color(0xFFD9735A),
+                          side: const BorderSide(color: Color(0xFFD9735A)),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        label: const Text('Premium', style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
