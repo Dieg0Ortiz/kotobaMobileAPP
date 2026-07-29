@@ -18,17 +18,20 @@ class MainShell extends ConsumerWidget {
 
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
-    if (location.startsWith('/library')) {
+    if (location.startsWith('/search')) {
       return 1;
     }
-    if (location.startsWith('/chat')) {
+    if (location.startsWith('/write')) {
       return 2;
     }
-    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
+    if (location.startsWith('/library')) {
       return 3;
     }
-    if (location.startsWith('/works')) {
-      return 0;
+    if (location.startsWith('/chat')) {
+      return 4;
+    }
+    if (location.startsWith('/profile') || location.startsWith('/dashboard')) {
+      return 5;
     }
     return 0;
   }
@@ -91,9 +94,15 @@ class MainShell extends ConsumerWidget {
                         onTap: () => context.go('/home'),
                       ),
                       _SidebarItem(
+                        icon: Icons.search,
+                        label: 'SEARCH',
+                        isSelected: currentIndex == 1,
+                        onTap: () => context.go('/search'),
+                      ),
+                      _SidebarItem(
                         icon: Icons.menu_book_outlined,
                         label: 'LIBRARY',
-                        isSelected: currentIndex == 1,
+                        isSelected: currentIndex == 3,
                         onTap: () => context.go('/library'),
                       ),
                       _SidebarItem(
@@ -105,8 +114,27 @@ class MainShell extends ConsumerWidget {
                       _SidebarItem(
                         icon: Icons.person_outline,
                         label: 'PROFILE',
-                        isSelected: currentIndex == 3,
+                        isSelected: currentIndex == 5,
                         onTap: () => context.go('/profile'),
+                      ),
+                      const Spacer(),
+                      Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () => context.go('/write'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFFD9735A),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            child: const Text('WRITE NOW', style: TextStyle(letterSpacing: 1, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -131,10 +159,13 @@ class MainShell extends ConsumerWidget {
         }
 
         // ── Mobile Layout (Bottom Nav Bar) ──
+        final location = GoRouterState.of(context).matchedLocation;
+        final showNotification = !location.startsWith('/search') && !location.startsWith('/write');
         return Scaffold(
           body: Stack(
             children: [
               child,
+              if (showNotification)
               SafeArea(
                 child: Align(
                   alignment: Alignment.topRight,
@@ -241,10 +272,14 @@ class MainShell extends ConsumerWidget {
                 case 0:
                   context.go('/home');
                 case 1:
-                  context.go('/library');
+                  context.go('/search');
                 case 2:
-                  context.go('/chat');
+                  context.go('/write');
                 case 3:
+                  context.go('/library');
+                case 4:
+                  context.go('/chat');
+                case 5:
                   context.go('/profile');
               }
             },
@@ -253,6 +288,16 @@ class MainShell extends ConsumerWidget {
                 icon: Icon(Icons.home_outlined),
                 activeIcon: Icon(Icons.home),
                 label: 'Inicio',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.search),
+                activeIcon: Icon(Icons.search),
+                label: 'Buscar',
+              ),
+              const BottomNavigationBarItem(
+                icon: Icon(Icons.edit_outlined),
+                activeIcon: Icon(Icons.edit),
+                label: 'Escribir',
               ),
               const BottomNavigationBarItem(
                 icon: Icon(Icons.menu_book_outlined),
@@ -303,10 +348,14 @@ class MainShell extends ConsumerWidget {
             case 0:
               context.go('/home');
             case 1:
-              context.go('/library');
+              context.go('/search');
             case 2:
-              context.go('/chat');
+              context.go('/write');
             case 3:
+              context.go('/library');
+            case 4:
+              context.go('/chat');
+            case 5:
               context.go('/profile');
           }
         },
@@ -315,6 +364,16 @@ class MainShell extends ConsumerWidget {
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: 'Inicio',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            activeIcon: Icon(Icons.search),
+            label: 'Buscar',
+          ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.edit_outlined),
+            activeIcon: Icon(Icons.edit),
+            label: 'Escribir',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.menu_book_outlined),

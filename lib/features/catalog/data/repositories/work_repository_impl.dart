@@ -49,7 +49,14 @@ class WorkRepositoryImpl implements IWorkRepository {
 
   @override
   Future<Either<Failure, List<Work>>> getRecommended() async {
-    return getTrending();
+    final result = await _api.get<List<dynamic>>(
+      '/recommended',
+      fromJson: (data) => data as List<dynamic>,
+    );
+    return result.fold(
+      (failure) => Left(failure),
+      (list) => Right(list.map((e) => _workFromJson(e as Map<String, dynamic>)).toList()),
+    );
   }
 
   @override

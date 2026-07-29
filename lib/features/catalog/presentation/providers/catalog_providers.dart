@@ -19,7 +19,7 @@ final trendingWorksProvider = FutureProvider<List<Work>>((ref) async {
 final recommendedWorksProvider = FutureProvider<List<Work>>((ref) async {
   final repo = ref.read(workRepositoryProvider);
   final result = await repo.getRecommended();
-  return result.fold((f) => throw f, (works) => works.take(3).toList());
+  return result.fold((f) => throw f, (works) => works);
 });
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
