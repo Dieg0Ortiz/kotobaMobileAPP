@@ -43,6 +43,8 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
   XFile? _localCoverFile;
   List<Chapter> _chapters = [];
   List<String> _tags = [];
+  List<String> _suggestedTags = [];
+  bool _predicting = false;
   List<String> _selectedGenres = [];
 
   String? _actualWorkId;
@@ -171,10 +173,14 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
     final title = _titleCtrl.text.trim().isEmpty ? 'Historia sin título' : _titleCtrl.text.trim();
     setState(() => _saving = true);
     final repo = ref.read(workRepositoryProvider);
+
+    // Auto-asignar tags sugeridos si no hay tags manuales
+    final tagsToSave = _tags.isEmpty && _suggestedTags.isNotEmpty ? _suggestedTags : _tags;
+
     final body = {
       'title': title,
       'synopsis': _synopsisCtrl.text.trim(),
-      'tags': _tags,
+      'tags': tagsToSave,
       'genres': _selectedGenres,
       'status': status,
       'language': 'es',
@@ -278,6 +284,34 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
       _tags.remove(tag);
       _tagsCtrl.text = _tags.join(', ');
     });
+  }
+
+  Future<void> _predictTags() async {
+    final synopsis = _synopsisCtrl.text.trim();
+    if (synopsis.isEmpty) return;
+
+    setState(() => _predicting = true);
+
+    try {
+      final dio = ref.read(contentApiClientProvider).dio;
+      final response = await dio.post(
+        '/tags/predict-tags',
+        data: {'synopsis': synopsis},
+      );
+      final data = response.data as Map<String, dynamic>;
+      final tags = List<String>.from(data['tags'] ?? []);
+      setState(() {
+        _suggestedTags = tags;
+        _predicting = false;
+      });
+    } catch (e) {
+      setState(() => _predicting = false);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudieron predecir etiquetas. Intenta de nuevo.')),
+        );
+      }
+    }
   }
 
   // ── Build ──────────────────────────────────────────────────────────
@@ -560,6 +594,30 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             placeholder: '¿De qué trata tu historia? Atrae a los lectores con un buen resumen...',
             maxLines: 5,
             style: KotobaTypography.bodyMd,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _predicting ? null : _predictTags,
+              icon: _predicting
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.auto_awesome, size: 18),
+              label: Text(_predicting ? 'Prediciendo...' : 'Predecir etiquetas'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: c.primary.withValues(alpha: 0.15),
+                foregroundColor: c.primary,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(color: c.primary.withValues(alpha: 0.3)),
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -866,6 +924,65 @@ class _EditStoryScreenState extends ConsumerState<EditStoryScreen> {
             ],
           ),
           const SizedBox(height: 16),
+
+          // Suggested tags (from AI prediction)
+          if (_suggestedTags.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              'ETIQUETAS SUGERIDAS',
+              style: KotobaTypography.labelXs.copyWith(
+                color: c.primary.withValues(alpha: 0.7),
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _suggestedTags.map((tag) {
+                final isSelected = _tags.contains(tag);
+                return GestureDetector(
+                  onTap: () {
+                    if (isSelected) {
+                      _removeTag(tag);
+                    } else {
+                      _addTag(tag);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? c.primary.withValues(alpha: 0.2) : c.surfaceHighest,
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: isSelected
+                            ? c.primary.withValues(alpha: 0.5)
+                            : c.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isSelected ? Icons.check_circle : Icons.add_circle_outline,
+                          size: 14,
+                          color: isSelected ? c.primary : c.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          tag,
+                          style: KotobaTypography.labelSm.copyWith(
+                            color: isSelected ? c.primary : c.onSurface,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Tag input
           _buildStyledInput(
